@@ -384,6 +384,10 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
 .ph-light { position: fixed; z-index: 11; inset: 16px; margin: auto; max-width: 900px; max-height: calc(100% - 32px); display: flex; flex-direction: column; gap: 12px; padding: 12px; overflow-y: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: 0 30px 80px -20px rgba(0,0,0,.8); height: fit-content; }
 .ph-light img { width: 100%; max-height: 65vh; object-fit: contain; border-radius: 10px; background: #000; }
 .ph-meta { display: flex; flex-direction: column; gap: 10px; }
+
+.ph-av.img, .acct-btn i.img { padding: 0; overflow: hidden; background: var(--surface-2); }
+.ph-av.img img, .acct-btn i.img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.av-pick { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 </style>
 
 <div class="app">
@@ -1759,7 +1763,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     $('#tabSpot').setAttribute('aria-selected', state.tab === 'spot');
     $('#tabPhoto').setAttribute('aria-selected', state.tab === 'photo');
     $('#tabAcct').setAttribute('aria-selected', state.tab === 'acct');
-    var an = acctName() || 'Cuenta'; $('#acctLbl').textContent = an; $('#acctIni').textContent = an.trim().charAt(0).toUpperCase(); $('#acctBtn').setAttribute('aria-pressed', state.tab === 'acct'); $('#acctBtn').title = 'Cuenta: ' + an + ' · cambiar o agregar cuentas';
+    var an = acctName() || 'Cuenta'; $('#acctLbl').textContent = an; var avp = null; try { avp = JSON.parse(LS.get('garage.v1.ph.' + (active || 'x') + '.prof') || 'null'); } catch (e) {} var ai = $('#acctIni'); if (avp && avp.avatar) { ai.innerHTML = '<img src="' + esc(avp.avatar) + '" alt="">'; ai.classList.add('img'); } else { ai.textContent = an.trim().charAt(0).toUpperCase(); ai.classList.remove('img'); } $('#acctBtn').setAttribute('aria-pressed', state.tab === 'acct'); $('#acctBtn').title = 'Cuenta: ' + an + ' · cambiar o agregar cuentas';
     $('#tabRadar').setAttribute('aria-selected', state.tab === 'radar');
     $('#tabPeople').setAttribute('aria-selected', state.tab === 'people');
     $('#demoNote').hidden = !usingDemos() || !(state.tab === 'spotted' || state.tab === 'garage');
@@ -2014,7 +2018,8 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   function socialLink(key, raw) {
     var v = String(raw || '').trim(); if (!v) return null;
     var S = SOCIALS.find(function (x) { return x[0] === key; }); if (!S) return null;
-    if (/^https?:\/\//i.test(v) || /^[a-z0-9-]+(\.[a-z0-9-]+)+(\/|$)/i.test(v)) {
+    var looksUrl = /^https?:\/\//i.test(v) || (/^[a-z0-9-]+(\.[a-z0-9-]+)+(\/|$)/i.test(v) && (key === 'web' || v.indexOf('/') > -1 || (S[3] && S[3].test(v))));
+    if (looksUrl) {
       var url = /^https?:\/\//i.test(v) ? v : 'https://' + v;
       try { var u = new URL(url); if (u.protocol !== 'https:' && u.protocol !== 'http:') return null; if (S[3] && !S[3].test(u.hostname)) return { bad: true }; return { url: u.href, label: S[0] === 'web' ? u.hostname.replace(/^www\./, '') : decodeURIComponent(u.pathname.replace(/^\/+|\/+$/g, '').replace(/^add\/|^photos\//, '')) || u.hostname }; } catch (e) { return null; }
     }
@@ -2053,11 +2058,16 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     var acct = active || 'x'; if (ph.loadedFor === acct) return;
     ph.loadedFor = acct; ph.view = null; ph.editing = false; phLoadProf(); await phLoadPhotos(); renderPhoto();
   }
+  function avHTML(P, name, cls) {
+    return P && P.avatar ? '<div class="' + cls + ' img"><img src="' + esc(P.avatar) + '" alt="Foto de perfil de ' + esc(name) + '"></div>' : '<div class="' + cls + '">' + esc(String(name || '?').charAt(0).toUpperCase()) + '</div>';
+  }
   function profHTML() {
     var P = ph.prof, name = (P && P.name) || acctName() || 'Fotógrafo';
     if (ph.editing || !P) {
       var d = P || { name: acctName() || '', city: '', bio: '', soc: {} };
+      var av = ph.draftAv !== undefined ? ph.draftAv : (d.avatar || '');
       return '<form class="ph-form" id="phForm" onsubmit="return false">' + (P ? '' : '<p class="status">Crea tu perfil de fotógrafo: así la gente sabe quién tomó las fotos y dónde seguirte.</p>') +
+        '<div class="av-pick">' + avHTML({ avatar: av }, d.name || acctName(), 'ph-av') + '<div class="actions"><label class="btn" for="phAvFile">' + (av ? 'Cambiar foto de perfil' : 'Agregar foto de perfil') + '</label><input class="sr" type="file" id="phAvFile" accept="image/*">' + (av ? '<button class="btn" type="button" data-act="phAvDel">Quitar</button>' : '') + '</div></div>' +
         '<div class="f2"><div class="field"><label for="phName">Nombre o alias</label><input type="text" id="phName" maxlength="40" autocomplete="off" value="' + esc(d.name) + '"></div>' +
         '<div class="field"><label for="phCity">Ciudad</label><input type="text" id="phCity" maxlength="40" autocomplete="off" placeholder="Miami, FL" value="' + esc(d.city) + '"></div></div>' +
         '<div class="field"><label for="phBio">Bio</label><textarea id="phBio" maxlength="240" placeholder="Qué fotografías, tu equipo, cómo contratarte…">' + esc(d.bio) + '</textarea></div>' +
@@ -2069,7 +2079,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
         '<div class="actions"><button class="btn primary" type="button" data-act="phSave">Guardar perfil</button>' + (P ? '<button class="btn" type="button" data-act="phCancel">Cancelar</button>' : '') + '</div></form>';
     }
     var links = SOCIALS.map(function (x) { var l = socialLink(x[0], (P.soc || {})[x[0]]); return l && !l.bad ? '<a class="chip soc" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer"><b>' + esc(x[1]) + '</b><span>' + esc(l.label) + '</span></a>' : ''; }).join('');
-    return '<div class="ph-card"><div class="ph-av">' + esc(name.charAt(0).toUpperCase()) + '</div><div class="ph-who"><b>' + esc(name) + '</b>' + (P.city ? '<span>' + esc(P.city) + '</span>' : '') + '<span>' + ph.photos.length + ' fotos</span></div></div>' +
+    return '<div class="ph-card">' + avHTML(P, name, 'ph-av') + '<div class="ph-who"><b>' + esc(name) + '</b>' + (P.city ? '<span>' + esc(P.city) + '</span>' : '') + '<span>' + ph.photos.length + ' fotos</span></div></div>' +
       (P.bio ? '<p class="ph-bio">' + esc(P.bio) + '</p>' : '') + (links ? '<div class="chips">' + links + '</div>' : '<p class="status">Todavía no pusiste redes. Toca «Editar perfil».</p>');
   }
   function renderPhoto() {
@@ -2104,9 +2114,26 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
       if (!l || l.bad) bad.push(SOCIALS.find(function (x) { return x[0] === i.dataset.soc; })[1]); else soc[i.dataset.soc] = v.slice(0, 120);
     });
     if (bad.length) { $('#phFormMsg').textContent = 'Revisa: ' + bad.join(', ') + '. Pon tu @usuario o un link de esa red.'; return; }
-    ph.prof = { name: name, city: ($('#phCity').value || '').trim().slice(0, 40), bio: ($('#phBio').value || '').trim().slice(0, 240), soc: soc };
+    var avatar = ph.draftAv !== undefined ? ph.draftAv : ((ph.prof && ph.prof.avatar) || '');
+    ph.prof = { name: name, city: ($('#phCity').value || '').trim().slice(0, 40), bio: ($('#phBio').value || '').trim().slice(0, 240), soc: soc, avatar: avatar };
     if (!LS.set(phKey() + '.prof', JSON.stringify(ph.prof))) { $('#phFormMsg').textContent = 'Este navegador no deja guardar datos.'; return; }
-    ph.editing = false; renderPhoto();
+    ph.editing = false; ph.draftAv = undefined; renderPhoto(); renderHeader();
+  }
+  function squareAvatar(file) {
+    return new Promise(function (res, rej) {
+      var u = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        var n = Math.min(im.naturalWidth, im.naturalHeight), c = document.createElement('canvas'); c.width = c.height = 320;
+        c.getContext('2d').drawImage(im, (im.naturalWidth - n) / 2, (im.naturalHeight - n) / 2, n, n, 0, 0, 320, 320);
+        URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg', .82));
+      };
+      im.onerror = function () { URL.revokeObjectURL(u); rej(new Error('img')); };
+      im.src = u;
+    });
+  }
+  function phKeepForm() {
+    var keep = {}; document.querySelectorAll('#phForm input[type=text], #phForm textarea').forEach(function (i) { keep[i.id] = i.value; });
+    return function () { Object.keys(keep).forEach(function (id) { var el = $('#' + id); if (el) el.value = keep[id]; }); };
   }
   async function phUpload(files) {
     var list = Array.prototype.slice.call(files || []).filter(function (f) { return /^image\//.test(f.type); }).slice(0, 20);
@@ -2239,7 +2266,8 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     else if (a === 'sugModel') { $('#model').value = t.dataset.v; applyModelMatch(true); }
     else if (a === 'sugBack') { $('#make').value = ''; $('#model').value = ''; resetSpecs(); $('#make').focus(); }
     else if (a === 'phEdit') { ph.editing = true; renderPhoto(); }
-    else if (a === 'phCancel') { ph.editing = false; renderPhoto(); }
+    else if (a === 'phCancel') { ph.editing = false; ph.draftAv = undefined; renderPhoto(); }
+    else if (a === 'phAvDel') { var rs = phKeepForm(); ph.draftAv = ''; renderPhoto(); rs(); }
     else if (a === 'phSave') phSaveProf();
     else if (a === 'phOpen') { ph.view = t.dataset.id; ph.confirmDel = false; renderPhView(); }
     else if (a === 'phClose') { ph.view = null; ph.confirmDel = false; renderPhView(); }
@@ -2330,6 +2358,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     if (t.id === 'make' || t.id === 'model') applyModelMatch();
     else if (t.id === 'spOk') { $('#specBox').classList.remove('warn'); setSpecStatus(t.checked ? 'Specs confirmados. Se guardan con la carta.' : 'Sin confirmar: no se guardan.'); }
     else if (t.id === 'spDrive') { if (!$('#spOk').checked) setSpecStatus('Cuando estén bien, marca «Confirmo estos specs».'); }
+    else if (t.id === 'phAvFile') { var af = t.files && t.files[0]; if (af) squareAvatar(af).then(function (u) { var rs = phKeepForm(); ph.draftAv = u; renderPhoto(); rs(); }).catch(function () { var m = $('#phFormMsg'); if (m) m.textContent = 'No se pudo leer esa imagen.'; }); }
     else if (t.id === 'phFile') { var pf = t.files; phUpload(pf).then(function () { t.value = ''; }); }
     else if (t.id === 'acImport') { var imf = t.files && t.files[0]; t.value = ''; if (imf) importData(imf); }
     else if (t.id === 'sFrom') { var fc = carById(t.value); if (fc) { $('#sMake').value = fc.make; $('#sModel').value = fc.model; $('#sRarity').value = String(fc.rarity | 0); $('#sBody').value = BODIES[fc.body] ? fc.body : 'sedan'; if (fc.place) $('#sArea').value = fc.place; } }
