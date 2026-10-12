@@ -517,7 +517,7 @@ body.zone-home .home-btn { display: none; }
 @media (max-width: 520px) { .home-btn span { display: none; } .home-btn { padding: 4px 11px; } .acct-btn { right: 0; } .mast-r { gap: 8px; } }
 /* zonas: pestañas */
 body.zone-cards #tabPhoto { display: none; }
-body.zone-spot .bar .tab:not(#tabPhoto):not(#tabSocial) { display: none; }
+body.zone-spot .bar .tab:not(#tabPhoto):not(#tabSocial):not(#tabFeed) { display: none; }
 body.zone-spot #addOpen { display: none; }
 /* gente */
 .so-me { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--bg) 60%, transparent); margin-bottom: 12px; }
@@ -611,6 +611,24 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
 .tp-c { width: 100%; aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--line); background: var(--c); cursor: pointer; }
 .tp-c[aria-pressed="true"] { outline: 2px solid var(--fg); outline-offset: 2px; }
 @media (max-width: 520px) { .theme-pop { right: auto; left: 0; } }
+
+/* feed */
+.feed { display: flex; flex-direction: column; gap: 16px; max-width: 560px; margin-inline: auto; }
+.post { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 16px; background: var(--bg); box-shadow: var(--shadow); }
+.post-h .so-open .ph-who span { font-size: 12px; color: var(--muted); }
+.post-h .so-open .ph-who b { font-size: 18px; }
+.post-m img { display: block; width: 100%; max-height: 70vh; object-fit: cover; border-radius: 10px; background: var(--surface-2); }
+.post-card { display: flex; justify-content: center; }
+.post-card .card { width: min(260px, 100%); }
+.post-cap { margin: 0; }
+.post-spec { margin: 0; font-size: 13px; color: var(--muted); }
+.post-a { display: flex; gap: 8px; align-items: center; min-height: 36px; }
+.post-more { align-self: flex-start; padding: 0; border: 0; background: none; color: var(--muted); font: 500 13px var(--f-body); cursor: pointer; }
+.cmts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.cmts em { font-style: normal; font-size: 11px; color: var(--muted); }
+.cmt-del { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 16px; }
+.cmt-new { display: flex; gap: 8px; margin-top: 8px; }
+.cmt-new input { flex: 1; min-width: 0; }
 </style>
 
 <div class="app">
@@ -640,6 +658,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
       <button class="tab" role="tab" id="tabGarage" data-act="tab" data-tab="garage"></button>
       <button class="tab" role="tab" id="tabSpot" data-act="tab" data-tab="spot" hidden>Spot now</button>
       <button class="tab" role="tab" id="tabPhoto" data-act="tab" data-tab="photo">Mi portafolio</button>
+      <button class="tab" role="tab" id="tabFeed" data-act="tab" data-tab="feed">Feed</button>
       <button class="tab" role="tab" id="tabSocial" data-act="tab" data-tab="social">Gente</button>
       <button class="tab" role="tab" id="tabRadar" data-act="tab" data-tab="radar">Radar</button>
       <button class="tab" role="tab" id="tabPeople" data-act="tab" data-tab="people">Gente</button>
@@ -781,6 +800,10 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     <div class="ph-grid" id="phGrid"></div>
     <datalist id="camList"><option value="iPhone 16 Pro"><option value="iPhone 15 Pro"><option value="Samsung Galaxy S24 Ultra"><option value="Google Pixel 9 Pro"><option value="Sony A7 IV"><option value="Sony A7R V"><option value="Sony A6700"><option value="Canon EOS R5"><option value="Canon EOS R6 Mark II"><option value="Nikon Z6 III"><option value="Nikon Z8"><option value="Fujifilm X-T5"><option value="Fujifilm X100VI"><option value="DJI Mini 4 Pro"><option value="GoPro HERO12"></datalist>
     <p class="status">Por ahora tu perfil y tus fotos se guardan en este dispositivo, en tu cuenta «<span id="phAcct"></span>». Las redes se enlazan con tu usuario o link; no se conectan a tus cuentas.</p>
+  </section>
+
+  <section class="panel" id="feed" hidden aria-label="Feed">
+    <div id="feedBox"></div>
   </section>
 
   <section class="panel" id="social" hidden aria-label="Gente">
@@ -1300,6 +1323,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     if (c.demo || c.peer) return c.serial;
     var i = state.cars.findIndex(function (x) { return x.id === c.id; });
     if (i < 0 && c._n) return 'GAR-' + String(c._n).padStart(3, '0');
+    if (i < 0) return 'GAR-' + String(c.id || '').slice(-3).toUpperCase();
     return 'GAR-' + String(i + 1).padStart(3, '0');
   };
   var dateOf = function (ts) { return ts ? new Date(ts).toLocaleDateString(LANG === 'en' ? 'en-US' : 'es-US', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; };
@@ -2125,6 +2149,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     $('#tabSpot').setAttribute('aria-selected', state.tab === 'spot');
     $('#tabPhoto').setAttribute('aria-selected', state.tab === 'photo');
     $('#tabSocial').setAttribute('aria-selected', state.tab === 'social');
+    $('#tabFeed').setAttribute('aria-selected', state.tab === 'feed');
     $('#tabAcct').setAttribute('aria-selected', state.tab === 'acct');
     var an = acctName() || 'Cuenta'; $('#acctLbl').textContent = an; var avp = null; if (FB.user && FB.prof) avp = FB.prof; else { try { avp = JSON.parse(LS.get('garage.v1.ph.' + (active || 'x') + '.prof') || 'null'); } catch (e) {} } var ai = $('#acctIni'); if (avp && avp.avatar) { ai.innerHTML = '<img src="' + esc(avp.avatar) + '" alt="">'; ai.classList.add('img'); } else { ai.textContent = an.trim().charAt(0).toUpperCase(); ai.classList.remove('img'); } $('#acctBtn').setAttribute('aria-pressed', state.tab === 'acct'); $('#acctBtn').title = 'Cuenta: ' + an + ' · cambiar o agregar cuentas';
     $('#tabRadar').setAttribute('aria-selected', state.tab === 'radar');
@@ -2206,7 +2231,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
   function render() {
     var z = state.zone || 'home';
     if (state.tab === 'spot') state.tab = 'spotted';
-    if (z === 'spot' && state.tab !== 'photo' && state.tab !== 'acct' && state.tab !== 'social') state.tab = 'photo';
+    if (z === 'spot' && state.tab !== 'photo' && state.tab !== 'acct' && state.tab !== 'social' && state.tab !== 'feed') state.tab = 'photo';
     if (z === 'cards' && state.tab === 'photo') state.tab = 'spotted';
     document.body.classList.remove('zone-home', 'zone-cards', 'zone-spot'); document.body.classList.add('zone-' + z);
     var ha = $('#homeAcct');
@@ -2222,6 +2247,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     var t = z === 'home' ? '' : state.tab, isCol = t === 'spotted' || t === 'garage';
     $('#chips').hidden = !isCol; $('#grid').hidden = !isCol; $('#board').hidden = t !== 'board'; $('#radar').hidden = t !== 'radar'; $('#spot').hidden = t !== 'spot'; if (t !== 'spot') stopCam(); $('#people').hidden = t !== 'people';
     $('#acct').hidden = t !== 'acct';
+    $('#feed').hidden = t !== 'feed'; if (t === 'feed' && $('#feed').dataset.z !== z) { $('#feed').dataset.z = z; renderFeed(); } else if (t !== 'feed') $('#feed').dataset.z = '';
     $('#social').hidden = t !== 'social'; if (t === 'social') renderSocial(); else state.prof = null;
     $('#phSection').hidden = t !== 'photo'; if (t === 'photo') { if (ph.loadedFor !== phAcct()) phEnsure(); else renderPhoto(); } else if (ph.view) { ph.view = null; renderPhView(); }
     renderHeader(); renderChips(); renderGrid(); renderBoard(); renderRadar(); renderPeople(); renderAcct(); renderSheet();
@@ -2683,7 +2709,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     'Guardar look': 'Save look', 'Guardar perfil': 'Save profile', 'Hacer principal': 'Make main', 'Identificar con IA': 'Identify with AI', 'Importar copia': 'Import backup',
     'Inicio': 'Home', 'Intake, tune, rines…': 'Intake, tune, wheels…', 'Integral (AWD)': 'All-wheel (AWD)', 'Invertido': 'Invested',
     'Las cuentas de este dispositivo viven solo en este navegador: no se sincronizan entre teléfonos y se pierden si borras los datos del navegador. El PIN solo evita que alguien abra tu cuenta por accidente; no es seguridad real.': 'Accounts on this device live only in this browser: they don’t sync between phones and are lost if you clear browser data. The PIN only stops someone opening your account by accident; it isn’t real security.',
-    'Legendario': 'Legendary', 'Épico': 'Epic', 'Apariencia': 'Appearance', 'Modo': 'Mode', 'Claro': 'Light', 'Oscuro': 'Dark', 'Color de acento': 'Accent color', 'Rosado': 'Pink', 'Morado': 'Purple', 'Turquesa': 'Teal', '@usuario': '@username', 'Carro que manejo': 'Car I drive', 'Equipo / cámara': 'Gear / camera', 'Tu perfil': 'Your profile', 'Foto de perfil, @usuario, bio, carro, equipo y redes sociales.': 'Profile photo, @username, bio, car, gear and social media.', 'Editar perfil': 'Edit profile', 'Specs de la cámara': 'Camera specs', 'Edición': 'Editing', 'Lightroom, preset, sin editar…': 'Lightroom, preset, unedited…', 'Publicar': 'Publish', 'Subir': 'Upload', 'Leímos estos datos de la foto; corrígelos si hace falta.': 'We read this data from the photo; fix it if needed.', 'La foto no trae datos de cámara: ponlos a mano si quieres.': 'The photo has no camera data: add it by hand if you want.', 'Lo que escribas se aplica a todas; lo que dejes vacío se toma de cada foto.': 'What you type applies to all; anything left empty is taken from each photo.', 'Hola, @': 'Hi, @', 'Tu sesión está abierta.': 'You’re logged in.', 'Mi cuenta': 'My account', 'Tu cuenta': 'Your account', 'Entra o crea tu cuenta para guardar tus cartas en la nube, seguir gente y dar likes.': 'Log in or create an account to save your cards to the cloud, follow people and give likes.', 'Estás como «': 'You’re using “', 'Guardado en tu cuenta @': 'Saved to your account @', '. Lo ves desde cualquier teléfono.': '. You can see it from any phone.', 'Ese correo ya tiene cuenta. Entra con él.': 'That email already has an account. Log in with it.', 'Ese correo no es válido.': 'That email isn’t valid.', 'La contraseña necesita al menos 6 caracteres.': 'The password needs at least 6 characters.', 'Correo o contraseña incorrectos.': 'Wrong email or password.', 'No hay cuenta con ese correo.': 'No account with that email.', 'Demasiados intentos. Espera un momento y prueba otra vez.': 'Too many attempts. Wait a moment and try again.', 'Cerraste la ventana de Google antes de terminar.': 'You closed the Google window before finishing.', 'Sin conexión. Revisa tu internet.': 'No connection. Check your internet.', 'No tienes permiso para hacer eso.': 'You don’t have permission to do that.', 'Algo falló. Intenta otra vez.': 'Something went wrong. Try again.', 'Conectando…': 'Connecting…', 'Escoge tu usuario': 'Choose your username', 'Es tu nombre público en GARAGE. Así te buscan y te siguen.': 'It’s your public name on GARAGE. People find and follow you by it.', 'Usuario': 'Username', 'Guardar usuario': 'Save username', 'Tus cartas, tu perfil y tus fotos se guardan en tu cuenta y las ves desde cualquier teléfono. Tu sesión se queda abierta en este dispositivo hasta que la cierres.': 'Your cards, profile and photos are saved to your account and you can see them from any phone. You stay logged in on this device until you log out.', 'cartas del modo invitado a mi cuenta': 'guest-mode cards to my account', 'Pasar': 'Move', 'Tu colección y tu portafolio son públicos: cualquiera en GARAGE puede verlos, seguirte y darte like.': 'Your collection and portfolio are public: anyone on GARAGE can see them, follow you and like them.', 'Correo': 'Email', 'Contraseña': 'Password', 'Mínimo 6 caracteres': 'At least 6 characters', 'Repite la contraseña': 'Repeat password', 'Ya tengo cuenta': 'I have an account', 'Continuar con Google': 'Continue with Google', 'Olvidé mi contraseña': 'Forgot my password', 'Sin cuenta estás en modo invitado: tus cartas se quedan solo en este dispositivo y nadie las ve.': 'Without an account you’re in guest mode: your cards stay only on this device and nobody sees them.', 'Pon tu correo y tu contraseña.': 'Enter your email and password.', 'El usuario debe tener de 3 a 20 letras, números, punto o guion bajo.': 'Username must be 3–20 letters, numbers, dot or underscore.', 'Las contraseñas no coinciden.': 'The passwords don’t match.', 'Escribe tu correo arriba y vuelve a tocar «Olvidé mi contraseña».': 'Type your email above and tap “Forgot my password” again.', 'Te mandamos un correo para cambiar la contraseña.': 'We sent you an email to reset your password.', 'cartas pasadas a tu cuenta.': 'cards moved to your account.', 'Entra para seguir': 'Log in to follow', 'Entra a tu cuenta para seguir gente y dar likes.': 'Log in to follow people and give likes.', 'Cargando…': 'Loading…', 'No se pudo cargar la lista. Revisa tu conexión.': 'Couldn’t load the list. Check your connection.', 'Todavía no hay más personas. Comparte el link con tus amigos.': 'No other people yet. Share the link with your friends.', 'No se pudo cargar el perfil.': 'Couldn’t load the profile.', 'Entra para dar like': 'Log in to like', 'Entrar': 'Log in', 'tu@correo.com': 'you@email.com', 'Pon un PIN de 4 a 12 caracteres para proteger tu cuenta.': 'Set a 4 to 12 character PIN to protect your account.', 'Los PIN no coinciden.': 'The PINs don’t match.', 'Repite el PIN': 'Repeat PIN', 'Tu sesión se queda abierta en este dispositivo. Para entrar desde otra cuenta o volver después de cerrar sesión, se pide el PIN.': 'Your session stays open on this device. The PIN is asked when switching from another account or coming back after logging out.', 'Cerrar sesión': 'Log out', 'Invitado · sin PIN': 'Guest · no PIN', '· protegida con PIN': '· PIN protected', 'Todavía no tienes cartas. Usa «+ Agregar carro».': 'You don’t have cards yet. Use “+ Add car”.', 'Velocidad máxima': 'Top speed', 'Velocidad máx. (mph)': 'Top speed (mph)', 'Vel. máx.': 'Top speed', 'Transmisión': 'Transmission', '180 o 175/190': '180 or 175/190', 'Manual 6 velocidades': '6-speed manual', 'Manual 5 velocidades': '5-speed manual', 'Manual 7 velocidades': '7-speed manual', 'Automática 6 velocidades': '6-speed automatic', 'Automática 8 velocidades': '8-speed automatic', 'Automática 10 velocidades': '10-speed automatic', 'Doble embrague (DCT) 7 vel.': '7-speed dual-clutch (DCT)', 'Doble embrague (DCT) 8 vel.': '8-speed dual-clutch (DCT)', 'Secuencial': 'Sequential', 'Eléctrica (1 velocidad)': 'Electric (single-speed)', 'Exposición': 'Exposure', 'Torque (lb-ft)': 'Torque (lb-ft)', 'Arrastra la foto para encuadrarla. Pellizca o usa la rueda del mouse para hacer zoom. Así se verá en la carta.': 'Drag the photo to frame it. Pinch or use the mouse wheel to zoom. This is how it’ll look on the card.', 'El año no es válido. Usa 2020 o 2019/2023.': 'That year isn’t valid. Use 2020 or 2019/2023.', 'Revisa los números: usa un valor (400) o un rango (380/420).': 'Check the numbers: use one value (400) or a range (380/420).', '2025 o 2019/2023': '2025 or 2019/2023', '400 o 380/420': '400 or 380/420', '4.5 o 4.2/4.8': '4.5 or 4.2/4.8', '350 o 330/370': '350 or 330/370', '← Marcas': '← Makes', 'Marcas populares': 'Popular makes', 'Ejemplo': 'Sample', 'Nombre de usuario': 'Username', 'Mi perfil': 'My profile', 'Lente': 'Lens', 'Levantado': 'Lifted', 'Ligero': 'Light', 'Likes a tu colección': 'Likes on your collection',
+    'Legendario': 'Legendary', 'Épico': 'Epic', 'Actualizar': 'Refresh', 'Entra a tu cuenta para dar like y comentar.': 'Log in to like and comment.', 'Las fotos más recientes de los fotógrafos.': 'The latest photos from photographers.', 'Las cartas más recientes de todos.': 'The latest cards from everyone.', 'No se pudo cargar el feed. Revisa tu conexión.': 'Couldn’t load the feed. Check your connection.', 'Todavía nadie ha subido fotos. ¡Sé el primero!': 'Nobody has uploaded photos yet. Be the first!', 'Todavía nadie ha agregado cartas. ¡Sé el primero!': 'Nobody has added cards yet. Be the first!', 'Agregó a su garage:': 'Added to their garage:', 'Vio un': 'Spotted a', 'Me gusta': 'Like', 'Ver': 'View', 'comentarios': 'comments', 'comentario': 'comment', 'Escribe un comentario…': 'Write a comment…', 'Enviar': 'Send', 'Entra a tu cuenta para comentar.': 'Log in to comment.', 'El feed necesita internet para ver las publicaciones de todos.': 'The feed needs internet to show everyone’s posts.', 'Borrar comentario': 'Delete comment', 'Comentario': 'Comment', 'Apariencia': 'Appearance', 'Modo': 'Mode', 'Claro': 'Light', 'Oscuro': 'Dark', 'Color de acento': 'Accent color', 'Rosado': 'Pink', 'Morado': 'Purple', 'Turquesa': 'Teal', '@usuario': '@username', 'Carro que manejo': 'Car I drive', 'Equipo / cámara': 'Gear / camera', 'Tu perfil': 'Your profile', 'Foto de perfil, @usuario, bio, carro, equipo y redes sociales.': 'Profile photo, @username, bio, car, gear and social media.', 'Editar perfil': 'Edit profile', 'Specs de la cámara': 'Camera specs', 'Edición': 'Editing', 'Lightroom, preset, sin editar…': 'Lightroom, preset, unedited…', 'Publicar': 'Publish', 'Subir': 'Upload', 'Leímos estos datos de la foto; corrígelos si hace falta.': 'We read this data from the photo; fix it if needed.', 'La foto no trae datos de cámara: ponlos a mano si quieres.': 'The photo has no camera data: add it by hand if you want.', 'Lo que escribas se aplica a todas; lo que dejes vacío se toma de cada foto.': 'What you type applies to all; anything left empty is taken from each photo.', 'Hola, @': 'Hi, @', 'Tu sesión está abierta.': 'You’re logged in.', 'Mi cuenta': 'My account', 'Tu cuenta': 'Your account', 'Entra o crea tu cuenta para guardar tus cartas en la nube, seguir gente y dar likes.': 'Log in or create an account to save your cards to the cloud, follow people and give likes.', 'Estás como «': 'You’re using “', 'Guardado en tu cuenta @': 'Saved to your account @', '. Lo ves desde cualquier teléfono.': '. You can see it from any phone.', 'Ese correo ya tiene cuenta. Entra con él.': 'That email already has an account. Log in with it.', 'Ese correo no es válido.': 'That email isn’t valid.', 'La contraseña necesita al menos 6 caracteres.': 'The password needs at least 6 characters.', 'Correo o contraseña incorrectos.': 'Wrong email or password.', 'No hay cuenta con ese correo.': 'No account with that email.', 'Demasiados intentos. Espera un momento y prueba otra vez.': 'Too many attempts. Wait a moment and try again.', 'Cerraste la ventana de Google antes de terminar.': 'You closed the Google window before finishing.', 'Sin conexión. Revisa tu internet.': 'No connection. Check your internet.', 'No tienes permiso para hacer eso.': 'You don’t have permission to do that.', 'Algo falló. Intenta otra vez.': 'Something went wrong. Try again.', 'Conectando…': 'Connecting…', 'Escoge tu usuario': 'Choose your username', 'Es tu nombre público en GARAGE. Así te buscan y te siguen.': 'It’s your public name on GARAGE. People find and follow you by it.', 'Usuario': 'Username', 'Guardar usuario': 'Save username', 'Tus cartas, tu perfil y tus fotos se guardan en tu cuenta y las ves desde cualquier teléfono. Tu sesión se queda abierta en este dispositivo hasta que la cierres.': 'Your cards, profile and photos are saved to your account and you can see them from any phone. You stay logged in on this device until you log out.', 'cartas del modo invitado a mi cuenta': 'guest-mode cards to my account', 'Pasar': 'Move', 'Tu colección y tu portafolio son públicos: cualquiera en GARAGE puede verlos, seguirte y darte like.': 'Your collection and portfolio are public: anyone on GARAGE can see them, follow you and like them.', 'Correo': 'Email', 'Contraseña': 'Password', 'Mínimo 6 caracteres': 'At least 6 characters', 'Repite la contraseña': 'Repeat password', 'Ya tengo cuenta': 'I have an account', 'Continuar con Google': 'Continue with Google', 'Olvidé mi contraseña': 'Forgot my password', 'Sin cuenta estás en modo invitado: tus cartas se quedan solo en este dispositivo y nadie las ve.': 'Without an account you’re in guest mode: your cards stay only on this device and nobody sees them.', 'Pon tu correo y tu contraseña.': 'Enter your email and password.', 'El usuario debe tener de 3 a 20 letras, números, punto o guion bajo.': 'Username must be 3–20 letters, numbers, dot or underscore.', 'Las contraseñas no coinciden.': 'The passwords don’t match.', 'Escribe tu correo arriba y vuelve a tocar «Olvidé mi contraseña».': 'Type your email above and tap “Forgot my password” again.', 'Te mandamos un correo para cambiar la contraseña.': 'We sent you an email to reset your password.', 'cartas pasadas a tu cuenta.': 'cards moved to your account.', 'Entra para seguir': 'Log in to follow', 'Entra a tu cuenta para seguir gente y dar likes.': 'Log in to follow people and give likes.', 'Cargando…': 'Loading…', 'No se pudo cargar la lista. Revisa tu conexión.': 'Couldn’t load the list. Check your connection.', 'Todavía no hay más personas. Comparte el link con tus amigos.': 'No other people yet. Share the link with your friends.', 'No se pudo cargar el perfil.': 'Couldn’t load the profile.', 'Entra para dar like': 'Log in to like', 'Entrar': 'Log in', 'tu@correo.com': 'you@email.com', 'Pon un PIN de 4 a 12 caracteres para proteger tu cuenta.': 'Set a 4 to 12 character PIN to protect your account.', 'Los PIN no coinciden.': 'The PINs don’t match.', 'Repite el PIN': 'Repeat PIN', 'Tu sesión se queda abierta en este dispositivo. Para entrar desde otra cuenta o volver después de cerrar sesión, se pide el PIN.': 'Your session stays open on this device. The PIN is asked when switching from another account or coming back after logging out.', 'Cerrar sesión': 'Log out', 'Invitado · sin PIN': 'Guest · no PIN', '· protegida con PIN': '· PIN protected', 'Todavía no tienes cartas. Usa «+ Agregar carro».': 'You don’t have cards yet. Use “+ Add car”.', 'Velocidad máxima': 'Top speed', 'Velocidad máx. (mph)': 'Top speed (mph)', 'Vel. máx.': 'Top speed', 'Transmisión': 'Transmission', '180 o 175/190': '180 or 175/190', 'Manual 6 velocidades': '6-speed manual', 'Manual 5 velocidades': '5-speed manual', 'Manual 7 velocidades': '7-speed manual', 'Automática 6 velocidades': '6-speed automatic', 'Automática 8 velocidades': '8-speed automatic', 'Automática 10 velocidades': '10-speed automatic', 'Doble embrague (DCT) 7 vel.': '7-speed dual-clutch (DCT)', 'Doble embrague (DCT) 8 vel.': '8-speed dual-clutch (DCT)', 'Secuencial': 'Sequential', 'Eléctrica (1 velocidad)': 'Electric (single-speed)', 'Exposición': 'Exposure', 'Torque (lb-ft)': 'Torque (lb-ft)', 'Arrastra la foto para encuadrarla. Pellizca o usa la rueda del mouse para hacer zoom. Así se verá en la carta.': 'Drag the photo to frame it. Pinch or use the mouse wheel to zoom. This is how it’ll look on the card.', 'El año no es válido. Usa 2020 o 2019/2023.': 'That year isn’t valid. Use 2020 or 2019/2023.', 'Revisa los números: usa un valor (400) o un rango (380/420).': 'Check the numbers: use one value (400) or a range (380/420).', '2025 o 2019/2023': '2025 or 2019/2023', '400 o 380/420': '400 or 380/420', '4.5 o 4.2/4.8': '4.5 or 4.2/4.8', '350 o 330/370': '350 or 330/370', '← Marcas': '← Makes', 'Marcas populares': 'Popular makes', 'Ejemplo': 'Sample', 'Nombre de usuario': 'Username', 'Mi perfil': 'My profile', 'Lente': 'Lens', 'Levantado': 'Lifted', 'Ligero': 'Light', 'Likes a tu colección': 'Likes on your collection',
     'Listo. Identifícalo con IA o llena los datos a mano.': 'Done. Identify it with AI or fill in the details by hand.', 'Llena los datos a mano.': 'Fill in the details by hand.',
     'Lo vi en la calle': 'Spotted on the street', 'Los carros de tu garage no suman puntos.': 'Garage cars don’t earn points.', 'Malla': 'Mesh', 'Marca': 'Make',
     'Marcar en el Radar': 'Mark on Radar', 'Me gusta esta colección': 'Like this collection', 'Me gusta esta foto': 'Like this photo', 'Mi colección': 'My collection',
@@ -3104,6 +3130,101 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     delete FB.cache.stats[owner];
   }
 
+
+  /* ================= feed: publicaciones de todos, likes y comentarios ================= */
+  var FEED = { seq: 0, open: {}, users: {}, cars: {} };
+  function ago(ts) {
+    var s = Math.max(1, Math.round((Date.now() - (ts || 0)) / 1000)), en = LANG === 'en';
+    if (s < 60) return en ? 'now' : 'ahora';
+    var m = Math.round(s / 60); if (m < 60) return m + ' min';
+    var h = Math.round(m / 60); if (h < 24) return h + ' h';
+    var d = Math.round(h / 24); if (d < 7) return d + ' d';
+    return dateOf(ts);
+  }
+  async function feedUser(id) {
+    if (FEED.users[id]) return FEED.users[id];
+    var p = FB.fs.collection('users').doc(id).get().then(function (d) { var o = d.exists ? d.data() : { name: '—' }; o.id = id; return o; }).catch(function () { return { id: id, name: '—' }; });
+    FEED.users[id] = p; return p;
+  }
+  async function feedItems() {
+    var spot = state.zone === 'spot';
+    if (spot) {
+      var s = await FB.fs.collection('photos').orderBy('ts', 'desc').limit(30).get();
+      return s.docs.map(function (d) { var o = d.data(); return { kind: 'photo', id: d.id, owner: o.owner, ts: o.ts || 0, p: o }; });
+    }
+    var g = await FB.fs.collectionGroup('cars').limit(300).get();
+    var items = g.docs.map(function (d) { var o = d.data(); o.id = d.id; var owner = d.ref.parent.parent ? d.ref.parent.parent.id : ''; return { kind: 'card', id: d.id, owner: owner, ts: o.ts || 0, c: o }; });
+    items.sort(function (a, b) { return b.ts - a.ts; });
+    return items.slice(0, 30);
+  }
+  async function renderFeed() {
+    var box = $('#feedBox'); if (!box || state.tab !== 'feed') return;
+    var seq = ++FEED.seq, spot = state.zone === 'spot', me = fbMe();
+    if (!FB.on) { box.innerHTML = '<div class="panel-head"><h2>Feed</h2></div><p class="status">El feed necesita internet para ver las publicaciones de todos.</p>'; return; }
+    box.innerHTML = '<div class="panel-head"><h2>Feed</h2><button class="btn" type="button" data-act="feedRefresh">Actualizar</button></div>' +
+      (me ? '' : '<div class="note" style="margin-bottom:12px">Entra a tu cuenta para dar like y comentar. <button class="btn" type="button" data-act="homeAcct" data-v="login">Entrar</button></div>') +
+      '<p class="status">' + (spot ? 'Las fotos más recientes de los fotógrafos.' : 'Las cartas más recientes de todos.') + '</p><div class="feed" id="feedList"><p class="status">Cargando…</p></div>';
+    var items;
+    try { items = await feedItems(); } catch (e) { if (seq === FEED.seq) $('#feedList').innerHTML = '<p class="status err">No se pudo cargar el feed. Revisa tu conexión.</p>'; return; }
+    if (seq !== FEED.seq) return;
+    var list = $('#feedList');
+    if (!items.length) { list.innerHTML = '<div class="empty"><span>' + (spot ? 'Todavía nadie ha subido fotos. ¡Sé el primero!' : 'Todavía nadie ha agregado cartas. ¡Sé el primero!') + '</span></div>'; return; }
+    items.forEach(function (it) { if (it.kind === 'card') FEED.cars[it.id] = it.c; });
+    list.innerHTML = items.map(function (it) { return '<article class="post" id="post-' + esc(it.id) + '" data-kind="' + it.kind + '" data-owner="' + esc(it.owner) + '">' + postBody(it, null) + '</article>'; }).join('');
+    items.forEach(function (it) { hydratePost(it, seq); });
+  }
+  function postBody(it, u) {
+    var name = u ? ((state.zone === 'spot' && u.display) || u.name) : '…';
+    var head = '<header class="post-h"><button type="button" class="so-open" data-act="feedProfile" data-id="' + esc(it.owner) + '">' + (u ? avHTML(u, name, 'ph-av sm') : '<div class="ph-av sm"></div>') + '<span class="ph-who"><b>' + esc(name) + '</b><span>' + (u && u.name ? '@' + esc(u.name) + ' · ' : '') + ago(it.ts) + '</span></span></button></header>';
+    var media, cap = '';
+    if (it.kind === 'photo') {
+      var p = it.p;
+      media = '<div class="post-m"><img src="' + esc(p.data) + '" alt="' + esc(p.cap || 'Foto') + '" loading="lazy"></div>';
+      var spec = [p.cam, p.lens, p.set].filter(Boolean).join(' · ');
+      cap = (p.cap ? '<p class="post-cap">' + esc(p.cap) + '</p>' : '') + (spec || p.edit ? '<p class="post-spec">' + (spec ? '📷 ' + esc(spec) : '') + (p.edit ? (spec ? ' · ' : '') + '🎛 ' + esc(p.edit) : '') + '</p>' : '');
+    } else {
+      var c = it.c;
+      media = '<div class="post-card">' + cardHTML(c, false).replace('data-act="open" data-id="' + esc(c.id) + '"', 'data-act="feedCard" data-id="' + esc(c.id) + '"') + '</div>';
+      cap = '<p class="post-cap">' + (c.kind === 'garage' ? 'Agregó a su garage: ' : 'Vio un ') + '<b>' + esc([c.make, c.model].filter(Boolean).join(' ')) + '</b>' + (c.place ? ' · ' + esc(c.place) : '') + '</p>' + (c.note ? '<p class="post-spec">' + esc(c.note) + '</p>' : '');
+    }
+    return head + media + cap + '<div class="post-a" id="pa-' + esc(it.id) + '"></div><div class="post-c" id="pc-' + esc(it.id) + '"></div>';
+  }
+  async function hydratePost(it, seq) {
+    var u = await feedUser(it.owner); if (seq !== FEED.seq) return;
+    var el = $('#post-' + it.id); if (!el) return;
+    el.innerHTML = postBody(it, u);
+    refreshPostActions(it.kind, it.id, it.owner);
+  }
+  async function refreshPostActions(kind, id, owner) {
+    var pa = $('#pa-' + id); if (!pa) return;
+    var r = await Promise.all([
+      FB.fs.collection('likes').where('kind', '==', kind).where('target', '==', id).get().then(function (s) { return s.size; }).catch(function () { return 0; }),
+      FB.fs.collection('comments').where('target', '==', id).get().then(function (s) { return s.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; }).sort(function (a, b) { return a.ts - b.ts; }); }).catch(function () { return []; })
+    ]);
+    pa = $('#pa-' + id); if (!pa) return;
+    var me = fbMe(), liked = !!FB.likes[kind + '_' + id], own = me === owner;
+    pa.innerHTML = (own ? '<span class="like">♥ <span>' + r[0] + '</span></span>' : heart(liked, r[0], me ? 'feedLike' : 'homeAcct" data-v="login', id, 'Me gusta')) +
+      '<button type="button" class="like" data-act="feedCmt" data-id="' + esc(id) + '" aria-expanded="' + !!FEED.open[id] + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 5h16v11H9l-5 4Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span>' + r[1].length + '</span></button>';
+    var pc = $('#pc-' + id); if (!pc) return;
+    if (!FEED.open[id]) { pc.innerHTML = r[1].length ? '<button type="button" class="post-more" data-act="feedCmt" data-id="' + esc(id) + '">Ver ' + r[1].length + (r[1].length === 1 ? ' comentario' : ' comentarios') + '</button>' : ''; return; }
+    pc.innerHTML = '<ul class="cmts">' + r[1].map(function (x) {
+      return '<li><b>@' + esc(x.name || '—') + '</b> <span>' + esc(x.text) + '</span> <em>' + ago(x.ts) + '</em>' + (me && (x.from === me || owner === me) ? ' <button type="button" class="cmt-del" data-act="feedCmtDel" data-id="' + esc(x.id) + '" data-post="' + esc(id) + '" aria-label="Borrar comentario">×</button>' : '') + '</li>';
+    }).join('') + '</ul>' +
+      (me ? '<div class="cmt-new"><input type="text" id="cin-' + esc(id) + '" maxlength="300" autocomplete="off" placeholder="Escribe un comentario…" aria-label="Comentario"><button class="btn primary" type="button" data-act="feedCmtSend" data-id="' + esc(id) + '">Enviar</button></div>' : '<p class="status">Entra a tu cuenta para comentar.</p>');
+  }
+  function postMeta(id) { var el = $('#post-' + id); return el ? { kind: el.dataset.kind, owner: el.dataset.owner } : null; }
+  async function feedLike(id) {
+    var m = postMeta(id); if (!m || !fbMe()) return;
+    await fbToggleLike(m.kind, id, m.owner); refreshPostActions(m.kind, id, m.owner);
+  }
+  async function feedSend(id) {
+    var m = postMeta(id), inp = $('#cin-' + id), me = fbMe(); if (!m || !inp || !me) return;
+    var text = inp.value.trim().slice(0, 300); if (!text) return;
+    inp.value = ''; inp.disabled = true;
+    try { await FB.fs.collection('comments').add({ from: me, name: FB.prof.name, kind: m.kind, target: id, owner: m.owner, text: text, ts: Date.now() }); } catch (e) { inp.value = text; }
+    inp.disabled = false; FEED.open[id] = true; await refreshPostActions(m.kind, id, m.owner); var ni = $('#cin-' + id); if (ni) ni.focus();
+  }
+
   /* ================= gente: seguir y likes (cuentas de este dispositivo) ================= */
   var SO_KEY = 'garage.v1.social';
   function soGet() { var o = null; try { o = JSON.parse(LS.get(SO_KEY) || 'null'); } catch (e) {} o = o || {}; o.f = o.f || {}; o.lc = o.lc || {}; o.lp = o.lp || {}; return o; }
@@ -3413,7 +3534,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     else if (a === 'phUpCancel') phUnstage();
     else if (a === 'phUpGo') { if (ph.stage) { var fl = ph.stage.files, fm = { cap: $('#upCap').value.trim().slice(0, 100), cam: $('#upCam').value.trim().slice(0, 60), lens: $('#upLens').value.trim().slice(0, 60), set: $('#upSet').value.trim().slice(0, 60), edit: $('#upEdit').value.trim().slice(0, 60) }; if (fl.length > 1 && ph.stage.ex.cam === fm.cam) fm.cam = ''; if (fl.length > 1 && ph.stage.ex.set === fm.set) fm.set = ''; if (fl.length > 1 && ph.stage.ex.lens === fm.lens) fm.lens = ''; phUnstage(); phUpload(fl, fm); } }
     else if (a === 'phCapSave') { var px = ph.photos.find(function (q) { return q.id === ph.view; }); if (px) { px.cap = ($('#phCap').value || '').trim().slice(0, 100); px.cam = ($('#phCam').value || '').trim().slice(0, 60); px.lens = ($('#phLens').value || '').trim().slice(0, 60); px.set = ($('#phSet').value || '').trim().slice(0, 60); px.edit = (($('#phEditIn') || {}).value || '').trim().slice(0, 60); phPut(px).then(function () { ph.view = null; renderPhoto(); }); } }
-    else if (a === 'acctToggle') { state.tab = state.tab === 'acct' ? 'spotted' : 'acct'; state.filter = null; pendingLogin = null; confirmDelAcct = null; render(); window.scrollTo(0, 0); }
+    else if (a === 'acctToggle') { if (!state.zone) state.zone = 'cards'; state.tab = state.tab === 'acct' ? (state.zone === 'spot' ? 'photo' : 'spotted') : 'acct'; if (FB.on && !FB.user && state.tab === 'acct') FB.view = 'login'; state.filter = null; pendingLogin = null; confirmDelAcct = null; render(); window.scrollTo(0, 0); }
     else if (a === 'filter') { var r = +t.dataset.r; state.filter = state.filter === r ? null : r; renderChips(); renderGrid(); }
     else if (a === 'add') openAdd(t.dataset.kind || state.tab);
     else if (a === 'addClose') closeAdd();
@@ -3481,6 +3602,13 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     else if (a === 'soLikeColl') { if (FB.on) fbToggleLike('coll', t.dataset.id, t.dataset.id).then(renderSocial); else { toggleCollLike(t.dataset.id); renderSocial(); } }
     else if (a === 'soLikePhoto') { if (FB.on) fbToggleLike('photo', t.dataset.id, state.prof).then(renderSocial); else { togglePhotoLike(t.dataset.id); renderSocial(); } }
     else if (a === 'soCard') { var oc = (FB.on ? (t.dataset.own === fbMe() ? state.cars : (FB.cache.cars[t.dataset.own] || [])) : carsOf(t.dataset.own)).find(function (x) { return x.id === t.dataset.id; }); if (oc) { fv.car = Object.assign({}, oc); fv.id = oc.id; fv.flip = false; fv.angle = 0; renderFv(); } }
+    else if (a === 'feedRefresh') renderFeed();
+    else if (a === 'feedProfile') { state.tab = 'social'; state.prof = t.dataset.id; render(); window.scrollTo(0, 0); }
+    else if (a === 'feedCard') { var fc0 = FEED.cars[t.dataset.id]; if (fc0) { fv.car = Object.assign({}, fc0); fv.id = fc0.id; fv.flip = false; fv.angle = 0; renderFv(); } }
+    else if (a === 'feedLike') feedLike(t.dataset.id);
+    else if (a === 'feedCmt') { FEED.open[t.dataset.id] = !FEED.open[t.dataset.id]; var pm = postMeta(t.dataset.id); if (pm) refreshPostActions(pm.kind, t.dataset.id, pm.owner).then(function () { var ci = $('#cin-' + t.dataset.id); if (ci) ci.focus(); }); }
+    else if (a === 'feedCmtSend') feedSend(t.dataset.id);
+    else if (a === 'feedCmtDel') { var pid0 = t.dataset.post, pm2 = postMeta(pid0); FB.fs.collection('comments').doc(t.dataset.id).delete().catch(function () {}).then(function () { if (pm2) refreshPostActions(pm2.kind, pid0, pm2.owner); }); }
     else if (a === 'homeAcct') { state.zone = 'cards'; state.tab = 'acct'; if (FB.on && !FB.user) FB.view = t.dataset.v === 'signup' ? 'signup' : 'login'; FB.msg = ''; acctView = 'list'; acctSig = ''; render(); window.scrollTo(0, 0); var fe = $('#fbEmail') || $('#fbUser'); if (fe) fe.focus(); }
     else if (a === 'zone') { state.zone = t.dataset.z; state.tab = state.zone === 'spot' ? 'photo' : 'spotted'; state.filter = null; closeAdd(); render(); window.scrollTo(0, 0); }
     else if (a === 'home') { if (fv.id) { fv.id = null; fv.car = null; renderFv(); } if (ph.view) { ph.view = null; renderPhView(); } if (state.sel) closeSheet(); closeAdd(); state.prof = null; state.zone = null; render(); window.scrollTo(0, 0); }
@@ -3504,6 +3632,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
       else if (state.sel) closeSheet();
       else if (!$('#add').hidden) closeAdd();
     } else if (e.key === 'Enter' && e.target && e.target.id === 'modName') { e.preventDefault(); modAdd(); }
+    else if (e.key === 'Enter' && e.target && /^cin-/.test(e.target.id || '')) { e.preventDefault(); feedSend(e.target.id.slice(4)); }
   });
   document.addEventListener('input', function (e) {
     var t = e.target;
