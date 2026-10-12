@@ -430,20 +430,114 @@ html.fv-open { overflow: hidden; }
 }
 @media (prefers-reduced-motion: reduce) { .fv-card { transition: none; } }
 @media (max-height: 640px) { .fv-card { width: min(260px, 70vw); } }
+
+/* inicio y zonas */
+.plate-brand { cursor: pointer; font: inherit; }
+body.zone-home .bar, body.zone-home #chips, body.zone-home #grid, body.zone-home #foot, body.zone-home .panel, body.zone-home #demoNote, body.zone-home .summary { display: none !important; }
+body:not(.zone-home) #home { display: none; }
+body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot #foot, body.zone-spot .summary { display: none !important; }
+.home { display: flex; flex-direction: column; gap: 18px; padding: 24px 0 8px; }
+.home-kicker { margin: 0; font: 500 12px var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.home-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 640px) { .home-grid { grid-template-columns: minmax(0, 1fr); } }
+.home-tile { position: relative; display: flex; flex-direction: column; gap: 0; min-height: 340px; padding: 0; overflow: hidden; text-align: left; font: inherit; color: var(--fg); border: 1px solid var(--line); border-radius: 18px; background: var(--glass); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: var(--shadow); cursor: pointer; transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+@media (hover: hover) { .home-tile:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); box-shadow: var(--shadow), 0 30px 60px -30px var(--accent); } }
+@media (max-width: 640px) { .home-tile { min-height: 250px; } }
+.ht-art { position: relative; flex: 1; min-height: 170px; background: radial-gradient(ellipse 80% 70% at 50% 0%, rgba(255,255,255,.12), transparent 70%), linear-gradient(180deg, var(--surface-2) 0 70%, var(--floor) 70%); overflow: hidden; }
+.ht-card { position: absolute; left: 50%; top: 50%; width: 92px; height: 132px; margin: -76px 0 0 -46px; border-radius: 10px; border: 1px solid var(--line); background: linear-gradient(180deg, var(--surface), var(--surface-2)); box-shadow: 0 16px 30px -14px rgba(0,0,0,.7); }
+.ht-card::before { content: ''; position: absolute; inset: 7px 7px 38px; border-radius: 6px; background: linear-gradient(160deg, color-mix(in srgb, var(--rc) 40%, var(--surface-2)), var(--surface-2)); }
+.ht-card::after { content: ''; position: absolute; left: 9px; right: 30px; bottom: 16px; height: 6px; border-radius: 3px; background: var(--fg); opacity: .5; }
+.ht-card.c1 { --rc: var(--r2); transform: translateX(-62px) rotate(-12deg); }
+.ht-card.c2 { --rc: var(--r4); z-index: 1; transform: translateY(-6px); box-shadow: 0 20px 40px -14px rgba(0,0,0,.8), 0 0 24px -8px var(--r4); }
+.ht-card.c3 { --rc: var(--r3); transform: translateX(62px) rotate(12deg); }
+.ht-frame { position: absolute; left: 50%; top: 50%; width: 150px; height: 100px; margin: -58px 0 0 -75px; border-radius: 16px; border: 2px solid var(--fg); opacity: .85; }
+.ht-frame::before { content: ''; position: absolute; top: -12px; left: 18px; width: 34px; height: 10px; border-radius: 4px 4px 0 0; background: var(--fg); }
+.ht-lens { position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%; border: 2px solid var(--fg); background: radial-gradient(circle at 35% 35%, color-mix(in srgb, var(--accent) 60%, #fff), var(--accent) 45%, #1a0a0b 75%); box-shadow: 0 0 24px -4px var(--accent); }
+.ht-txt { display: flex; flex-direction: column; gap: 6px; padding: 16px 18px 18px; border-top: 1px solid var(--line); }
+.ht-txt small { font: 500 10px var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.ht-txt b { font: 700 34px/1 var(--f-display); letter-spacing: .02em; }
+.ht-txt span { font-size: 14px; color: var(--muted); }
+.ht-txt em { margin-top: 6px; font: 600 14px var(--f-body); font-style: normal; color: var(--accent); }
+@media (prefers-reduced-motion: no-preference) {
+  .home-tile.cards:hover .ht-card.c1 { transform: translateX(-76px) rotate(-16deg); }
+  .home-tile.cards:hover .ht-card.c3 { transform: translateX(76px) rotate(16deg); }
+  .ht-card { transition: transform .35s ease; }
+  .home-tile.spot:hover .ht-lens { animation: lensPulse 1.2s ease-in-out infinite; }
+  @keyframes lensPulse { 50% { box-shadow: 0 0 40px 2px var(--accent); } }
+}
+
+/* giro con el dedo */
+.fv-card { transition: none; touch-action: none; user-select: none; -webkit-user-select: none; }
+.fv-card.anim { transition: transform .9s cubic-bezier(.3, 1.45, .45, 1); }
+.fv-card.grab { cursor: grabbing; }
+.fv-face { will-change: transform; }
+@media (prefers-reduced-motion: no-preference) {
+  .fv-float.bump .fv-tilt { animation: fvBump .9s cubic-bezier(.3,.7,.3,1); }
+  @keyframes fvBump { 0% { transform: none; } 35% { transform: translateZ(80px) scale(1.07); } 100% { transform: none; } }
+  .fv-card.pop .fv-shine { animation: fvSweep .9s ease; }
+  @keyframes fvSweep { 0% { opacity: 0; } 40% { opacity: 1; } 100% { opacity: .4; } }
+}
+@media (prefers-reduced-motion: reduce) { .fv-card.anim { transition: transform .01s; } }
+.fv-hint2 { font: 500 10px var(--f-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+
+/* marca sobria (reemplaza la placa) */
+.plate-brand.brand { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 0 0 0 14px; border: 0; border-radius: 0; background: none !important; box-shadow: none !important; color: var(--fg); position: relative; }
+.plate-brand.brand::before { content: ''; position: absolute; left: 0; top: 2px; bottom: 2px; height: auto; margin-top: 0; width: 3px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.plate-brand.brand::after { display: none; }
+.plate-brand.brand b { font: 700 40px/.9 var(--f-display); letter-spacing: .32em; color: var(--fg); text-shadow: none; margin-right: -.32em; }
+.plate-brand.brand small { font: 500 10px var(--f-mono); letter-spacing: .34em; text-transform: uppercase; color: var(--muted); }
+@media (max-width: 520px) { .plate-brand.brand b { font-size: 32px; letter-spacing: .26em; } }
+
+.ph-item span small { display: block; margin-top: 2px; font-size: 11px; opacity: .8; overflow: hidden; text-overflow: ellipsis; }
+
+/* brillo por rareza (más fuerte) */
+.card.r1 { box-shadow: var(--shadow), 0 0 18px -6px var(--rc); border-color: color-mix(in srgb, var(--rc) 65%, var(--line)); }
+.card.r2 { box-shadow: var(--shadow), 0 0 26px -4px var(--rc), 0 0 0 1px color-mix(in srgb, var(--rc) 40%, transparent) inset; border-color: color-mix(in srgb, var(--rc) 80%, var(--line)); }
+.card.r3 { box-shadow: var(--shadow), 0 0 34px -2px var(--rc), 0 0 70px -20px var(--rc) !important; }
+.card.r4 { box-shadow: var(--shadow), 0 0 40px 0 var(--rc), 0 0 90px -10px var(--rc) !important; }
+.card.r2 .art, .card.r3 .art, .card.r4 .art { box-shadow: 0 0 0 1px color-mix(in srgb, var(--rc) 50%, transparent) inset, 0 0 24px -6px color-mix(in srgb, var(--rc) 70%, transparent) inset; }
+.card.r3 .c-bar, .card.r4 .c-bar { height: 3px; box-shadow: 0 0 14px 2px var(--rc); }
+.card .c-top .rar i { box-shadow: 0 0 8px var(--rc); }
+@media (prefers-reduced-motion: no-preference) {
+  .card.r3 { animation: glowE 3.2s ease-in-out infinite; }
+  .card.r4 { animation: glowL 2.4s ease-in-out infinite; }
+  @keyframes glowE { 50% { box-shadow: var(--shadow), 0 0 46px 2px var(--rc), 0 0 90px -16px var(--rc); } }
+  @keyframes glowL { 50% { box-shadow: var(--shadow), 0 0 60px 6px var(--rc), 0 0 120px -6px var(--rc); } }
+  .card.r4 .art::before { animation: holo 3.5s linear infinite; }
+  @keyframes holo { 0% { transform: translateX(-110%); } 60%, 100% { transform: translateX(110%); } }
+}
+.fv-card.r2 .fv-face { box-shadow: 0 40px 80px -30px rgba(0,0,0,.85), 0 0 50px -6px var(--rc) !important; }
+.fv-card.r3 .fv-face { box-shadow: 0 40px 80px -30px rgba(0,0,0,.85), 0 0 70px 0 var(--rc) !important; }
+.fv-card.r4 .fv-face { box-shadow: 0 40px 80px -30px rgba(0,0,0,.85), 0 0 90px 8px var(--rc) !important; }
+.fv-card.r0 .fv-face { box-shadow: 0 40px 80px -30px rgba(0,0,0,.85) !important; }
 </style>
 
 <div class="app">
   <header class="mast">
-    <div class="plate-brand"><b>GARAGE</b></div>
+    <button type="button" class="plate-brand brand" data-act="home" aria-label="GARAGE, ir al inicio"><b>GARAGE</b><small>Collect · Spot</small></button>
     <div class="mast-r"><p class="summary" id="summary"></p><button class="acct-btn" id="acctBtn" type="button" data-act="acctToggle" aria-label="Cuenta"><i id="acctIni"></i><span id="acctLbl">Cuenta</span></button></div>
   </header>
+
+  <section class="home" id="home" aria-label="Inicio">
+    <p class="home-kicker">¿A dónde vas hoy?</p>
+    <div class="home-grid">
+      <button type="button" class="home-tile cards" data-act="zone" data-z="cards">
+        <span class="ht-art" aria-hidden="true"><span class="ht-card c1"></span><span class="ht-card c2"></span><span class="ht-card c3"></span></span>
+        <span class="ht-txt"><small>Zona 01</small><b>Colección de cartas</b><span>Tus cartas de carros vistos en la calle, tu garage, mods y puntos.</span><em id="homeCards"></em></span>
+      </button>
+      <button type="button" class="home-tile spot" data-act="zone" data-z="spot">
+        <span class="ht-art" aria-hidden="true"><span class="ht-frame"><span class="ht-lens"></span></span></span>
+        <span class="ht-txt"><small>Zona 02</small><b>Car Spotting</b><span>Fotógrafos de carros: portafolios, perfiles y sus redes.</span><em id="homeSpot"></em></span>
+      </button>
+    </div>
+  </section>
 
   <div class="bar">
     <div class="tabs" role="tablist" aria-label="Secciones">
       <button class="tab" role="tab" id="tabSpotted" data-act="tab" data-tab="spotted"></button>
       <button class="tab" role="tab" id="tabGarage" data-act="tab" data-tab="garage"></button>
       <button class="tab" role="tab" id="tabSpot" data-act="tab" data-tab="spot">Spot now</button>
-      <button class="tab" role="tab" id="tabPhoto" data-act="tab" data-tab="photo">Fotógrafos</button>
+      <button class="tab" role="tab" id="tabPhoto" data-act="tab" data-tab="photo" hidden>Fotógrafos</button>
       <button class="tab" role="tab" id="tabRadar" data-act="tab" data-tab="radar">Radar</button>
       <button class="tab" role="tab" id="tabPeople" data-act="tab" data-tab="people">Gente</button>
       <button class="tab" role="tab" id="tabBoard" data-act="tab" data-tab="board">Ranking</button>
@@ -570,11 +664,12 @@ html.fv-open { overflow: hidden; }
   </section>
 
   <section class="panel" id="phSection" hidden aria-label="Fotógrafos">
-    <div class="panel-head"><h2>Fotógrafos</h2><button class="btn" type="button" data-act="phEdit" id="phEditBtn">Editar perfil</button></div>
+    <div class="panel-head"><h2>Car Spotting</h2><button class="btn" type="button" data-act="phEdit" id="phEditBtn">Editar perfil</button></div>
     <div id="phProfile"></div>
     <div class="ph-bar"><h3 class="sub" style="margin:0">Mi portafolio</h3><label class="btn primary" for="phFile">+ Subir fotos</label><input class="sr" type="file" id="phFile" accept="image/*" multiple></div>
     <p class="status" id="phMsg" role="status"></p>
     <div class="ph-grid" id="phGrid"></div>
+    <datalist id="camList"><option value="iPhone 16 Pro"><option value="iPhone 15 Pro"><option value="Samsung Galaxy S24 Ultra"><option value="Google Pixel 9 Pro"><option value="Sony A7 IV"><option value="Sony A7R V"><option value="Sony A6700"><option value="Canon EOS R5"><option value="Canon EOS R6 Mark II"><option value="Nikon Z6 III"><option value="Nikon Z8"><option value="Fujifilm X-T5"><option value="Fujifilm X100VI"><option value="DJI Mini 4 Pro"><option value="GoPro HERO12"></datalist>
     <p class="status">Por ahora tu perfil y tus fotos se guardan en este dispositivo, en tu cuenta «<span id="phAcct"></span>». Las redes se enlazan con tu usuario o link; no se conectan a tus cuentas.</p>
   </section>
 
@@ -1019,7 +1114,7 @@ html.fv-open { overflow: hidden; }
   }
 
   /* ================= estado ================= */
-  var state = { cars: [], tab: 'spotted', filter: null, sel: null, look: null, crop: null, cropDirty: false, pi: 0, extras: [], photoMsg: '', confirmDel: false, focusMod: false, mode: 'checking' };
+  var state = { zone: null, cars: [], tab: 'spotted', filter: null, sel: null, look: null, crop: null, cropDirty: false, pi: 0, extras: [], photoMsg: '', confirmDel: false, focusMod: false, mode: 'checking' };
   var col = null, sample = null, canImages = false, ctl = null, lastWhy = '', lastAI = null, extrasUnsub = null;
   var photo = { blob: null, url: '', tech: null };
   var addCrop = { x: 50, y: 50, z: 1 }, addCropper = null, sheetCropper = null;
@@ -1902,7 +1997,14 @@ html.fv-open { overflow: hidden; }
   }
 
   function render() {
-    var t = state.tab, isCol = t === 'spotted' || t === 'garage';
+    var z = state.zone || 'home';
+    if (z === 'spot' && state.tab !== 'photo' && state.tab !== 'acct') state.tab = 'photo';
+    if (z === 'cards' && state.tab === 'photo') state.tab = 'spotted';
+    document.body.classList.remove('zone-home', 'zone-cards', 'zone-spot'); document.body.classList.add('zone-' + z);
+    var hc = $('#homeCards'), hs = $('#homeSpot');
+    if (hc) { var nc = state.cars.length; hc.textContent = nc ? nc + (nc === 1 ? ' carta' : ' cartas') + ' →' : 'Empezar →'; }
+    if (hs) hs.textContent = 'Entrar →';
+    var t = z === 'home' ? '' : state.tab, isCol = t === 'spotted' || t === 'garage';
     $('#chips').hidden = !isCol; $('#grid').hidden = !isCol; $('#board').hidden = t !== 'board'; $('#radar').hidden = t !== 'radar'; $('#spot').hidden = t !== 'spot'; if (t !== 'spot') stopCam(); $('#people').hidden = t !== 'people';
     $('#acct').hidden = t !== 'acct';
     $('#phSection').hidden = t !== 'photo'; if (t === 'photo') { if (ph.loadedFor !== (active || 'x')) phEnsure(); else renderPhoto(); } else if (ph.view) { ph.view = null; renderPhView(); }
@@ -2151,7 +2253,7 @@ html.fv-open { overflow: hidden; }
     $('#phProfile').innerHTML = profHTML();
     var g = $('#phGrid');
     g.innerHTML = ph.photos.length ? ph.photos.map(function (x) {
-      return '<button type="button" class="ph-item" data-act="phOpen" data-id="' + esc(x.id) + '"><img src="' + esc(x.data) + '" alt="' + esc(x.cap || 'Foto') + '" loading="lazy">' + (x.cap ? '<span>' + esc(x.cap) + '</span>' : '') + '</button>';
+      return '<button type="button" class="ph-item" data-act="phOpen" data-id="' + esc(x.id) + '"><img src="' + esc(x.data) + '" alt="' + esc(x.cap || 'Foto') + '" loading="lazy">' + ((x.cap || x.cam) ? '<span>' + (x.cap ? esc(x.cap) : '') + (x.cam ? '<small>📷 ' + esc(x.cam) + '</small>' : '') + '</span>' : '') + '</button>';
     }).join('') : '<div class="empty"><span>Sube tus mejores fotos de carros. Se ven aquí como portafolio.</span></div>';
     renderPhView();
   }
@@ -2162,9 +2264,13 @@ html.fv-open { overflow: hidden; }
     var name = (ph.prof && ph.prof.name) || acctName();
     root.innerHTML = '<div class="scrim" data-act="phClose"></div><div class="ph-light" role="dialog" aria-modal="true" aria-label="Foto"><img src="' + esc(x.data) + '" alt="' + esc(x.cap || 'Foto') + '">' +
       '<div class="ph-meta"><div class="field"><label for="phCap">Descripción</label><input type="text" id="phCap" maxlength="100" autocomplete="off" placeholder="Carro, lugar, evento…" value="' + esc(x.cap || '') + '"></div>' +
+      '<div class="f2"><div class="field"><label for="phCam">Cámara</label><input type="text" id="phCam" list="camList" maxlength="60" autocomplete="off" placeholder="Sony A7 IV, iPhone 15 Pro…" value="' + esc(x.cam || '') + '"></div>' +
+      '<div class="field"><label for="phLens">Lente</label><input type="text" id="phLens" maxlength="60" autocomplete="off" placeholder="24-70mm f/2.8" value="' + esc(x.lens || '') + '"></div></div>' +
+      '<div class="field"><label for="phSet">Ajustes</label><input type="text" id="phSet" maxlength="60" autocomplete="off" placeholder="35mm · f/1.8 · 1/500s · ISO 100" value="' + esc(x.set || '') + '"></div>' +
+      (x.cam || x.set ? '<p class="status">Datos leídos de la foto. Puedes corregirlos.</p>' : '') +
       '<p class="status">Foto de ' + esc(name) + ' · ' + dateOf(x.ts) + '</p>' +
       (ph.confirmDel ? '<div class="confirm-del"><b>¿Seguro que quieres borrar esta foto?</b><span>No se puede deshacer.</span><div class="actions"><button class="btn danger" type="button" data-act="phDelYes">Sí, borrar</button><button class="btn" type="button" data-act="phDelNo">Cancelar</button></div></div>'
-        : '<div class="actions"><button class="btn primary" type="button" data-act="phCapSave">Guardar descripción</button><button class="btn" type="button" data-act="phDel">Borrar foto</button><button class="btn" type="button" data-act="phClose">Cerrar</button></div>') +
+        : '<div class="actions"><button class="btn primary" type="button" data-act="phCapSave">Guardar</button><button class="btn" type="button" data-act="phDel">Borrar foto</button><button class="btn" type="button" data-act="phClose">Cerrar</button></div>') +
       '</div></div>';
   }
   function phSaveProf() {
@@ -2197,6 +2303,52 @@ html.fv-open { overflow: hidden; }
     var keep = {}; document.querySelectorAll('#phForm input[type=text], #phForm textarea').forEach(function (i) { keep[i.id] = i.value; });
     return function () { Object.keys(keep).forEach(function (id) { var el = $('#' + id); if (el) el.value = keep[id]; }); };
   }
+
+  /* lee cámara, lente y ajustes del EXIF de una foto JPEG */
+  async function readExif(file) {
+    try {
+      var buf = await file.slice(0, 196608).arrayBuffer(), v = new DataView(buf);
+      if (v.getUint16(0) !== 0xFFD8) return null;
+      var o = 2;
+      while (o < v.byteLength - 4) {
+        var m = v.getUint16(o), len = v.getUint16(o + 2);
+        if (m === 0xFFE1 && v.getUint32(o + 4) === 0x45786966) { return parseTiff(v, o + 10); }
+        if ((m & 0xFF00) !== 0xFF00) break;
+        o += 2 + len;
+      }
+    } catch (e) {}
+    return null;
+  }
+  function parseTiff(v, t) {
+    var le = v.getUint16(t) === 0x4949;
+    var u16 = function (p) { return v.getUint16(p, le); }, u32 = function (p) { return v.getUint32(p, le); };
+    var str = function (p, n) { var s = ''; for (var i = 0; i < n; i++) { var c = v.getUint8(p + i); if (!c) break; s += String.fromCharCode(c); } return s.trim(); };
+    function ifd(p) {
+      var out = {}, n = u16(p);
+      for (var i = 0; i < n; i++) {
+        var e = p + 2 + i * 12, tag = u16(e), type = u16(e + 2), cnt = u32(e + 4), vo = e + 8;
+        var size = ({ 1: 1, 2: 1, 3: 2, 4: 4, 5: 8, 7: 1, 9: 4, 10: 8 })[type] || 1;
+        var dp = size * cnt > 4 ? t + u32(vo) : vo;
+        if (dp + size * cnt > v.byteLength) continue;
+        if (type === 2) out[tag] = str(dp, cnt);
+        else if (type === 3) out[tag] = u16(dp);
+        else if (type === 4) out[tag] = u32(dp);
+        else if (type === 5 || type === 10) { var d = u32(dp + 4); out[tag] = d ? u32(dp) / d : 0; }
+      }
+      return out;
+    }
+    var i0 = ifd(t + u32(t + 4)), ex = i0[0x8769] ? ifd(t + i0[0x8769]) : {};
+    var mk = i0[0x010F] || '', md = i0[0x0110] || '';
+    var cam = md && mk && md.toLowerCase().indexOf(mk.split(' ')[0].toLowerCase()) === 0 ? md : (mk + ' ' + md).trim();
+    var parts = [];
+    if (ex[0x920A]) parts.push(Math.round(ex[0x920A]) + 'mm');
+    if (ex[0x829D]) parts.push('f/' + (Math.round(ex[0x829D] * 10) / 10));
+    if (ex[0x829A]) parts.push(ex[0x829A] >= 1 ? ex[0x829A] + 's' : '1/' + Math.round(1 / ex[0x829A]) + 's');
+    if (ex[0x8827]) parts.push('ISO ' + ex[0x8827]);
+    var r = { cam: cam.slice(0, 60), lens: String(ex[0xA434] || '').slice(0, 60), set: parts.join(' · ') };
+    return (r.cam || r.lens || r.set) ? r : null;
+  }
+
   async function phUpload(files) {
     var list = Array.prototype.slice.call(files || []).filter(function (f) { return /^image\//.test(f.type); }).slice(0, 20);
     if (!list.length) return;
@@ -2204,8 +2356,9 @@ html.fv-open { overflow: hidden; }
     for (var i = 0; i < list.length; i++) {
       msg.textContent = 'Subiendo ' + (i + 1) + ' de ' + list.length + '…';
       try {
+        var meta = await readExif(list[i]) || {};
         var r = await shrink(list[i], 1600), data = await toURL(r.blob);
-        if (await phPut({ id: uid(), acct: acct, data: data, cap: '', ts: Date.now() + i })) ok++;
+        if (await phPut({ id: uid(), acct: acct, data: data, cap: '', cam: meta.cam || '', lens: meta.lens || '', set: meta.set || '', ts: Date.now() + i })) ok++;
       } catch (e) {}
     }
     await phLoadPhotos();
@@ -2215,7 +2368,7 @@ html.fv-open { overflow: hidden; }
 
 
   /* ================= carta en grande (flota y gira) ================= */
-  var fv = { id: null, flip: false };
+  var fv = { id: null, flip: false, angle: 0 };
   function fvHTML(c) {
     var r = clamp(c.rarity | 0, 0, 4), sp = c.specs || {}, body = (BODYLIST.find(function (b) { return b[0] === c.body; }) || [0, '—'])[1];
     var sub = [c.year || '', c.color || ''].filter(Boolean).join(' · ');
@@ -2231,7 +2384,7 @@ html.fv-open { overflow: hidden; }
     }
     return '<div class="fv-scrim" data-act="fvClose"></div>' +
       '<div class="fv" role="dialog" aria-modal="true" aria-label="Carta ' + esc(c.make + ' ' + c.model) + '">' +
-      '<div class="fv-float"><div class="fv-tilt" id="fvTilt"><button type="button" class="fv-card r' + r + (fv.flip ? ' flipped' : '') + '" data-act="fvFlip" aria-label="Girar carta">' +
+      '<div class="fv-float"><div class="fv-tilt" id="fvTilt"><button type="button" class="fv-card r' + r + '" id="fvCard" aria-label="Carta. Desliza o toca para girarla" style="transform:rotateY(' + fv.angle + 'deg)">' +
       '<span class="fv-face fv-front card big r' + r + '">' +
         '<span class="c-top"><span>' + esc(serialOf(c)) + '</span><span class="rar"><i></i>' + RAR[r].n + '</span></span>' +
         '<span class="art">' + artHTML(c) + '</span><span class="c-bar"></span>' +
@@ -2246,7 +2399,7 @@ html.fv-open { overflow: hidden; }
         '<span class="c-bar"></span><dl class="fv-specs small">' + extra + '</dl>' +
       '</span>' +
       '</button></div></div>' +
-      '<div class="fv-actions"><button class="btn" type="button" data-act="fvFlip">' + (fv.flip ? 'Ver frente' : 'Girar · ver specs') + '</button><button class="btn" type="button" data-act="fvClose">Cerrar</button></div>' +
+      '<span class="fv-hint2">Desliza la carta para girarla</span><div class="fv-actions"><button class="btn" type="button" data-act="fvFlip">' + (fv.flip ? 'Ver frente' : 'Girar · ver specs') + '</button><button class="btn" type="button" data-act="fvClose">Cerrar</button></div>' +
       '</div>';
   }
   function renderFv() {
@@ -2254,19 +2407,58 @@ html.fv-open { overflow: hidden; }
     var c = fv.id && (carById(fv.id) || all().find(function (x) { return x.id === fv.id; }));
     if (!c) { root.innerHTML = ''; document.documentElement.classList.remove('fv-open'); return; }
     root.innerHTML = fvHTML(c); document.documentElement.classList.add('fv-open');
-    var tilt = $('#fvTilt'), card = root.querySelector('.fv-card');
-    if (tilt && window.matchMedia && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      tilt.onpointermove = function (e) {
-        var b = tilt.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5;
-        tilt.style.transform = 'rotateY(' + (x * 16).toFixed(1) + 'deg) rotateX(' + (-y * 12).toFixed(1) + 'deg)';
-        card.style.setProperty('--mx', ((x + .5) * 100).toFixed(0) + '%'); card.style.setProperty('--my', ((y + .5) * 100).toFixed(0) + '%');
-      };
-      tilt.onpointerleave = function () { tilt.style.transform = ''; };
+    var tilt = $('#fvTilt'), card = $('#fvCard'); if (!card) return;
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var drag = null;
+    function setAngle(a, anim) {
+      card.classList.toggle('anim', !!anim);
+      card.style.transform = 'rotateY(' + a + 'deg)';
     }
+    card.onpointerdown = function (e) {
+      if (e.button != null && e.button !== 0) return;
+      drag = { x: e.clientX, t: performance.now(), a: fv.angle, lastX: e.clientX, lastT: performance.now(), v: 0, moved: false };
+      card.classList.remove('anim'); card.classList.add('grab');
+      try { card.setPointerCapture(e.pointerId); } catch (err) {}
+    };
+    card.onpointermove = function (e) {
+      if (drag) {
+        var dx = e.clientX - drag.x; if (Math.abs(dx) > 6) drag.moved = true;
+        var now = performance.now(), dt = Math.max(1, now - drag.lastT);
+        drag.v = (e.clientX - drag.lastX) / dt; drag.lastX = e.clientX; drag.lastT = now;
+        setAngle(drag.a + dx * 0.6, false);
+        if (tilt) tilt.style.transform = 'rotateX(' + (Math.min(8, Math.abs(dx) / 20)).toFixed(1) + 'deg) scale(' + (1 + Math.min(.05, Math.abs(dx) / 3000)).toFixed(3) + ')';
+        return;
+      }
+      if (e.pointerType === 'mouse' && tilt && !reduce) {
+        var b = tilt.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5;
+        tilt.style.transform = 'rotateY(' + (x * 14).toFixed(1) + 'deg) rotateX(' + (-y * 10).toFixed(1) + 'deg)';
+        card.style.setProperty('--mx', ((x + .5) * 100).toFixed(0) + '%'); card.style.setProperty('--my', ((y + .5) * 100).toFixed(0) + '%');
+      }
+    };
+    function release(e) {
+      if (!drag) return;
+      var d = drag; drag = null; card.classList.remove('grab'); if (tilt) tilt.style.transform = '';
+      if (!d.moved) { fvFlip(); return; }
+      var cur = d.a + (e.clientX - d.x) * 0.6, target;
+      if (Math.abs(d.v) > 0.5) target = (d.v > 0 ? Math.floor(cur / 180) + 1 : Math.ceil(cur / 180) - 1) * 180;
+      else target = Math.round(cur / 180) * 180;
+      if (Math.abs(target - d.a) > 360) target = d.a + Math.sign(target - d.a) * 360;
+      fv.angle = target; fv.flip = Math.abs(Math.round(target / 180)) % 2 === 1;
+      setAngle(target, true); syncFlipBtn();
+    }
+    card.onpointerup = release;
+    card.onpointercancel = function (e) { if (drag) { var d = drag; drag = null; card.classList.remove('grab'); setAngle(d.a, true); } };
+    card.onpointerleave = function () { if (!drag && tilt) tilt.style.transform = ''; };
+    card.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fvFlip(); } };
+  }
+  function syncFlipBtn() {
+    var bt = document.querySelector('.fv-actions [data-act=fvFlip]'); if (bt) bt.textContent = fv.flip ? 'Ver frente' : 'Girar · ver specs';
   }
   function fvFlip() {
-    fv.flip = !fv.flip;
-    var card = document.querySelector('.fv-card'); if (card) card.classList.toggle('flipped', fv.flip);
+    fv.angle += 180; fv.flip = !fv.flip;
+    var card = $('#fvCard');
+    if (card) { card.classList.remove('pop'); void card.offsetWidth; card.classList.add('anim', 'pop'); card.style.transform = 'rotateY(' + fv.angle + 'deg)'; }
+    var fl = document.querySelector('.fv-float'); if (fl) { fl.classList.remove('bump'); void fl.offsetWidth; fl.classList.add('bump'); }
     var bt = document.querySelector('.fv-actions [data-act=fvFlip]'); if (bt) bt.textContent = fv.flip ? 'Ver frente' : 'Girar · ver specs';
   }
 
@@ -2393,7 +2585,7 @@ html.fv-open { overflow: hidden; }
     else if (a === 'phDel') { ph.confirmDel = true; renderPhView(); }
     else if (a === 'phDelNo') { ph.confirmDel = false; renderPhView(); }
     else if (a === 'phDelYes') { var pid = ph.view; ph.view = null; ph.confirmDel = false; phDel(pid).then(phLoadPhotos).then(function () { $('#phMsg').textContent = 'Foto borrada.'; renderPhoto(); }); }
-    else if (a === 'phCapSave') { var px = ph.photos.find(function (q) { return q.id === ph.view; }); if (px) { px.cap = ($('#phCap').value || '').trim().slice(0, 100); phPut(px).then(function () { ph.view = null; renderPhoto(); }); } }
+    else if (a === 'phCapSave') { var px = ph.photos.find(function (q) { return q.id === ph.view; }); if (px) { px.cap = ($('#phCap').value || '').trim().slice(0, 100); px.cam = ($('#phCam').value || '').trim().slice(0, 60); px.lens = ($('#phLens').value || '').trim().slice(0, 60); px.set = ($('#phSet').value || '').trim().slice(0, 60); phPut(px).then(function () { ph.view = null; renderPhoto(); }); } }
     else if (a === 'acctToggle') { state.tab = state.tab === 'acct' ? 'spotted' : 'acct'; state.filter = null; pendingLogin = null; confirmDelAcct = null; render(); window.scrollTo(0, 0); }
     else if (a === 'filter') { var r = +t.dataset.r; state.filter = state.filter === r ? null : r; renderChips(); renderGrid(); }
     else if (a === 'add') openAdd(t.dataset.kind || state.tab);
@@ -2446,7 +2638,9 @@ html.fv-open { overflow: hidden; }
     else if (a === 'peerCmp') { peerCmp = t.dataset.v; renderPeer(); }
     else if (a === 'rm') { c = carById(state.sel); if (c) { var i = +t.dataset.i; setMods(c, (c.mods || []).filter(function (_, k) { return k !== i; })); } }
     else if (a === 'del') { state.confirmDel = true; renderSheet(); var cd = document.querySelector('.confirm-del'); if (cd) cd.scrollIntoView({ block: 'center' }); }
-    else if (a === 'fvOpen') { fv.id = state.sel; fv.flip = false; renderFv(); }
+    else if (a === 'zone') { state.zone = t.dataset.z; state.tab = state.zone === 'spot' ? 'photo' : 'spotted'; state.filter = null; closeAdd(); render(); window.scrollTo(0, 0); }
+    else if (a === 'home') { if (state.sel) closeSheet(); closeAdd(); state.zone = null; render(); window.scrollTo(0, 0); }
+    else if (a === 'fvOpen') { fv.id = state.sel; fv.flip = false; fv.angle = 0; renderFv(); }
     else if (a === 'fvFlip') fvFlip();
     else if (a === 'fvClose') { fv.id = null; fv.flip = false; renderFv(); }
     else if (a === 'photoOpen') { state.photoView = true; state.edit = false; state.confirmDel = false; state.crop = null; state.cropDirty = false; renderSheet(); var sh0 = document.querySelector('.sheet'); if (sh0) sh0.scrollTop = 0; }
