@@ -388,6 +388,48 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
 .ph-av.img, .acct-btn i.img { padding: 0; overflow: hidden; background: var(--surface-2); }
 .ph-av.img img, .acct-btn i.img img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .av-pick { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+
+.sheet-tabhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sheet-tabhead h3 { margin: 0; }
+.fx-row .chip { min-height: 34px; padding: 5px 12px; font-size: 13px; }
+.sheet .actions .btn { flex: 1 1 auto; }
+
+/* carta en grande: flota y gira */
+.card.big { font: inherit; text-align: left; }
+.fv-hint { display: block; margin-top: 8px; text-align: center; font: 500 10px var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.card.big[data-act="fvOpen"] { cursor: zoom-in; }
+html.fv-open { overflow: hidden; }
+.fv-scrim { position: fixed; inset: 0; z-index: 20; background: radial-gradient(ellipse at 50% 35%, rgba(30,34,44,.75), rgba(3,4,6,.94)); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.fv { position: fixed; inset: 0; z-index: 21; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 24px 16px; pointer-events: none; }
+.fv > * { pointer-events: auto; }
+.fv-float { perspective: 1400px; }
+.fv-tilt { transition: transform .25s ease-out; transform-style: preserve-3d; }
+.fv-card { position: relative; display: block; width: min(330px, 82vw); aspect-ratio: 330 / 520; padding: 0; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; transform-style: preserve-3d; transition: transform .8s cubic-bezier(.2,.7,.2,1); --mx: 50%; --my: 30%; }
+.fv-card.flipped { transform: rotateY(180deg); }
+.fv-face { position: absolute; inset: 0; max-width: none !important; margin: 0 !important; backface-visibility: hidden; -webkit-backface-visibility: hidden; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 40px 80px -30px rgba(0,0,0,.85), 0 0 40px -14px var(--rc) !important; }
+.fv-back { transform: rotateY(180deg); padding: 14px 16px 16px !important; gap: 6px; }
+.fv-front .art { flex: none; }
+.fv-sub { margin-top: 4px; font: 500 12px var(--f-mono); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+.fv-shine { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; background: radial-gradient(circle at var(--mx) var(--my), rgba(255,255,255,.22), transparent 45%); mix-blend-mode: overlay; }
+.fv-bhead { display: flex; flex-direction: column; padding: 2px 0 6px; }
+.fv-specs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 6px 0 4px; }
+.fv-specs dt { font: 500 10px var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.fv-specs dd { margin: 2px 0 0; font: 700 20px/1.1 var(--f-display); overflow-wrap: anywhere; }
+.fv-specs.small dd { font: 600 14px/1.2 var(--f-body); }
+.fv-meter { display: grid; grid-template-columns: 82px 1fr auto; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.fv-meter i { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.fv-meter b { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--rc) 60%, transparent), var(--rc)); box-shadow: 0 0 10px var(--rc); }
+.fv-meter em { font: 500 12px var(--f-mono); font-style: normal; color: var(--fg); }
+.fv-foot { margin-top: auto !important; }
+.fv-none { padding: 14px 0; color: var(--muted); font-size: 14px; }
+.fv-actions { display: flex; gap: 10px; }
+@media (prefers-reduced-motion: no-preference) {
+  .fv-float { animation: fvIn .6s cubic-bezier(.2,.8,.2,1) both, fvFloat 5s ease-in-out .6s infinite; }
+  @keyframes fvIn { from { opacity: 0; transform: translateY(40px) scale(.9); } to { opacity: 1; transform: none; } }
+  @keyframes fvFloat { 0%, 100% { transform: translateY(0) rotate(-.4deg); } 50% { transform: translateY(-14px) rotate(.4deg); } }
+}
+@media (prefers-reduced-motion: reduce) { .fv-card { transition: none; } }
+@media (max-height: 640px) { .fv-card { width: min(260px, 70vw); } }
 </style>
 
 <div class="app">
@@ -456,7 +498,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
           <div class="field"><label for="year">Año</label><input type="number" id="year" inputmode="numeric" min="1900" max="2100" placeholder="2025"></div>
           <div class="field"><label for="rarity">Rareza</label><select id="rarity"></select></div>
         </div>
-        <div class="field"><label for="bodyType">Tipo de carro</label><select id="bodyType"></select></div>
+        <div class="f2"><div class="field"><label for="bodyType">Tipo de carro</label><select id="bodyType"></select></div><div class="field"><label for="colorIn">Color</label><input type="text" id="colorIn" list="colorList" maxlength="30" autocomplete="off" placeholder="Rojo, Negro mate…"><datalist id="colorList"><option value="Negro"><option value="Blanco"><option value="Gris"><option value="Plata"><option value="Rojo"><option value="Azul"><option value="Verde"><option value="Amarillo"><option value="Naranja"><option value="Morado"><option value="Café"><option value="Negro mate"><option value="Gris Nardo"><option value="Blanco perla"></datalist></div></div>
         <div class="specs" id="specBox">
           <div class="specs-head"><span class="lbl">Specs</span><span class="specs-tag">Aproximados</span></div>
           <div class="f2">
@@ -1006,8 +1048,18 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   }
 
   /* ================= fotos y encuadre ================= */
-  function normCrop(c) { c = c || {}; return { x: clamp(num(c.x, 50), 0, 100), y: clamp(num(c.y, 50), 0, 100), z: clamp(num(c.z, 1), 1, 3) }; }
-  function cropStyle(c) { var k = normCrop(c); return 'object-position:' + k.x + '% ' + k.y + '%;transform-origin:' + k.x + '% ' + k.y + '%;transform:scale(' + k.z + ')'; }
+  function normCrop(c) { c = c || {}; return { x: clamp(num(c.x, 50), 0, 100), y: clamp(num(c.y, 50), 0, 100), z: clamp(num(c.z, 1), 1, 3), b: clamp(num(c.b, 100), 50, 150), k: clamp(num(c.k, 100), 50, 150), s: clamp(num(c.s, 100), 0, 200), w: clamp(num(c.w, 0), -30, 30) }; }
+  function fxFilter(k) {
+    var f = [];
+    if (k.b !== 100) f.push('brightness(' + k.b / 100 + ')');
+    if (k.k !== 100) f.push('contrast(' + k.k / 100 + ')');
+    if (k.s !== 100) f.push('saturate(' + k.s / 100 + ')');
+    if (k.w > 0) f.push('sepia(' + (k.w / 100).toFixed(2) + ')');
+    if (k.w < 0) f.push('hue-rotate(' + Math.round(k.w * 0.6) + 'deg)');
+    return f.join(' ');
+  }
+  function cropStyle(c) { var k = normCrop(c), fl = fxFilter(k); return 'object-position:' + k.x + '% ' + k.y + '%;transform-origin:' + k.x + '% ' + k.y + '%;transform:scale(' + k.z + ')' + (fl ? ';filter:' + fl : ''); }
+  var FX_PRESETS = [['orig', 'Original', { b: 100, k: 100, s: 100, w: 0 }], ['vivo', 'Vivo', { b: 104, k: 112, s: 135, w: 0 }], ['cine', 'Cine', { b: 96, k: 118, s: 80, w: -12 }], ['calido', 'Cálido', { b: 104, k: 104, s: 110, w: 18 }], ['noche', 'Noche', { b: 88, k: 122, s: 90, w: -20 }], ['bn', 'B/N', { b: 102, k: 120, s: 0, w: 0 }]];
 
   function photoList(c) {
     var out = [];
@@ -1027,12 +1079,15 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
       img.style.transformOrigin = st.x + '% ' + st.y + '%';
       img.style.transform = 'scale(' + st.z + ')';
       zi.value = st.z; xi.value = st.x; yi.value = st.y;
+      if (st.b != null) { img.style.filter = fxFilter(normCrop(st)); [['cb', 'b'], ['ck', 'k'], ['cs', 's'], ['cw', 'w']].forEach(function (q) { var el = root.querySelector('.' + q[0]); if (el) el.value = st[q[1]]; }); }
     }
     function change() { apply(); if (onChange) onChange(st); }
     zi.oninput = function () { st.z = clamp(+zi.value, 1, 3); change(); };
     xi.oninput = function () { st.x = clamp(+xi.value, 0, 100); change(); };
     yi.oninput = function () { st.y = clamp(+yi.value, 0, 100); change(); };
     cb.onclick = function () { st.x = 50; st.y = 50; st.z = 1; change(); };
+    [['cb', 'b', 50, 150], ['ck', 'k', 50, 150], ['cs', 's', 0, 200], ['cw', 'w', -30, 30]].forEach(function (q) { var el = root.querySelector('.' + q[0]); if (el) el.oninput = function () { st[q[1]] = clamp(+el.value, q[2], q[3]); change(); }; });
+    root.querySelectorAll('[data-fx]').forEach(function (bt) { bt.onclick = function () { var pr = FX_PRESETS.find(function (x) { return x[0] === bt.dataset.fx; }); if (pr) { Object.assign(st, pr[2]); change(); } }; });
     stage.onpointerdown = function (e) { drag = { x: e.clientX, y: e.clientY, sx: st.x, sy: st.y }; try { stage.setPointerCapture(e.pointerId); } catch (err) { /* sin captura */ } };
     stage.onpointermove = function (e) {
       if (!drag) return;
@@ -1047,7 +1102,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   }
 
   function photosHTML(c) {
-    var list = photoList(c), sp = selPhoto(c), h = '<h3>Fotos</h3><div class="thumbs">';
+    var list = photoList(c), sp = selPhoto(c), h = '<div class="sheet-tabhead"><h3>Foto y edición</h3><button class="btn" type="button" data-act="photoBack">Volver</button></div><div class="thumbs">';
     list.forEach(function (p, i) {
       h += '<button type="button" class="thumb" data-act="pick" data-i="' + i + '" aria-pressed="' + (p === sp || (sp && p.id === sp.id)) + '" aria-label="Foto ' + (i + 1) + (p.primary ? ' (principal)' : '') + '"><img src="' + esc(p.data) + '" alt="" style="' + cropStyle(p.crop) + '">' + (p.primary ? '<b>Principal</b>' : '') + '</button>';
     });
@@ -1060,8 +1115,14 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
         '<div class="crop-ctl"><label for="sZ">Zoom</label><input class="cz" id="sZ" type="range" min="1" max="3" step="0.05" value="' + k.z + '">' +
         '<label for="sX">Horizontal</label><input class="cx" id="sX" type="range" min="0" max="100" step="1" value="' + k.x + '">' +
         '<label for="sY">Vertical</label><input class="cy" id="sY" type="range" min="0" max="100" step="1" value="' + k.y + '"></div>' +
+        '<span class="lbl">Filtros</span><div class="opts fx-row">' + FX_PRESETS.map(function (pr) { return '<button type="button" class="chip" data-fx="' + pr[0] + '">' + pr[1] + '</button>'; }).join('') + '</div>' +
+        '<span class="lbl">Ajustes</span><div class="crop-ctl">' +
+        '<label for="sB">Brillo</label><input class="cb" id="sB" type="range" min="50" max="150" step="1" value="' + k.b + '">' +
+        '<label for="sK">Contraste</label><input class="ck" id="sK" type="range" min="50" max="150" step="1" value="' + k.k + '">' +
+        '<label for="sS">Saturación</label><input class="cs" id="sS" type="range" min="0" max="200" step="1" value="' + k.s + '">' +
+        '<label for="sW">Temperatura</label><input class="cw" id="sW" type="range" min="-30" max="30" step="1" value="' + k.w + '"></div>' +
         '<div class="actions"><button class="btn" type="button" data-crop="center">Centrar</button>' +
-        '<button class="btn primary" type="button" id="cropSave" data-act="cropSave"' + (state.cropDirty ? '' : ' disabled') + '>Guardar encuadre</button>' +
+        '<button class="btn primary" type="button" id="cropSave" data-act="cropSave"' + (state.cropDirty ? '' : ' disabled') + '>Guardar foto</button>' +
         (sp.primary ? '' : '<button class="btn" type="button" data-act="photoMain">Hacer principal</button><button class="btn danger" type="button" data-act="photoDel">Quitar</button>') + '</div>' +
         (typeof sp.q === 'number' ? '<p class="status">Foto ' + clamp(Math.round(sp.q), 0, 100) + '/100 · ' + qLabel(sp.q) + (sp.qd ? ' · ' + esc(qualityTip(sp.qd)) : '') + '</p>' : '') + '</div>';
     } else {
@@ -1099,7 +1160,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   function saveCrop() {
     var c = carById(state.sel); if (!c) return;
     var sp = selPhoto(c); if (!sp || !state.crop) return;
-    var crop = { x: Math.round(state.crop.x * 10) / 10, y: Math.round(state.crop.y * 10) / 10, z: r2(state.crop.z) };
+    var nk = normCrop(state.crop), crop = { x: Math.round(nk.x * 10) / 10, y: Math.round(nk.y * 10) / 10, z: r2(nk.z), b: Math.round(nk.b), k: Math.round(nk.k), s: Math.round(nk.s), w: Math.round(nk.w) };
     enqueue(async function () {
       try {
         if (sp.primary) { if (col) await col.doc(c.id).update({ crop: crop }); else c.crop = crop; }
@@ -1741,7 +1802,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
       '<span class="art">' + artHTML(c) + (c.demo ? '<span class="tag">Ejemplo</span>' : '') + '</span><span class="c-bar"></span>' +
       '<span class="c-meta"><span class="make">' + esc(c.make) + '</span><span class="model">' + esc(c.model) + '</span></span>' +
       '<span class="c-foot"><span>' + esc(foot) + '</span>' + (spotted ? '<b>★ ' + pointsOf(c.rarity, c.q) + '</b>' : '') + '</span>';
-    return big ? '<div class="card big r' + r + '">' + inner + '</div>' : '<button type="button" class="card r' + r + '" data-act="open" data-id="' + esc(c.id) + '">' + inner + '</button>';
+    return big ? '<button type="button" class="card big r' + r + '" data-act="fvOpen" aria-label="Ver carta en grande">' + inner + '<span class="fv-hint">Toca para verla en grande</span></button>' : '<button type="button" class="card r' + r + '" data-act="open" data-id="' + esc(c.id) + '">' + inner + '</button>';
   }
 
   function renderHeader() {
@@ -1805,6 +1866,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     var total = mods.reduce(function (s, m) { return s + (+m.cost || 0); }, 0);
     var facts = '';
     if (c.year) facts += '<div><dt>Año</dt><dd>' + c.year + '</dd></div>';
+    if (c.color) facts += '<div><dt>Color</dt><dd>' + esc(c.color) + '</dd></div>';
     facts += specFacts(c.specs);
     if (c.place) facts += '<div><dt>Visto en</dt><dd>' + esc(c.place) + '</dd></div>';
     if (c.ts) facts += '<div><dt>' + (c.kind === 'garage' ? 'Agregado' : 'Fecha') + '</dt><dd>' + dateOf(c.ts) + '</dd></div>';
@@ -1821,18 +1883,18 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     var tail;
     if (c.demo) tail = '<p class="note">Carta de ejemplo. Desaparece cuando guardes tu primer carro.</p>';
     else if (state.confirmDel) tail = '<div class="confirm-del"><b>¿Seguro que quieres eliminar ' + esc(c.make + ' ' + c.model) + '?</b><span>Se borra la carta con sus fotos' + (c.kind === 'garage' ? ' y mods' : '') + '. No se puede deshacer.</span><div class="actions"><button class="btn danger" type="button" data-act="delYes">Sí, eliminar</button><button class="btn" type="button" data-act="delNo">Cancelar</button></div></div>';
-    else tail = '<div class="actions">' + (c.kind === 'spotted' && sightCol && active === 'cloud' ? '<button class="btn" type="button" data-act="sightFromCar">Marcar en el Radar</button>' : '') + '<button class="btn" type="button" data-act="editOpen">Editar carta</button><button class="btn" type="button" data-act="del">Eliminar carta</button></div>';
+    else tail = '<div class="actions">' + (c.kind === 'spotted' && sightCol && active === 'cloud' ? '<button class="btn" type="button" data-act="sightFromCar">Marcar en el Radar</button>' : '') + '<button class="btn" type="button" data-act="photoOpen">' + (c.photo ? 'Foto y edición' : 'Agregar foto') + '</button><button class="btn" type="button" data-act="editOpen">Editar carta</button><button class="btn" type="button" data-act="del">Eliminar carta</button></div>';
     root.innerHTML = '<div class="scrim" data-act="close"></div>' +
       '<aside class="sheet r' + clamp(c.rarity | 0, 0, 4) + '" role="dialog" aria-modal="true" aria-label="' + esc(c.make + ' ' + c.model) + '"><div class="sheet-body">' +
       '<div class="sheet-top"><span class="lbl">Carta ' + esc(serialOf(c)) + '</span><button class="btn" type="button" id="sheetClose" data-act="close">Cerrar</button></div>' +
       cardHTML(c, true) +
-      (c.demo ? '' : photosHTML(c)) +
+      (state.photoView && !c.demo ? '<div class="edit-form">' + photosHTML(c) + '</div>' :
       (c.kind === 'spotted' ? scoreHTML(c) : '') +
       (state.edit && !c.demo ? editHTML(c) :
       (facts ? '<dl class="facts">' + facts + '</dl>' : '') +
       (c.why ? '<p class="why">' + esc(c.why) + '</p>' : '') +
       (c.note ? '<p>' + esc(c.note) + '</p>' : '') +
-      modsHTML + tail) + '</div></aside>';
+      modsHTML + tail)) + '</div></aside>';
     var sc = $('#sheetCrop');
     sheetCropper = sc ? mountCropper(sc, state.crop, function () { state.cropDirty = true; var b = $('#cropSave'); if (b) b.disabled = false; }) : null;
     var ns = root.querySelector('.sheet'); if (ns && prev) ns.scrollTop = prevTop;
@@ -1872,7 +1934,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     updateQuality();
   }
   function resetForm() {
-    ['#make', '#model', '#year', '#place', '#noteIn'].forEach(function (s) { $(s).value = ''; });
+    ['#make', '#model', '#year', '#place', '#noteIn', '#colorIn'].forEach(function (s) { $(s).value = ''; });
     $('#rarity').value = '0'; $('#bodyType').value = 'sedan';
     resetSpecs();
     photo = { blob: null, url: '', tech: null }; lastWhy = ''; lastAI = null;
@@ -1983,7 +2045,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
       id: uid(), kind: kind, make: make.slice(0, 60), model: model.slice(0, 60),
       year: (y >= 1900 && y <= 2100) ? y : null, rarity: +$('#rarity').value || 0, body: BODIES[$('#bodyType').value] ? $('#bodyType').value : 'sedan',
       place: kind === 'spotted' ? $('#place').value.trim().slice(0, 80) : '',
-      note: $('#noteIn').value.trim().slice(0, 400), why: lastWhy, photo: photo.url,
+      note: $('#noteIn').value.trim().slice(0, 400), color: $('#colorIn').value.trim().slice(0, 30), why: lastWhy, photo: photo.url,
       crop: photo.url ? { x: Math.round(addCrop.x * 10) / 10, y: Math.round(addCrop.y * 10) / 10, z: r2(addCrop.z) } : null,
       q: cq ? cq.q : null, qd: cq ? cq.qd : null, mods: [], ts: Date.now()
     };
@@ -2151,18 +2213,75 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     renderPhoto();
   }
 
+
+  /* ================= carta en grande (flota y gira) ================= */
+  var fv = { id: null, flip: false };
+  function fvHTML(c) {
+    var r = clamp(c.rarity | 0, 0, 4), sp = c.specs || {}, body = (BODYLIST.find(function (b) { return b[0] === c.body; }) || [0, '—'])[1];
+    var sub = [c.year || '', c.color || ''].filter(Boolean).join(' · ');
+    var row = function (k, v) { return v ? '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>' : ''; };
+    var specs = row('Motor', esc(sp.engine || '')) + row('Potencia', sp.hp ? sp.hp + ' hp' : '') + row('0–60 mph', sp.zs ? sp.zs + ' s' : '') + row('Tracción', esc(sp.drive || ''));
+    var extra = row('Tipo', esc(body)) + row('Rareza', RAR[r].n) + row('Año', c.year || '') + row('Color', esc(c.color || '')) +
+      (c.kind === 'spotted' ? row('Visto en', esc(c.place || '')) + row('Puntos', '★ ' + pointsOf(c.rarity, c.q)) : row('Mods', String((c.mods || []).length)));
+    var bars = '';
+    if (sp.hp || sp.zs) {
+      var bar = function (lbl, pct, txt) { return '<div class="fv-meter"><span>' + lbl + '</span><i><b style="width:' + Math.round(clamp(pct, 4, 100)) + '%"></b></i><em>' + txt + '</em></div>'; };
+      if (sp.hp) bars += bar('Potencia', sp.hp / 10, sp.hp + ' hp');
+      if (sp.zs) bars += bar('Aceleración', (10 - sp.zs) / 8 * 100, sp.zs + ' s');
+    }
+    return '<div class="fv-scrim" data-act="fvClose"></div>' +
+      '<div class="fv" role="dialog" aria-modal="true" aria-label="Carta ' + esc(c.make + ' ' + c.model) + '">' +
+      '<div class="fv-float"><div class="fv-tilt" id="fvTilt"><button type="button" class="fv-card r' + r + (fv.flip ? ' flipped' : '') + '" data-act="fvFlip" aria-label="Girar carta">' +
+      '<span class="fv-face fv-front card big r' + r + '">' +
+        '<span class="c-top"><span>' + esc(serialOf(c)) + '</span><span class="rar"><i></i>' + RAR[r].n + '</span></span>' +
+        '<span class="art">' + artHTML(c) + '</span><span class="c-bar"></span>' +
+        '<span class="c-meta"><span class="make">' + esc(c.make) + '</span><span class="model">' + esc(c.model) + '</span>' + (sub ? '<span class="fv-sub">' + esc(sub) + '</span>' : '') + '</span>' +
+        '<span class="c-foot fv-foot"><span>' + esc(c.kind === 'spotted' ? (c.place || 'Visto en la calle') : ((c.mods || []).length + ' mods')) + '</span>' + (c.kind === 'spotted' ? '<b>★ ' + pointsOf(c.rarity, c.q) + '</b>' : '<b>Mi garage</b>') + '</span>' +
+        '<span class="fv-shine"></span>' +
+      '</span>' +
+      '<span class="fv-face fv-back card big r' + r + '">' +
+        '<span class="c-top"><span>Specs</span><span class="rar"><i></i>' + esc(serialOf(c)) + '</span></span>' +
+        '<span class="fv-bhead"><span class="make">' + esc(c.make) + '</span><span class="model">' + esc(c.model) + '</span></span>' +
+        (specs ? '<dl class="fv-specs">' + specs + '</dl>' + bars : '<span class="fv-none">Sin specs todavía. Edita la carta para agregarlos.</span>') +
+        '<span class="c-bar"></span><dl class="fv-specs small">' + extra + '</dl>' +
+      '</span>' +
+      '</button></div></div>' +
+      '<div class="fv-actions"><button class="btn" type="button" data-act="fvFlip">' + (fv.flip ? 'Ver frente' : 'Girar · ver specs') + '</button><button class="btn" type="button" data-act="fvClose">Cerrar</button></div>' +
+      '</div>';
+  }
+  function renderFv() {
+    var root = $('#fvRoot'); if (!root) { root = document.createElement('div'); root.id = 'fvRoot'; document.body.appendChild(root); }
+    var c = fv.id && (carById(fv.id) || all().find(function (x) { return x.id === fv.id; }));
+    if (!c) { root.innerHTML = ''; document.documentElement.classList.remove('fv-open'); return; }
+    root.innerHTML = fvHTML(c); document.documentElement.classList.add('fv-open');
+    var tilt = $('#fvTilt'), card = root.querySelector('.fv-card');
+    if (tilt && window.matchMedia && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      tilt.onpointermove = function (e) {
+        var b = tilt.getBoundingClientRect(), x = (e.clientX - b.left) / b.width - .5, y = (e.clientY - b.top) / b.height - .5;
+        tilt.style.transform = 'rotateY(' + (x * 16).toFixed(1) + 'deg) rotateX(' + (-y * 12).toFixed(1) + 'deg)';
+        card.style.setProperty('--mx', ((x + .5) * 100).toFixed(0) + '%'); card.style.setProperty('--my', ((y + .5) * 100).toFixed(0) + '%');
+      };
+      tilt.onpointerleave = function () { tilt.style.transform = ''; };
+    }
+  }
+  function fvFlip() {
+    fv.flip = !fv.flip;
+    var card = document.querySelector('.fv-card'); if (card) card.classList.toggle('flipped', fv.flip);
+    var bt = document.querySelector('.fv-actions [data-act=fvFlip]'); if (bt) bt.textContent = fv.flip ? 'Ver frente' : 'Girar · ver specs';
+  }
+
   /* ================= editar carta ================= */
   function draftOf(c) {
     var sp = c.specs || {};
     return { make: c.make || '', model: c.model || '', year: c.year ? String(c.year) : '', rarity: String(c.rarity | 0), body: c.body || 'sedan',
-      place: c.place || '', note: c.note || '', engine: sp.engine || '', hp: sp.hp ? String(sp.hp) : '', zs: sp.zs ? String(sp.zs) : '', drive: sp.drive || '' };
+      place: c.place || '', color: c.color || '', note: c.note || '', engine: sp.engine || '', hp: sp.hp ? String(sp.hp) : '', zs: sp.zs ? String(sp.zs) : '', drive: sp.drive || '' };
   }
   function readEdit() {
     var g = function (id) { var el = $('#' + id); return el ? el.value : ''; };
     return { make: g('eMake').trim(), model: g('eModel').trim(), year: g('eYear').trim(), rarity: g('eRarity'), body: g('eBody'),
-      place: g('ePlace').trim(), note: g('eNote').trim(), engine: g('eEngine').trim(), hp: g('eHp').trim(), zs: g('eZs').trim(), drive: g('eDrive') };
+      place: g('ePlace').trim(), color: g('eColor').trim(), note: g('eNote').trim(), engine: g('eEngine').trim(), hp: g('eHp').trim(), zs: g('eZs').trim(), drive: g('eDrive') };
   }
-  var EDIT_LABELS = { make: 'Marca', model: 'Modelo', year: 'Año', rarity: 'Rareza', body: 'Tipo', place: 'Dónde lo viste', note: 'Nota', engine: 'Motor', hp: 'Potencia (hp)', zs: '0–60 mph (s)', drive: 'Tracción' };
+  var EDIT_LABELS = { make: 'Marca', model: 'Modelo', year: 'Año', rarity: 'Rareza', body: 'Tipo', color: 'Color', place: 'Dónde lo viste', note: 'Nota', engine: 'Motor', hp: 'Potencia (hp)', zs: '0–60 mph (s)', drive: 'Tracción' };
   function showVal(k, v) {
     if (v === '' || v == null) return '—';
     if (k === 'rarity') return (RAR[+v] || RAR[0]).n;
@@ -2189,7 +2308,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
       '<div class="field"><label for="eModel">Modelo</label><input type="text" id="eModel" list="eMdList" maxlength="60" autocomplete="off" value="' + esc(d.model) + '"><datalist id="eMdList">' + mdl + '</datalist></div></div>' +
       '<div class="f2"><div class="field"><label for="eYear">Año</label><input type="number" id="eYear" inputmode="numeric" min="1900" max="2100" value="' + esc(d.year) + '"></div>' +
       '<div class="field"><label for="eRarity">Rareza</label><select id="eRarity">' + opt(RAR.map(function (r, i) { return [String(i), r.n]; }), d.rarity) + '</select></div></div>' +
-      '<div class="field"><label for="eBody">Tipo de carro</label><select id="eBody">' + opt(BODYLIST, d.body) + '</select></div>' +
+      '<div class="f2"><div class="field"><label for="eBody">Tipo de carro</label><select id="eBody">' + opt(BODYLIST, d.body) + '</select></div><div class="field"><label for="eColor">Color</label><input type="text" id="eColor" list="colorList" maxlength="30" autocomplete="off" value="' + esc(d.color) + '"></div></div>' +
       (c.kind === 'spotted' ? '<div class="field"><label for="ePlace">Dónde lo viste</label><input type="text" id="ePlace" maxlength="80" autocomplete="off" value="' + esc(d.place) + '"></div>' : '') +
       '<div class="field"><label for="eNote">Nota</label><textarea id="eNote" maxlength="400">' + esc(d.note) + '</textarea></div>' +
       '<div class="specs"><div class="specs-head"><span class="lbl">Specs</span>' + (mk && catModel(mk, d.model) ? '<button class="btn" type="button" data-act="editSpecs" style="min-height:34px;padding:4px 10px;font-size:13px">Usar specs sugeridos</button>' : '') + '</div>' +
@@ -2213,9 +2332,9 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     var y = parseInt(d.year, 10), hp = parseInt(d.hp, 10), zs = parseFloat(d.zs);
     var specs = { engine: d.engine.slice(0, 60), hp: hp > 0 && hp < 3000 ? hp : null, zs: zs > 0 && zs < 30 ? Math.round(zs * 10) / 10 : null, drive: d.drive };
     var patch = { make: d.make.slice(0, 60), model: d.model.slice(0, 60), year: (y >= 1900 && y <= 2100) ? y : null, rarity: clamp(+d.rarity || 0, 0, 4),
-      body: BODIES[d.body] ? d.body : 'sedan', note: d.note.slice(0, 400), specs: (specs.engine || specs.hp || specs.zs || specs.drive) ? specs : null };
+      body: BODIES[d.body] ? d.body : 'sedan', color: d.color.slice(0, 30), note: d.note.slice(0, 400), specs: (specs.engine || specs.hp || specs.zs || specs.drive) ? specs : null };
     if (c.kind === 'spotted') patch.place = d.place.slice(0, 80);
-    state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = '';
+    state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = ''; state.photoView = false;
     patchCar(c, patch, function () { syncBoardSafe(); });
   }
   function syncBoardSafe() { try { if (typeof syncBoard === 'function') syncBoard(); if (typeof syncPub === 'function') syncPub(); } catch (e) {} }
@@ -2237,7 +2356,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     setMods(c, (c.mods || []).concat([{ name: name, cost: cost }]));
   }
   function closeSheet() {
-    state.sel = null; state.look = null; state.crop = null; state.cropDirty = false; state.pi = 0; state.photoMsg = ''; state.confirmDel = false; state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = '';
+    state.sel = null; state.look = null; state.crop = null; state.cropDirty = false; state.pi = 0; state.photoMsg = ''; state.confirmDel = false; state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = ''; state.photoView = false;
     if (extrasUnsub) { extrasUnsub(); extrasUnsub = null; }
     state.extras = [];
     renderSheet();
@@ -2280,7 +2399,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     else if (a === 'add') openAdd(t.dataset.kind || state.tab);
     else if (a === 'addClose') closeAdd();
     else if (a === 'open') {
-      state.sel = t.dataset.id; state.look = null; state.crop = null; state.cropDirty = false; state.pi = 0; state.photoMsg = ''; state.confirmDel = false; state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = '';
+      state.sel = t.dataset.id; state.look = null; state.crop = null; state.cropDirty = false; state.pi = 0; state.photoMsg = ''; state.confirmDel = false; state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = ''; state.photoView = false;
       var oc = selCar(); watchExtras(oc && !oc.demo ? oc.id : null);
       renderSheet(); var cl = $('#sheetClose'); if (cl) cl.focus();
     }
@@ -2327,8 +2446,13 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     else if (a === 'peerCmp') { peerCmp = t.dataset.v; renderPeer(); }
     else if (a === 'rm') { c = carById(state.sel); if (c) { var i = +t.dataset.i; setMods(c, (c.mods || []).filter(function (_, k) { return k !== i; })); } }
     else if (a === 'del') { state.confirmDel = true; renderSheet(); var cd = document.querySelector('.confirm-del'); if (cd) cd.scrollIntoView({ block: 'center' }); }
-    else if (a === 'editOpen') { var ec = carById(state.sel); if (ec) { state.edit = true; state.editConfirm = false; state.editDraft = draftOf(ec); state.editMsg = ''; renderSheet(); var ef = $('#editForm'); if (ef) ef.scrollIntoView({ block: 'start' }); } }
-    else if (a === 'editCancel') { state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = ''; renderSheet(); }
+    else if (a === 'fvOpen') { fv.id = state.sel; fv.flip = false; renderFv(); }
+    else if (a === 'fvFlip') fvFlip();
+    else if (a === 'fvClose') { fv.id = null; fv.flip = false; renderFv(); }
+    else if (a === 'photoOpen') { state.photoView = true; state.edit = false; state.confirmDel = false; state.crop = null; state.cropDirty = false; renderSheet(); var sh0 = document.querySelector('.sheet'); if (sh0) sh0.scrollTop = 0; }
+    else if (a === 'photoBack') { state.photoView = false; state.crop = null; state.cropDirty = false; renderSheet(); }
+    else if (a === 'editOpen') { var ec = carById(state.sel); if (ec) { state.photoView = false; state.edit = true; state.editConfirm = false; state.editDraft = draftOf(ec); state.editMsg = ''; renderSheet(); var ef = $('#editForm'); if (ef) ef.scrollIntoView({ block: 'start' }); } }
+    else if (a === 'editCancel') { state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = ''; state.photoView = false; renderSheet(); }
     else if (a === 'editSave') editSave();
     else if (a === 'editBack') { state.editConfirm = false; renderSheet(); }
     else if (a === 'editYes') editCommit();
@@ -2338,7 +2462,8 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
-      if (state.sel) closeSheet();
+      if (fv.id) { fv.id = null; fv.flip = false; renderFv(); }
+      else if (state.sel) closeSheet();
       else if (!$('#add').hidden) closeAdd();
     } else if (e.key === 'Enter' && e.target && e.target.id === 'modName') { e.preventDefault(); modAdd(); }
   });
