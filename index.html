@@ -340,6 +340,17 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
 .acct-btn[aria-pressed="true"] { border-color: var(--accent); }
 .mast { position: relative; }
 @media (max-width: 520px) { .mast-r { width: 100%; justify-content: flex-start; } .acct-btn { position: absolute; top: 8px; right: 0; max-width: 130px; } .plate-brand b { font-size: 34px; } }
+
+/* sugerencias y specs */
+.sug { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.sug-row { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+.chip.sug { flex: none; min-height: 34px; padding: 5px 12px; font-size: 13px; }
+.chip.sug[aria-pressed="true"] { border-color: var(--accent); color: var(--fg); background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+.specs { display: flex; flex-direction: column; gap: 10px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: color-mix(in srgb, var(--bg) 70%, transparent); }
+.specs.found { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.specs.warn { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+.specs-head { display: flex; justify-content: space-between; align-items: center; }
+.specs-tag { font: 500 10px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; }
 </style>
 
 <div class="app">
@@ -398,15 +409,29 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
           <label><input type="radio" name="kind" value="spotted" checked> Lo vi en la calle</label>
           <label><input type="radio" name="kind" value="garage"> Es mío</label>
         </fieldset>
+        <div class="sug" id="sugBox" aria-label="Sugerencias de marcas y modelos"></div>
         <div class="f2">
-          <div class="field"><label for="make">Marca</label><input type="text" id="make" autocomplete="off" placeholder="Toyota"></div>
-          <div class="field"><label for="model">Modelo</label><input type="text" id="model" autocomplete="off" placeholder="Tacoma"></div>
+          <div class="field"><label for="make">Marca</label><input type="text" id="make" list="mkList" autocomplete="off" placeholder="Toyota"><datalist id="mkList"></datalist></div>
+          <div class="field"><label for="model">Modelo</label><input type="text" id="model" list="mdList" autocomplete="off" placeholder="Tacoma"><datalist id="mdList"></datalist></div>
         </div>
         <div class="f2">
           <div class="field"><label for="year">Año</label><input type="number" id="year" inputmode="numeric" min="1900" max="2100" placeholder="2025"></div>
           <div class="field"><label for="rarity">Rareza</label><select id="rarity"></select></div>
         </div>
         <div class="field"><label for="bodyType">Tipo de carro</label><select id="bodyType"></select></div>
+        <div class="specs" id="specBox">
+          <div class="specs-head"><span class="lbl">Specs</span><span class="specs-tag">Aproximados</span></div>
+          <div class="f2">
+            <div class="field"><label for="spEngine">Motor</label><input type="text" id="spEngine" autocomplete="off" maxlength="60" placeholder="3.5L V6 biturbo"></div>
+            <div class="field"><label for="spHp">Potencia (hp)</label><input type="number" id="spHp" inputmode="numeric" min="1" max="3000" placeholder="400"></div>
+          </div>
+          <div class="f2">
+            <div class="field"><label for="spZs">0–60 mph (seg)</label><input type="number" id="spZs" inputmode="decimal" min="1" max="30" step="0.1" placeholder="4.5"></div>
+            <div class="field"><label for="spDrive">Tracción</label><select id="spDrive"></select></div>
+          </div>
+          <p class="status" id="spStatus" role="status"></p>
+          <label class="check"><input type="checkbox" id="spOk"> Confirmo estos specs</label>
+        </div>
         <div class="field" id="placeField"><label for="place">Dónde lo viste</label><input type="text" id="place" autocomplete="off" placeholder="Brickell, Wynwood, Doral…"></div>
         <div class="field"><label for="noteIn">Nota</label><textarea id="noteIn" placeholder="Color, detalles, algo que te llamó la atención"></textarea></div>
         <div class="actions"><button class="btn primary" id="save" type="button">Guardar carta</button></div>
@@ -521,6 +546,142 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     'Escala de rareza según qué tan raro es verlo en las calles de Estados Unidos: 0 Común (Corolla, Civic, Camry, pickups de trabajo), 1 Poco común (versiones deportivas o de nicho: Mustang GT, Wrangler Rubicon, Miata), ' +
     '2 Raro (deportivos y lujo alto: Porsche 911, Corvette, AMG, M3), 3 Épico (exóticos: Lamborghini, Ferrari, McLaren, Aston Martin), 4 Legendario (hipercarros y clásicos muy escasos: Bugatti, Pagani, Koenigsegg, ediciones limitadas). ' +
     'Si no estás seguro del año, da un año aproximado y confianza baja. Si no hay un carro claro en la foto responde {"error": "no_car"}.';
+
+
+  /* ================= sugerencias de marcas, modelos y specs ================= */
+  /* Formato: 'Modelo|tipo|rareza|motor|hp|0-60 (s)|tracción'. Specs aproximados del modelo base o la versión más común. */
+  var CAT_RAW = {
+    'Toyota': 'Corolla|sedan|0|2.0L I4|169|8.0|FWD;Camry|sedan|0|2.5L I4 híbrido|225|7.4|FWD;RAV4|suv|0|2.5L I4|203|8.0|FWD;Tacoma|pickup|0|2.4L I4 turbo|228|7.5|RWD;Tundra|pickup|0|3.4L V6 biturbo|389|6.1|4x4;4Runner|suv|0|2.4L I4 turbo|278|7.5|4x4;Land Cruiser|suv|1|2.4L turbo híbrido|326|7.0|4x4;GR86|sports|1|2.4L Boxer|228|5.4|RWD;GR Corolla|hatch|1|1.6L I3 turbo|300|4.9|AWD;Supra|sports|2|3.0L I6 turbo|382|3.9|RWD',
+    'Honda': 'Civic|sedan|0|2.0L I4|150|8.0|FWD;Civic Si|sedan|1|1.5L I4 turbo|200|6.8|FWD;Civic Type R|hatch|2|2.0L I4 turbo|315|5.0|FWD;Accord|sedan|0|1.5L I4 turbo|192|7.5|FWD;CR-V|suv|0|1.5L I4 turbo|190|8.0|FWD;Pilot|suv|0|3.5L V6|285|7.0|FWD;S2000|convertible|2|2.0L I4|240|5.8|RWD',
+    'Ford': 'Mustang EcoBoost|sports|0|2.3L I4 turbo|315|5.0|RWD;Mustang GT|sports|1|5.0L V8|480|4.3|RWD;Shelby GT500|sports|2|5.2L V8 sobrealimentado|760|3.5|RWD;F-150|pickup|0|2.7L V6 biturbo|325|6.0|RWD;F-150 Raptor|pickup|2|3.5L V6 biturbo|450|5.5|4x4;Bronco|suv|1|2.3L I4 turbo|300|6.5|4x4;Explorer|suv|0|2.3L I4 turbo|300|6.5|RWD;GT|sports|4|3.5L V6 biturbo|660|3.0|RWD',
+    'Chevrolet': 'Malibu|sedan|0|1.5L I4 turbo|163|8.5|FWD;Silverado 1500|pickup|0|5.3L V8|355|6.5|RWD;Tahoe|suv|0|5.3L V8|355|7.0|RWD;Camaro SS|sports|1|6.2L V8|455|4.0|RWD;Corvette Stingray|sports|2|6.2L V8|490|2.9|RWD;Corvette Z06|sports|3|5.5L V8|670|2.6|RWD',
+    'Dodge': 'Charger|sedan|0|3.6L V6|292|6.2|RWD;Durango|suv|0|3.6L V6|293|7.0|RWD;Challenger R/T|sports|1|5.7L V8|375|5.1|RWD;Challenger Hellcat|sports|2|6.2L V8 sobrealimentado|717|3.6|RWD;Viper|sports|3|8.4L V10|645|3.3|RWD',
+    'Ram': '1500|pickup|0|5.7L V8|395|6.0|RWD;1500 TRX|pickup|2|6.2L V8 sobrealimentado|702|3.7|4x4',
+    'Jeep': 'Wrangler|suv|0|2.0L I4 turbo|270|6.5|4x4;Wrangler Rubicon|suv|1|3.6L V6|285|7.0|4x4;Grand Cherokee|suv|0|3.6L V6|293|7.2|4x4;Gladiator|pickup|1|3.6L V6|285|7.5|4x4',
+    'Nissan': 'Sentra|sedan|0|2.0L I4|149|8.8|FWD;Altima|sedan|0|2.5L I4|188|7.8|FWD;Rogue|suv|0|1.5L I3 turbo|201|8.0|FWD;370Z|sports|1|3.7L V6|332|5.0|RWD;Z|sports|1|3.0L V6 biturbo|400|4.3|RWD;GT-R|sports|3|3.8L V6 biturbo|565|2.9|AWD',
+    'BMW': 'X3|suv|0|2.0L I4 turbo|255|6.0|AWD;330i|sedan|1|2.0L I4 turbo|255|5.6|RWD;X5|suv|1|3.0L I6 turbo|375|5.3|AWD;M3|sedan|2|3.0L I6 biturbo|473|4.1|RWD;M4|sports|2|3.0L I6 biturbo|473|3.9|RWD;M5|sedan|2|4.4L V8 biturbo|600|3.1|AWD',
+    'Mercedes-Benz': 'C 300|sedan|1|2.0L I4 turbo|255|5.9|RWD;E 350|sedan|1|2.0L I4 turbo|255|6.2|RWD;GLE|suv|1|2.0L I4 turbo|255|6.9|AWD;S 580|sedan|2|4.0L V8 biturbo|496|4.4|AWD;AMG G 63|suv|2|4.0L V8 biturbo|577|4.4|4x4;AMG GT|sports|3|4.0L V8 biturbo|523|3.7|RWD',
+    'Audi': 'A4|sedan|0|2.0L I4 turbo|201|6.4|AWD;Q5|suv|0|2.0L I4 turbo|261|5.7|AWD;RS 5|sports|2|2.9L V6 biturbo|444|3.8|AWD;RS 6 Avant|hatch|3|4.0L V8 biturbo|621|3.4|AWD;R8|sports|3|5.2L V10|602|3.2|AWD',
+    'Porsche': 'Macan|suv|1|2.0L I4 turbo|261|6.0|AWD;Cayenne|suv|1|3.0L V6 turbo|348|5.7|AWD;Taycan|sedan|2|Eléctrico|402|5.1|RWD;718 Cayman|sports|2|2.0L flat-4 turbo|300|4.9|RWD;911 Carrera|sports|2|3.0L flat-6 biturbo|379|4.0|RWD;911 GT3|sports|3|4.0L flat-6|502|3.2|RWD;911 Turbo S|sports|3|3.7L flat-6 biturbo|640|2.6|AWD',
+    'Tesla': 'Model 3|sedan|0|Eléctrico|283|5.8|RWD;Model Y|suv|0|Eléctrico|299|6.5|RWD;Model X|suv|1|Eléctrico|670|3.8|AWD;Cybertruck|pickup|1|Eléctrico|600|4.1|AWD;Model S Plaid|sedan|2|Eléctrico (3 motores)|1020|2.0|AWD',
+    'Lamborghini': 'Urus|suv|3|4.0L V8 biturbo|657|3.5|AWD;Huracán|sports|3|5.2L V10|602|2.9|AWD;Aventador|sports|4|6.5L V12|769|2.8|AWD;Revuelto|sports|4|6.5L V12 híbrido|1001|2.5|AWD',
+    'Ferrari': 'Roma|sports|3|3.9L V8 biturbo|612|3.4|RWD;296 GTB|sports|3|3.0L V6 biturbo híbrido|819|2.9|RWD;F8 Tributo|sports|3|3.9L V8 biturbo|710|2.9|RWD;812 Superfast|sports|4|6.5L V12|789|2.8|RWD;SF90 Stradale|sports|4|4.0L V8 biturbo híbrido|986|2.5|AWD;Purosangue|suv|4|6.5L V12|715|3.3|AWD',
+    'McLaren': 'Artura|sports|3|3.0L V6 biturbo híbrido|671|3.0|RWD;720S|sports|3|4.0L V8 biturbo|710|2.8|RWD;750S|sports|3|4.0L V8 biturbo|740|2.7|RWD;P1|sports|4|3.8L V8 biturbo híbrido|903|2.8|RWD',
+    'Aston Martin': 'Vantage|sports|3|4.0L V8 biturbo|656|3.4|RWD;DB12|sports|3|4.0L V8 biturbo|671|3.5|RWD;DBX|suv|3|4.0L V8 biturbo|542|4.3|AWD',
+    'Rolls-Royce': 'Ghost|sedan|3|6.75L V12 biturbo|563|4.6|AWD;Cullinan|suv|3|6.75L V12 biturbo|563|4.8|AWD;Spectre|sports|4|Eléctrico|577|4.4|AWD',
+    'Bentley': 'Bentayga|suv|2|4.0L V8 biturbo|542|4.4|AWD;Continental GT|sports|3|6.0L W12 biturbo|626|3.5|AWD',
+    'Bugatti': 'Veyron|sports|4|8.0L W16 quad-turbo|987|2.5|AWD;Chiron|sports|4|8.0L W16 quad-turbo|1479|2.4|AWD',
+    'Pagani': 'Zonda|sports|4|7.3L V12|602|3.6|RWD;Huayra|sports|4|6.0L V12 biturbo|720|3.0|RWD',
+    'Koenigsegg': 'Jesko|sports|4|5.0L V8 biturbo|1280|2.5|RWD;Regera|sports|4|5.0L V8 biturbo híbrido|1500|2.8|RWD',
+    'Lexus': 'RX 350|suv|0|2.4L I4 turbo|275|7.2|FWD;IS 350|sedan|1|3.5L V6|311|5.6|RWD;LC 500|sports|2|5.0L V8|471|4.4|RWD;LFA|sports|4|4.8L V10|553|3.6|RWD',
+    'Subaru': 'Crosstrek|suv|0|2.0L Boxer|152|9.0|AWD;Outback|suv|0|2.5L Boxer|180|8.5|AWD;WRX|sedan|1|2.4L Boxer turbo|271|5.4|AWD;BRZ|sports|1|2.4L Boxer|228|5.4|RWD',
+    'Mazda': 'Mazda3|hatch|0|2.5L I4|191|7.5|FWD;CX-5|suv|0|2.5L I4|187|8.0|AWD;MX-5 Miata|convertible|1|2.0L I4|181|5.7|RWD;RX-7|sports|2|1.3L rotativo biturbo|255|5.3|RWD',
+    'Hyundai': 'Elantra|sedan|0|2.0L I4|147|8.5|FWD;Tucson|suv|0|2.5L I4|187|8.5|FWD;Ioniq 5|suv|0|Eléctrico|225|7.0|RWD;Elantra N|sedan|1|2.0L I4 turbo|276|5.1|FWD',
+    'Kia': 'K5|sedan|0|1.6L I4 turbo|180|7.8|FWD;Telluride|suv|0|3.8L V6|291|7.0|FWD;Stinger|sedan|1|3.3L V6 biturbo|368|4.7|AWD',
+    'Volkswagen': 'Jetta|sedan|0|1.5L I4 turbo|158|8.0|FWD;Tiguan|suv|0|2.0L I4 turbo|184|8.5|FWD;Golf GTI|hatch|1|2.0L I4 turbo|241|5.9|FWD;Golf R|hatch|1|2.0L I4 turbo|315|4.7|AWD',
+    'Cadillac': 'Escalade|suv|1|6.2L V8|420|5.9|4x4;CT5-V Blackwing|sedan|2|6.2L V8 sobrealimentado|668|3.6|RWD',
+    'GMC': 'Sierra 1500|pickup|0|5.3L V8|355|6.5|RWD;Yukon|suv|0|5.3L V8|355|7.0|RWD;Hummer EV|pickup|2|Eléctrico|1000|3.0|AWD',
+    'Land Rover': 'Defender|suv|1|2.0L I4 turbo|296|7.0|4x4;Range Rover Sport|suv|1|3.0L I6 turbo|355|5.7|AWD;Range Rover|suv|2|3.0L I6 turbo híbrido|395|5.8|AWD',
+    'Maserati': 'Ghibli|sedan|2|2.0L I4 turbo híbrido|300|5.7|RWD;Levante|suv|2|3.0L V6 biturbo|345|5.8|AWD;MC20|sports|3|3.0L V6 biturbo|621|2.9|RWD',
+    'Alfa Romeo': 'Giulia Quadrifoglio|sedan|2|2.9L V6 biturbo|505|3.8|RWD',
+    'Acura': 'MDX|suv|0|3.5L V6|290|6.5|AWD;Integra Type S|hatch|1|2.0L I4 turbo|320|5.1|FWD;NSX|sports|3|3.5L V6 biturbo híbrido|573|2.9|AWD'
+  };
+  var CAT = {};
+  Object.keys(CAT_RAW).forEach(function (mk) {
+    CAT[mk] = CAT_RAW[mk].split(';').map(function (row) {
+      var p = row.split('|');
+      return { model: p[0], body: p[1], rarity: +p[2], engine: p[3], hp: +p[4], zs: +p[5], drive: p[6] };
+    });
+  });
+  var TOP_MAKES = ['Toyota', 'Honda', 'Ford', 'Chevrolet', 'Nissan', 'Jeep', 'Dodge', 'BMW', 'Mercedes-Benz', 'Tesla', 'Porsche', 'Lamborghini', 'Ferrari', 'McLaren', 'Rolls-Royce'];
+  var DRIVES = [['', '—'], ['FWD', 'Delantera (FWD)'], ['RWD', 'Trasera (RWD)'], ['AWD', 'Integral (AWD)'], ['4x4', '4x4']];
+  var norm = function (s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ''); };
+  var nhtsaCache = {}, specSrc = '';
+  function catMake(v) { var n = norm(v); if (!n) return null; var k = Object.keys(CAT).find(function (m) { return norm(m) === n; }); return k || null; }
+  function catModel(mk, v) {
+    var list = CAT[mk]; if (!list) return null; var n = norm(v); if (!n) return null;
+    return list.find(function (m) { return norm(m.model) === n; }) || null;
+  }
+  function chipBtn(act, val, label, extra) { return '<button type="button" class="chip sug" data-act="' + act + '" data-v="' + esc(val) + '"' + (extra || '') + '>' + esc(label) + '</button>'; }
+  function renderSug() {
+    var box = $('#sugBox'); if (!box) return;
+    var mk = catMake($('#make').value), cur = norm($('#model').value), html;
+    if (mk) {
+      html = '<span class="lbl">Modelos de ' + esc(mk) + '</span><div class="sug-row">' + chipBtn('sugBack', '', '← Marcas') +
+        CAT[mk].map(function (m) { return chipBtn('sugModel', m.model, m.model, ' aria-pressed="' + (norm(m.model) === cur) + '"'); }).join('') + '</div>';
+    } else {
+      html = '<span class="lbl">Marcas populares</span><div class="sug-row">' + TOP_MAKES.map(function (m) { return chipBtn('sugMake', m, m); }).join('') + '</div>';
+    }
+    box.innerHTML = html;
+    $('#mkList').innerHTML = Object.keys(CAT).sort().map(function (m) { return '<option value="' + esc(m) + '">'; }).join('');
+    fillModelList();
+  }
+  function fillModelList() {
+    var raw = $('#make').value.trim(), mk = catMake(raw), seen = {}, opts = [];
+    (mk ? CAT[mk] : []).forEach(function (m) { seen[norm(m.model)] = 1; opts.push(m.model); });
+    var extra = nhtsaCache[norm(raw)];
+    if (Array.isArray(extra)) extra.forEach(function (n) { if (!seen[norm(n)]) { seen[norm(n)] = 1; opts.push(n); } });
+    $('#mdList').innerHTML = opts.slice(0, 250).map(function (n) { return '<option value="' + esc(n) + '">'; }).join('');
+  }
+  var nhtsaT = null;
+  function lookupModels() {
+    clearTimeout(nhtsaT);
+    var raw = $('#make').value.trim(), key = norm(raw);
+    if (raw.length < 2 || nhtsaCache[key]) return;
+    nhtsaT = setTimeout(async function () {
+      nhtsaCache[key] = 'loading';
+      try {
+        var ctl = window.AbortController ? new AbortController() : null, to = setTimeout(function () { if (ctl) ctl.abort(); }, 6000);
+        var r = await fetch('https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMake/' + encodeURIComponent(raw) + '?format=json', ctl ? { signal: ctl.signal } : {});
+        clearTimeout(to);
+        var j = await r.json();
+        nhtsaCache[key] = (j.Results || []).map(function (x) { return String(x.Model_Name || '').trim(); }).filter(Boolean).sort();
+      } catch (e) { delete nhtsaCache[key]; }
+      if (norm($('#make').value) === key) fillModelList();
+    }, 450);
+  }
+  function specInputs() { return { engine: $('#spEngine'), hp: $('#spHp'), zs: $('#spZs'), drive: $('#spDrive') }; }
+  function setSpecStatus(t) { var s = $('#spStatus'); if (s) s.textContent = t || ''; }
+  function applyModelMatch(force) {
+    var mk = catMake($('#make').value), m = mk ? catModel(mk, $('#model').value) : null;
+    renderSug();
+    if (!m) {
+      if (!$('#spOk').checked) setSpecStatus($('#model').value.trim() ? 'No tengo specs guardados de ese modelo. Puedes escribirlos tú y confirmarlos.' : '');
+      return;
+    }
+    if ($('#make').value !== mk) $('#make').value = mk;
+    if ($('#model').value !== m.model) $('#model').value = m.model;
+    if ($('#spOk').checked && !force) return;
+    var f = specInputs();
+    f.engine.value = m.engine; f.hp.value = m.hp; f.zs.value = m.zs; f.drive.value = m.drive;
+    if (BODIES[m.body]) $('#bodyType').value = m.body;
+    $('#rarity').value = String(m.rarity);
+    $('#spOk').checked = false; specSrc = mk + ' ' + m.model;
+    $('#specBox').classList.add('found');
+    setSpecStatus('Encontré specs de ' + specSrc + '. Son del modelo base o la versión más común: revísalos, corrige lo que no cuadre y confírmalos.');
+    updateQuality();
+  }
+  function readSpecs() {
+    if (!$('#spOk').checked) return null;
+    var f = specInputs(), hp = parseInt(f.hp.value, 10), zs = parseFloat(f.zs.value);
+    var o = { engine: f.engine.value.trim().slice(0, 60), hp: hp > 0 && hp < 3000 ? hp : null, zs: zs > 0 && zs < 30 ? Math.round(zs * 10) / 10 : null, drive: f.drive.value };
+    return (o.engine || o.hp || o.zs || o.drive) ? o : null;
+  }
+  function resetSpecs() {
+    var f = specInputs(); if (!f.engine) return;
+    f.engine.value = ''; f.hp.value = ''; f.zs.value = ''; f.drive.value = '';
+    $('#spOk').checked = false; specSrc = ''; $('#specBox').classList.remove('found'); setSpecStatus('');
+    renderSug();
+  }
+  function specFacts(s) {
+    if (!s) return '';
+    var o = '';
+    if (s.engine) o += '<div><dt>Motor</dt><dd>' + esc(s.engine) + '</dd></div>';
+    if (s.hp) o += '<div><dt>Potencia</dt><dd>' + s.hp + ' hp</dd></div>';
+    if (s.zs) o += '<div><dt>0–60 mph</dt><dd>' + s.zs + ' s</dd></div>';
+    if (s.drive) o += '<div><dt>Tracción</dt><dd>' + esc(s.drive) + '</dd></div>';
+    return o;
+  }
 
   /* ================= dibujo del carro (vista lateral) ================= */
   /* VIS START */
@@ -1596,6 +1757,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     var total = mods.reduce(function (s, m) { return s + (+m.cost || 0); }, 0);
     var facts = '';
     if (c.year) facts += '<div><dt>Año</dt><dd>' + c.year + '</dd></div>';
+    facts += specFacts(c.specs);
     if (c.place) facts += '<div><dt>Visto en</dt><dd>' + esc(c.place) + '</dd></div>';
     if (c.ts) facts += '<div><dt>' + (c.kind === 'garage' ? 'Agregado' : 'Fecha') + '</dt><dd>' + dateOf(c.ts) + '</dd></div>';
     var modsHTML = '';
@@ -1662,6 +1824,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   function resetForm() {
     ['#make', '#model', '#year', '#place', '#noteIn'].forEach(function (s) { $(s).value = ''; });
     $('#rarity').value = '0'; $('#bodyType').value = 'sedan';
+    resetSpecs();
     photo = { blob: null, url: '', tech: null }; lastWhy = ''; lastAI = null;
     addCrop.x = 50; addCrop.y = 50; addCrop.z = 1;
     $('#photo').value = '';
@@ -1738,6 +1901,9 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
       var y = parseInt(r.year, 10); $('#year').value = (y >= 1900 && y <= 2100) ? y : '';
       var ra = Math.max(0, Math.min(4, parseInt(r.rarity, 10) || 0)); $('#rarity').value = String(ra);
       if (BODIES[r.body]) $('#bodyType').value = r.body;
+      applyModelMatch();
+      if (BODIES[r.body]) $('#bodyType').value = r.body;
+      $('#rarity').value = String(ra);
       lastWhy = String(r.why || '').slice(0, 240);
       var cmp = parseFloat(r.composition);
       lastAI = { comp: isFinite(cmp) ? clamp(cmp, 0, 10) : null, stock: r.stock === true };
@@ -1759,6 +1925,8 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     var kind = document.querySelector('input[name=kind]:checked').value;
     var make = $('#make').value.trim(), model = $('#model').value.trim();
     if (!make || !model) { setStatus('Falta la marca y el modelo.', true); return; }
+    var spf = specInputs();
+    if (!$('#spOk').checked && (spf.engine.value.trim() || spf.hp.value || spf.zs.value || spf.drive.value)) { setSpecStatus('Confirma los specs (o bórralos) antes de guardar.'); $('#specBox').classList.add('warn'); $('#spOk').focus(); return; }
     var y = parseInt($('#year').value, 10);
     var cq = currentQ();
     var car = {
@@ -1769,6 +1937,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
       crop: photo.url ? { x: Math.round(addCrop.x * 10) / 10, y: Math.round(addCrop.y * 10) / 10, z: r2(addCrop.z) } : null,
       q: cq ? cq.q : null, qd: cq ? cq.qd : null, mods: [], ts: Date.now()
     };
+    var spx = readSpecs(); if (spx) car.specs = spx;
     var sb = $('#save'); sb.disabled = true;
     enqueue(async function () {
       try {
@@ -1823,6 +1992,9 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     var t = e.target.closest('[data-act]'); if (!t) return;
     var a = t.dataset.act, c;
     if (a === 'tab') { state.tab = t.dataset.tab; state.filter = null; render(); }
+    else if (a === 'sugMake') { $('#make').value = t.dataset.v; $('#model').value = ''; renderSug(); lookupModels(); $('#model').focus(); }
+    else if (a === 'sugModel') { $('#model').value = t.dataset.v; applyModelMatch(true); }
+    else if (a === 'sugBack') { $('#make').value = ''; $('#model').value = ''; resetSpecs(); $('#make').focus(); }
     else if (a === 'acctToggle') { state.tab = state.tab === 'acct' ? 'spotted' : 'acct'; state.filter = null; pendingLogin = null; confirmDelAcct = null; render(); window.scrollTo(0, 0); }
     else if (a === 'filter') { var r = +t.dataset.r; state.filter = state.filter === r ? null : r; renderChips(); renderGrid(); }
     else if (a === 'add') openAdd(t.dataset.kind || state.tab);
@@ -1886,13 +2058,19 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   });
   document.addEventListener('input', function (e) {
     var t = e.target;
-    if (t.id === 'lookDrop') setLook('drop', t.value);
+    if (t.id === 'make') { renderSug(); lookupModels(); }
+    else if (t.id === 'model') { var mk0 = catMake($('#make').value); if (mk0 && catModel(mk0, t.value)) applyModelMatch(); else renderSug(); }
+    else if (t.id === 'spEngine' || t.id === 'spHp' || t.id === 'spZs') { $('#specBox').classList.remove('warn'); if ($('#spOk').checked) return; setSpecStatus('Cuando estén bien, marca «Confirmo estos specs».'); }
+    else if (t.id === 'lookDrop') setLook('drop', t.value);
     else if (t.id === 'lookColor') setLook('color', t.value);
     else if (t.id === 'lookWing') setLook('wing', t.checked);
   });
   document.addEventListener('change', function (e) {
     var t = e.target;
-    if (t.id === 'acImport') { var imf = t.files && t.files[0]; t.value = ''; if (imf) importData(imf); }
+    if (t.id === 'make' || t.id === 'model') applyModelMatch();
+    else if (t.id === 'spOk') { $('#specBox').classList.remove('warn'); setSpecStatus(t.checked ? 'Specs confirmados. Se guardan con la carta.' : 'Sin confirmar: no se guardan.'); }
+    else if (t.id === 'spDrive') { if (!$('#spOk').checked) setSpecStatus('Cuando estén bien, marca «Confirmo estos specs».'); }
+    else if (t.id === 'acImport') { var imf = t.files && t.files[0]; t.value = ''; if (imf) importData(imf); }
     else if (t.id === 'sFrom') { var fc = carById(t.value); if (fc) { $('#sMake').value = fc.make; $('#sModel').value = fc.model; $('#sRarity').value = String(fc.rarity | 0); $('#sBody').value = BODIES[fc.body] ? fc.body : 'sedan'; if (fc.place) $('#sArea').value = fc.place; } }
     else if (t.id === 'spotFile') { var sf = t.files && t.files[0]; t.value = ''; if (sf) spotWith(sf); }
     else if (t.id === 'morePhoto') { var f = t.files && t.files[0]; t.value = ''; if (f) addPhotoFile(f); }
@@ -1906,6 +2084,8 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   $('#rarity').innerHTML = RAR.map(function (r, i) { return '<option value="' + i + '">' + r.n + '</option>'; }).join('');
   $('#bodyType').innerHTML = BODYLIST.map(function (b) { return '<option value="' + b[0] + '">' + b[1] + '</option>'; }).join('');
   $('#bodyType').value = 'sedan';
+  $('#spDrive').innerHTML = DRIVES.map(function (d) { return '<option value="' + d[0] + '">' + d[1] + '</option>'; }).join('');
+  renderSug();
   addCropper = mountCropper($('#addCropBox'), addCrop, null);
   $('#sRarity').innerHTML = RAR.map(function (r, i) { return '<option value="' + i + '">' + r.n + '</option>'; }).join('');
   $('#sBody').innerHTML = BODYLIST.map(function (b) { return '<option value="' + b[0] + '">' + b[1] + '</option>'; }).join('');
