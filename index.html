@@ -565,6 +565,10 @@ body.zone-spot #addOpen { display: none; }
 .fv-back .fv-specs.small dd { font-size: 12.5px; }
 .fv-back .fv-meter { font-size: 11px; }
 .fv-back .fv-bhead .model { font-size: 26px; }
+
+.or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+.or::before, .or::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.btn.google { width: 100%; background: #fff; color: #1f1f1f; border-color: #dadce0; }
 </style>
 
 <div class="app">
@@ -1848,7 +1852,7 @@ body.zone-spot #addOpen { display: none; }
   function loadAccts() { try { accts = JSON.parse(LS.get('garage.v1.accts') || '[]'); } catch (e) { accts = []; } if (!Array.isArray(accts)) accts = []; }
   function saveAccts() { return LS.set('garage.v1.accts', JSON.stringify(accts)); }
   function loadCars(id) { try { var o = JSON.parse(LS.get('garage.v1.d.' + id) || '{}'); return Array.isArray(o.cars) ? o.cars : []; } catch (e) { return []; } }
-  function acctName() { if (active === 'cloud') return cloudName || 'Cuenta de Claude'; var a = accts.find(function (x) { return x.id === active; }); return a ? a.name : ''; }
+  function acctName() { if (FB.user && FB.prof && FB.prof.name) return FB.prof.name; if (active === 'cloud') return cloudName || 'Cuenta de Claude'; var a = accts.find(function (x) { return x.id === active; }); return a ? a.name : ''; }
   function persistNow() {
     if (!active || active === 'cloud') return;
     clearTimeout(persistT); persistT = null;
@@ -1965,6 +1969,16 @@ body.zone-spot #addOpen { display: none; }
   function renderAcct(force) {
     if (state.tab !== 'acct') return;
     var box = $('#acctBox');
+    if (FB.on) {
+      var fsig = JSON.stringify(['fb', FB.ready, FB.user && FB.user.uid, FB.prof && FB.prof.name, FB.view, FB.msg, FB.busy]);
+      if (!force && fsig === acctSig) return;
+      if (!force && box.contains(document.activeElement) && box.innerHTML) return;
+      acctSig = fsig;
+      var keep = {}; box.querySelectorAll('input').forEach(function (i) { if (i.id) keep[i.id] = i.value; });
+      box.innerHTML = fbAcctHTML();
+      Object.keys(keep).forEach(function (k) { var el = $('#' + k); if (el && !el.value) el.value = keep[k]; });
+      return;
+    }
     var sig = JSON.stringify([acctView, active, accts.map(function (a) { return a.id + a.name + (a.pin ? 1 : 0); }), cloudAvail, pendingLogin, confirmDelAcct, acctMsg, cloudName, cloudPhone]);
     if (!force && sig === acctSig) return;
     if (!force && box.contains(document.activeElement) && box.innerHTML) return;
@@ -2038,14 +2052,14 @@ body.zone-spot #addOpen { display: none; }
     $('#tabPhoto').setAttribute('aria-selected', state.tab === 'photo');
     $('#tabSocial').setAttribute('aria-selected', state.tab === 'social');
     $('#tabAcct').setAttribute('aria-selected', state.tab === 'acct');
-    var an = acctName() || 'Cuenta'; $('#acctLbl').textContent = an; var avp = null; try { avp = JSON.parse(LS.get('garage.v1.ph.' + (active || 'x') + '.prof') || 'null'); } catch (e) {} var ai = $('#acctIni'); if (avp && avp.avatar) { ai.innerHTML = '<img src="' + esc(avp.avatar) + '" alt="">'; ai.classList.add('img'); } else { ai.textContent = an.trim().charAt(0).toUpperCase(); ai.classList.remove('img'); } $('#acctBtn').setAttribute('aria-pressed', state.tab === 'acct'); $('#acctBtn').title = 'Cuenta: ' + an + ' · cambiar o agregar cuentas';
+    var an = acctName() || 'Cuenta'; $('#acctLbl').textContent = an; var avp = null; if (FB.user && FB.prof) avp = FB.prof; else { try { avp = JSON.parse(LS.get('garage.v1.ph.' + (active || 'x') + '.prof') || 'null'); } catch (e) {} } var ai = $('#acctIni'); if (avp && avp.avatar) { ai.innerHTML = '<img src="' + esc(avp.avatar) + '" alt="">'; ai.classList.add('img'); } else { ai.textContent = an.trim().charAt(0).toUpperCase(); ai.classList.remove('img'); } $('#acctBtn').setAttribute('aria-pressed', state.tab === 'acct'); $('#acctBtn').title = 'Cuenta: ' + an + ' · cambiar o agregar cuentas';
     $('#tabRadar').setAttribute('aria-selected', state.tab === 'radar');
     $('#tabPeople').setAttribute('aria-selected', state.tab === 'people');
     $('#demoNote').hidden = !usingDemos() || !(state.tab === 'spotted' || state.tab === 'garage');
     var f = '';
     if (state.mode === 'memory') f = 'Modo de prueba: lo que agregues no se guarda al cerrar esta página.';
     else if (state.mode === 'local') f = 'Guardado en este dispositivo, cuenta «' + acctName() + '». No se sincroniza con otros teléfonos: exporta una copia desde tu cuenta (botón de arriba).';
-    else if (state.mode === 'db') f = 'Tus cartas y fotos se guardan en tu cuenta y solo las ves tú, salvo lo que publiques en Gente, Radar o Ranking.';
+    else if (state.mode === 'db') f = FB.user ? 'Guardado en tu cuenta @' + acctName() + '. Lo ves desde cualquier teléfono.' : 'Tus cartas y fotos se guardan en tu cuenta y solo las ves tú, salvo lo que publiques en Gente, Radar o Ranking.';
     $('#foot').textContent = f;
   }
 
@@ -2128,7 +2142,7 @@ body.zone-spot #addOpen { display: none; }
     $('#chips').hidden = !isCol; $('#grid').hidden = !isCol; $('#board').hidden = t !== 'board'; $('#radar').hidden = t !== 'radar'; $('#spot').hidden = t !== 'spot'; if (t !== 'spot') stopCam(); $('#people').hidden = t !== 'people';
     $('#acct').hidden = t !== 'acct';
     $('#social').hidden = t !== 'social'; if (t === 'social') renderSocial(); else state.prof = null;
-    $('#phSection').hidden = t !== 'photo'; if (t === 'photo') { if (ph.loadedFor !== (active || 'x')) phEnsure(); else renderPhoto(); } else if (ph.view) { ph.view = null; renderPhView(); }
+    $('#phSection').hidden = t !== 'photo'; if (t === 'photo') { if (ph.loadedFor !== phAcct()) phEnsure(); else renderPhoto(); } else if (ph.view) { ph.view = null; renderPhView(); }
     renderHeader(); renderChips(); renderGrid(); renderBoard(); renderRadar(); renderPeople(); renderAcct(); renderSheet();
   }
 
@@ -2315,8 +2329,9 @@ body.zone-spot #addOpen { display: none; }
     var h = v.replace(/^@+/, '').replace(/[^A-Za-z0-9._-]/g, '');
     return h ? { url: S[2] + encodeURIComponent(h), label: '@' + h } : null;
   }
+  function phAcct() { return FB.user ? 'fb:' + FB.user.uid : (active || 'x'); }
   function phKey() { return 'garage.v1.ph.' + (active || 'x'); }
-  function phLoadProf() { try { ph.prof = JSON.parse(LS.get(phKey() + '.prof') || 'null'); } catch (e) { ph.prof = null; } }
+  function phLoadProf() { if (FB.user) { var P = FB.prof || {}; ph.prof = P.phSet ? { name: P.display || P.name, city: P.city || '', bio: P.bio || '', soc: P.soc || {}, avatar: P.avatar || '' } : null; return; } try { ph.prof = JSON.parse(LS.get(phKey() + '.prof') || 'null'); } catch (e) { ph.prof = null; } }
   var IDB = null;
   function idb() {
     if (IDB) return IDB;
@@ -2326,6 +2341,7 @@ body.zone-spot #addOpen { display: none; }
     return IDB;
   }
   async function phLoadPhotos() {
+    if (FB.user) { try { ph.photos = await fbPhotosOf(FB.user.uid); } catch (e) { ph.photos = []; } return; }
     var db = await idb(); var acct = active || 'x';
     if (!db) { ph.photos = ph.mem && ph.memFor === acct ? ph.mem : []; return; }
     ph.photos = await new Promise(function (res) {
@@ -2333,17 +2349,19 @@ body.zone-spot #addOpen { display: none; }
     });
   }
   async function phPut(rec) {
+    if (FB.user) { var r2 = Object.assign({}, rec, { owner: FB.user.uid }); delete r2.acct; try { await FB.fs.collection('photos').doc(rec.id).set(r2); return true; } catch (e) { return false; } }
     var db = await idb();
     if (!db) { if (ph.memFor !== rec.acct) { ph.mem = []; ph.memFor = rec.acct; } ph.mem.unshift(rec); return true; }
     return new Promise(function (res) { try { var tx = db.transaction('p', 'readwrite'); tx.objectStore('p').put(rec); tx.oncomplete = function () { res(true); }; tx.onerror = function () { res(false); }; } catch (e) { res(false); } });
   }
   async function phDel(id) {
+    if (FB.user) { try { await FB.fs.collection('photos').doc(id).delete(); } catch (e) {} return; }
     var db = await idb();
     if (!db) { ph.mem = (ph.mem || []).filter(function (x) { return x.id !== id; }); return; }
     await new Promise(function (res) { try { var tx = db.transaction('p', 'readwrite'); tx.objectStore('p').delete(id); tx.oncomplete = res; tx.onerror = res; } catch (e) { res(); } });
   }
   async function phEnsure() {
-    var acct = active || 'x'; if (ph.loadedFor === acct) return;
+    var acct = phAcct(); if (ph.loadedFor === acct) return;
     ph.loadedFor = acct; ph.view = null; ph.editing = false; phLoadProf(); await phLoadPhotos(); renderPhoto();
   }
   function avHTML(P, name, cls) {
@@ -2408,7 +2426,8 @@ body.zone-spot #addOpen { display: none; }
     if (bad.length) { $('#phFormMsg').textContent = 'Revisa: ' + bad.join(', ') + '. Pon tu @usuario o un link de esa red.'; return; }
     var avatar = ph.draftAv !== undefined ? ph.draftAv : ((ph.prof && ph.prof.avatar) || '');
     ph.prof = { name: name, city: ($('#phCity').value || '').trim().slice(0, 40), bio: ($('#phBio').value || '').trim().slice(0, 240), soc: soc, avatar: avatar };
-    if (!LS.set(phKey() + '.prof', JSON.stringify(ph.prof))) { $('#phFormMsg').textContent = 'Este navegador no deja guardar datos.'; return; }
+    if (FB.user) { var up = { display: ph.prof.name, city: ph.prof.city, bio: ph.prof.bio, soc: soc, avatar: avatar, phSet: true }; Object.assign(FB.prof, up); FB.fs.collection('users').doc(FB.user.uid).set(up, { merge: true }).catch(function () { var m = $('#phFormMsg'); if (m) m.textContent = 'No se pudo guardar. Intenta otra vez.'; }); }
+    else if (!LS.set(phKey() + '.prof', JSON.stringify(ph.prof))) { $('#phFormMsg').textContent = 'Este navegador no deja guardar datos.'; return; }
     ph.editing = false; ph.draftAv = undefined; renderPhoto(); renderHeader();
   }
   function squareAvatar(file) {
@@ -2473,6 +2492,7 @@ body.zone-spot #addOpen { display: none; }
     return (r.cam || r.lens || r.set) ? r : null;
   }
 
+  function fbPhotoCount() { if (FB.user && FB.prof) { FB.prof.photos = ph.photos.length; FB.fs.collection('users').doc(FB.user.uid).set({ photos: ph.photos.length }, { merge: true }).catch(function () {}); } }
   async function phUpload(files) {
     var list = Array.prototype.slice.call(files || []).filter(function (f) { return /^image\//.test(f.type); }).slice(0, 20);
     if (!list.length) return;
@@ -2481,11 +2501,12 @@ body.zone-spot #addOpen { display: none; }
       msg.textContent = 'Subiendo ' + (i + 1) + ' de ' + list.length + '…';
       try {
         var meta = await readExif(list[i]) || {};
-        var r = await shrink(list[i], 1600), data = await toURL(r.blob);
+        var r = await shrink(list[i], FB.user ? 1400 : 1600), data = await toURL(r.blob);
+        if (FB.user && data.length > 900000) { r = await shrink(list[i], 1000); data = await toURL(r.blob); }
         if (await phPut({ id: uid(), acct: acct, data: data, cap: '', cam: meta.cam || '', lens: meta.lens || '', set: meta.set || '', ts: Date.now() + i })) ok++;
       } catch (e) {}
     }
-    await phLoadPhotos();
+    await phLoadPhotos(); fbPhotoCount();
     msg.textContent = ok === list.length ? ok + (ok === 1 ? ' foto subida.' : ' fotos subidas.') : ok + ' de ' + list.length + ' fotos subidas. Algunas no se pudieron guardar (¿falta espacio?).';
     renderPhoto();
   }
@@ -2546,7 +2567,7 @@ body.zone-spot #addOpen { display: none; }
     'Guardar look': 'Save look', 'Guardar perfil': 'Save profile', 'Hacer principal': 'Make main', 'Identificar con IA': 'Identify with AI', 'Importar copia': 'Import backup',
     'Inicio': 'Home', 'Intake, tune, rines…': 'Intake, tune, wheels…', 'Integral (AWD)': 'All-wheel (AWD)', 'Invertido': 'Invested',
     'Las cuentas de este dispositivo viven solo en este navegador: no se sincronizan entre teléfonos y se pierden si borras los datos del navegador. El PIN solo evita que alguien abra tu cuenta por accidente; no es seguridad real.': 'Accounts on this device live only in this browser: they don’t sync between phones and are lost if you clear browser data. The PIN only stops someone opening your account by accident; it isn’t real security.',
-    'Legendario': 'Legendary', 'Épico': 'Epic', 'Pon un PIN de 4 a 12 caracteres para proteger tu cuenta.': 'Set a 4 to 12 character PIN to protect your account.', 'Los PIN no coinciden.': 'The PINs don’t match.', 'Repite el PIN': 'Repeat PIN', 'Tu sesión se queda abierta en este dispositivo. Para entrar desde otra cuenta o volver después de cerrar sesión, se pide el PIN.': 'Your session stays open on this device. The PIN is asked when switching from another account or coming back after logging out.', 'Cerrar sesión': 'Log out', 'Invitado · sin PIN': 'Guest · no PIN', '· protegida con PIN': '· PIN protected', 'Todavía no tienes cartas. Usa «+ Agregar carro».': 'You don’t have cards yet. Use “+ Add car”.', 'Velocidad máxima': 'Top speed', 'Velocidad máx. (mph)': 'Top speed (mph)', 'Vel. máx.': 'Top speed', 'Transmisión': 'Transmission', '180 o 175/190': '180 or 175/190', 'Manual 6 velocidades': '6-speed manual', 'Manual 5 velocidades': '5-speed manual', 'Manual 7 velocidades': '7-speed manual', 'Automática 6 velocidades': '6-speed automatic', 'Automática 8 velocidades': '8-speed automatic', 'Automática 10 velocidades': '10-speed automatic', 'Doble embrague (DCT) 7 vel.': '7-speed dual-clutch (DCT)', 'Doble embrague (DCT) 8 vel.': '8-speed dual-clutch (DCT)', 'Secuencial': 'Sequential', 'Eléctrica (1 velocidad)': 'Electric (single-speed)', 'Exposición': 'Exposure', 'Torque (lb-ft)': 'Torque (lb-ft)', 'Arrastra la foto para encuadrarla. Pellizca o usa la rueda del mouse para hacer zoom. Así se verá en la carta.': 'Drag the photo to frame it. Pinch or use the mouse wheel to zoom. This is how it’ll look on the card.', 'El año no es válido. Usa 2020 o 2019/2023.': 'That year isn’t valid. Use 2020 or 2019/2023.', 'Revisa los números: usa un valor (400) o un rango (380/420).': 'Check the numbers: use one value (400) or a range (380/420).', '2025 o 2019/2023': '2025 or 2019/2023', '400 o 380/420': '400 or 380/420', '4.5 o 4.2/4.8': '4.5 or 4.2/4.8', '350 o 330/370': '350 or 330/370', '← Marcas': '← Makes', 'Marcas populares': 'Popular makes', 'Ejemplo': 'Sample', 'Nombre de usuario': 'Username', 'Mi perfil': 'My profile', 'Lente': 'Lens', 'Levantado': 'Lifted', 'Ligero': 'Light', 'Likes a tu colección': 'Likes on your collection',
+    'Legendario': 'Legendary', 'Épico': 'Epic', 'Guardado en tu cuenta @': 'Saved to your account @', '. Lo ves desde cualquier teléfono.': '. You can see it from any phone.', 'Ese correo ya tiene cuenta. Entra con él.': 'That email already has an account. Log in with it.', 'Ese correo no es válido.': 'That email isn’t valid.', 'La contraseña necesita al menos 6 caracteres.': 'The password needs at least 6 characters.', 'Correo o contraseña incorrectos.': 'Wrong email or password.', 'No hay cuenta con ese correo.': 'No account with that email.', 'Demasiados intentos. Espera un momento y prueba otra vez.': 'Too many attempts. Wait a moment and try again.', 'Cerraste la ventana de Google antes de terminar.': 'You closed the Google window before finishing.', 'Sin conexión. Revisa tu internet.': 'No connection. Check your internet.', 'No tienes permiso para hacer eso.': 'You don’t have permission to do that.', 'Algo falló. Intenta otra vez.': 'Something went wrong. Try again.', 'Conectando…': 'Connecting…', 'Escoge tu usuario': 'Choose your username', 'Es tu nombre público en GARAGE. Así te buscan y te siguen.': 'It’s your public name on GARAGE. People find and follow you by it.', 'Usuario': 'Username', 'Guardar usuario': 'Save username', 'Tus cartas, tu perfil y tus fotos se guardan en tu cuenta y las ves desde cualquier teléfono. Tu sesión se queda abierta en este dispositivo hasta que la cierres.': 'Your cards, profile and photos are saved to your account and you can see them from any phone. You stay logged in on this device until you log out.', 'cartas del modo invitado a mi cuenta': 'guest-mode cards to my account', 'Pasar': 'Move', 'Tu colección y tu portafolio son públicos: cualquiera en GARAGE puede verlos, seguirte y darte like.': 'Your collection and portfolio are public: anyone on GARAGE can see them, follow you and like them.', 'Correo': 'Email', 'Contraseña': 'Password', 'Mínimo 6 caracteres': 'At least 6 characters', 'Repite la contraseña': 'Repeat password', 'Ya tengo cuenta': 'I have an account', 'Continuar con Google': 'Continue with Google', 'Olvidé mi contraseña': 'Forgot my password', 'Sin cuenta estás en modo invitado: tus cartas se quedan solo en este dispositivo y nadie las ve.': 'Without an account you’re in guest mode: your cards stay only on this device and nobody sees them.', 'Pon tu correo y tu contraseña.': 'Enter your email and password.', 'El usuario debe tener de 3 a 20 letras, números, punto o guion bajo.': 'Username must be 3–20 letters, numbers, dot or underscore.', 'Las contraseñas no coinciden.': 'The passwords don’t match.', 'Escribe tu correo arriba y vuelve a tocar «Olvidé mi contraseña».': 'Type your email above and tap “Forgot my password” again.', 'Te mandamos un correo para cambiar la contraseña.': 'We sent you an email to reset your password.', 'cartas pasadas a tu cuenta.': 'cards moved to your account.', 'Entra para seguir': 'Log in to follow', 'Entra a tu cuenta para seguir gente y dar likes.': 'Log in to follow people and give likes.', 'Cargando…': 'Loading…', 'No se pudo cargar la lista. Revisa tu conexión.': 'Couldn’t load the list. Check your connection.', 'Todavía no hay más personas. Comparte el link con tus amigos.': 'No other people yet. Share the link with your friends.', 'No se pudo cargar el perfil.': 'Couldn’t load the profile.', 'Entra para dar like': 'Log in to like', 'Entrar': 'Log in', 'tu@correo.com': 'you@email.com', 'Pon un PIN de 4 a 12 caracteres para proteger tu cuenta.': 'Set a 4 to 12 character PIN to protect your account.', 'Los PIN no coinciden.': 'The PINs don’t match.', 'Repite el PIN': 'Repeat PIN', 'Tu sesión se queda abierta en este dispositivo. Para entrar desde otra cuenta o volver después de cerrar sesión, se pide el PIN.': 'Your session stays open on this device. The PIN is asked when switching from another account or coming back after logging out.', 'Cerrar sesión': 'Log out', 'Invitado · sin PIN': 'Guest · no PIN', '· protegida con PIN': '· PIN protected', 'Todavía no tienes cartas. Usa «+ Agregar carro».': 'You don’t have cards yet. Use “+ Add car”.', 'Velocidad máxima': 'Top speed', 'Velocidad máx. (mph)': 'Top speed (mph)', 'Vel. máx.': 'Top speed', 'Transmisión': 'Transmission', '180 o 175/190': '180 or 175/190', 'Manual 6 velocidades': '6-speed manual', 'Manual 5 velocidades': '5-speed manual', 'Manual 7 velocidades': '7-speed manual', 'Automática 6 velocidades': '6-speed automatic', 'Automática 8 velocidades': '8-speed automatic', 'Automática 10 velocidades': '10-speed automatic', 'Doble embrague (DCT) 7 vel.': '7-speed dual-clutch (DCT)', 'Doble embrague (DCT) 8 vel.': '8-speed dual-clutch (DCT)', 'Secuencial': 'Sequential', 'Eléctrica (1 velocidad)': 'Electric (single-speed)', 'Exposición': 'Exposure', 'Torque (lb-ft)': 'Torque (lb-ft)', 'Arrastra la foto para encuadrarla. Pellizca o usa la rueda del mouse para hacer zoom. Así se verá en la carta.': 'Drag the photo to frame it. Pinch or use the mouse wheel to zoom. This is how it’ll look on the card.', 'El año no es válido. Usa 2020 o 2019/2023.': 'That year isn’t valid. Use 2020 or 2019/2023.', 'Revisa los números: usa un valor (400) o un rango (380/420).': 'Check the numbers: use one value (400) or a range (380/420).', '2025 o 2019/2023': '2025 or 2019/2023', '400 o 380/420': '400 or 380/420', '4.5 o 4.2/4.8': '4.5 or 4.2/4.8', '350 o 330/370': '350 or 330/370', '← Marcas': '← Makes', 'Marcas populares': 'Popular makes', 'Ejemplo': 'Sample', 'Nombre de usuario': 'Username', 'Mi perfil': 'My profile', 'Lente': 'Lens', 'Levantado': 'Lifted', 'Ligero': 'Light', 'Likes a tu colección': 'Likes on your collection',
     'Listo. Identifícalo con IA o llena los datos a mano.': 'Done. Identify it with AI or fill in the details by hand.', 'Llena los datos a mano.': 'Fill in the details by hand.',
     'Lo vi en la calle': 'Spotted on the street', 'Los carros de tu garage no suman puntos.': 'Garage cars don’t earn points.', 'Malla': 'Mesh', 'Marca': 'Make',
     'Marcar en el Radar': 'Mark on Radar', 'Me gusta esta colección': 'Like this collection', 'Me gusta esta foto': 'Like this photo', 'Mi colección': 'My collection',
@@ -2672,11 +2693,296 @@ body.zone-spot #addOpen { display: none; }
     applyLang(); render();
   }
 
+
+  /* ================= Firebase: cuentas reales, nube y social ================= */
+  var FB_CFG = { apiKey: 'AIzaSyBhMbDb53uMJbOSQJghyyqRnzdb_JHgCCA', authDomain: 'garage-car-spotting.firebaseapp.com', projectId: 'garage-car-spotting', storageBucket: 'garage-car-spotting.firebasestorage.app', messagingSenderId: '2221013702', appId: '1:2221013702:web:5c53464bac2f18d1b7f5c7' };
+  var FB_VER = '10.12.2';
+  var FB = { on: false, ready: false, fs: null, auth: null, user: null, prof: null, follows: {}, likes: {}, carsUnsub: null, view: 'login', msg: '', busy: false, cache: { cars: {}, photos: {}, stats: {}, users: [] }, statT: null };
+  function loadScript(src) { return new Promise(function (res, rej) { var s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+  async function fbInit() {
+    if (window.claude && window.claude.use) return;
+    try {
+      var base = 'https://www.gstatic.com/firebasejs/' + FB_VER + '/';
+      await loadScript(base + 'firebase-app-compat.js');
+      await Promise.all([loadScript(base + 'firebase-auth-compat.js'), loadScript(base + 'firebase-firestore-compat.js')]);
+      firebase.initializeApp(FB_CFG);
+      FB.fs = firebase.firestore();
+      try { FB.fs.settings({ ignoreUndefinedProperties: true, merge: true }); } catch (e) {}
+      FB.auth = firebase.auth();
+      FB.on = true;
+      FB.auth.onAuthStateChanged(fbUser);
+    } catch (e) { FB.on = false; FB.ready = true; render(); }
+  }
+  function fbErr(e) {
+    var c = (e && e.code) || '';
+    var m = {
+      'auth/email-already-in-use': 'Ese correo ya tiene cuenta. Entra con él.',
+      'auth/invalid-email': 'Ese correo no es válido.',
+      'auth/weak-password': 'La contraseña necesita al menos 6 caracteres.',
+      'auth/wrong-password': 'Correo o contraseña incorrectos.',
+      'auth/invalid-credential': 'Correo o contraseña incorrectos.',
+      'auth/invalid-login-credentials': 'Correo o contraseña incorrectos.',
+      'auth/user-not-found': 'No hay cuenta con ese correo.',
+      'auth/too-many-requests': 'Demasiados intentos. Espera un momento y prueba otra vez.',
+      'auth/popup-closed-by-user': 'Cerraste la ventana de Google antes de terminar.',
+      'auth/network-request-failed': 'Sin conexión. Revisa tu internet.',
+      'permission-denied': 'No tienes permiso para hacer eso.'
+    }[c];
+    return m || 'Algo falló. Intenta otra vez.';
+  }
+  async function fbUser(u) {
+    FB.ready = true;
+    if (FB.carsUnsub) { FB.carsUnsub(); FB.carsUnsub = null; }
+    FB.cache = { cars: {}, photos: {}, stats: {}, users: [] };
+    if (!u) {
+      FB.user = null; FB.prof = null; FB.follows = {}; FB.likes = {};
+      if (active === 'cloud') { active = ''; var g = accts.find(isGuest) || accts[0]; if (g) setActive(g.id); else ensureLocal(); }
+      ph.loadedFor = null; acctSig = ''; render(); return;
+    }
+    FB.user = u;
+    try { var d = await FB.fs.collection('users').doc(u.uid).get(); FB.prof = d.exists ? d.data() : null; } catch (e) { FB.prof = null; }
+    if (!FB.prof || !FB.prof.name) { FB.view = 'username'; FB.msg = ''; state.tab = 'acct'; if (!state.zone) state.zone = 'cards'; acctSig = ''; render(); return; }
+    fbStart();
+  }
+  function fbStart() {
+    var u = FB.user; if (!u) return;
+    closeSheet(); closeAdd();
+    active = 'cloud'; state.mode = 'db';
+    col = FB.fs.collection('users').doc(u.uid).collection('cars');
+    state.cars = []; ph.loadedFor = null;
+    FB.carsUnsub = col.onSnapshot(function (snap) {
+      state.cars = snap.docs.map(function (d) { var o = d.data() || {}; o.id = d.id; return o; }).sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+      if (state.sel && !state.cars.some(function (x) { return x.id === state.sel; })) closeSheet();
+      fbSyncStats(); render();
+    }, function () {});
+    FB.fs.collection('follows').where('from', '==', u.uid).get().then(function (s) { FB.follows = {}; s.forEach(function (d) { FB.follows[d.data().to] = 1; }); if (state.tab === 'social') renderSocial(); }).catch(function () {});
+    FB.fs.collection('likes').where('from', '==', u.uid).get().then(function (s) { FB.likes = {}; s.forEach(function (d) { var x = d.data(); FB.likes[x.kind + '_' + x.target] = 1; }); if (state.tab === 'social') renderSocial(); }).catch(function () {});
+    if (state.tab === 'acct') { FB.view = 'in'; state.tab = state.zone === 'spot' ? 'photo' : 'spotted'; }
+    acctSig = ''; render();
+  }
+  function fbSyncStats() {
+    clearTimeout(FB.statT);
+    FB.statT = setTimeout(function () {
+      if (!FB.user || !FB.prof) return;
+      var sp = state.cars.filter(function (c) { return c.kind === 'spotted'; });
+      var o = { cards: sp.length, garage: state.cars.length - sp.length, points: sp.reduce(function (t, c) { return t + pointsOf(c.rarity, c.q); }, 0) };
+      if (o.cards === FB.prof.cards && o.points === FB.prof.points && o.garage === FB.prof.garage) return;
+      Object.assign(FB.prof, o);
+      FB.fs.collection('users').doc(FB.user.uid).set(o, { merge: true }).catch(function () {});
+    }, 800);
+  }
+  var UNAME_RX = /^[a-z0-9._]{3,20}$/;
+  async function fbReserveName(name) {
+    var low = name.toLowerCase(), uid = FB.user.uid, ref = FB.fs.collection('usernames').doc(low), uref = FB.fs.collection('users').doc(uid);
+    await FB.fs.runTransaction(async function (tx) {
+      var r = await tx.get(ref);
+      if (r.exists && r.data().uid !== uid) throw { code: 'taken' };
+      tx.set(ref, { uid: uid });
+      tx.set(uref, { name: name, nameLower: low, createdAt: Date.now(), cards: 0, points: 0, photos: 0 }, { merge: true });
+    });
+    FB.prof = Object.assign(FB.prof || {}, { name: name, nameLower: low, cards: 0, points: 0, photos: 0 });
+  }
+  function fbVal(id) { var el = $('#' + id); return el ? el.value.trim() : ''; }
+  async function fbAct(a) {
+    if (FB.busy) return;
+    var setMsg = function (m) { FB.msg = m; FB.busy = false; acctSig = ''; renderAcct(true); };
+    FB.busy = true; FB.msg = '';
+    try {
+      if (a === 'fbLogin') {
+        var em = fbVal('fbEmail'), pw = ($('#fbPass') || {}).value || '';
+        if (!em || !pw) return setMsg('Pon tu correo y tu contraseña.');
+        await FB.auth.signInWithEmailAndPassword(em, pw); FB.busy = false; return;
+      }
+      if (a === 'fbGoogle') {
+        var prov = new firebase.auth.GoogleAuthProvider();
+        try { await FB.auth.signInWithPopup(prov); } catch (e) { if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment')) await FB.auth.signInWithRedirect(prov); else throw e; }
+        FB.busy = false; return;
+      }
+      if (a === 'fbSignup') {
+        var un = fbVal('fbUser').toLowerCase(), em2 = fbVal('fbEmail2'), p1 = ($('#fbPass1') || {}).value || '', p2 = ($('#fbPass2') || {}).value || '';
+        if (!UNAME_RX.test(un)) return setMsg('El usuario debe tener de 3 a 20 letras, números, punto o guion bajo.');
+        if (p1.length < 6) return setMsg('La contraseña necesita al menos 6 caracteres.');
+        if (p1 !== p2) return setMsg('Las contraseñas no coinciden.');
+        var taken = await FB.fs.collection('usernames').doc(un).get();
+        if (taken.exists) return setMsg('Ese usuario ya existe. Prueba otro.');
+        FB.pendingName = un;
+        var cred = await FB.auth.createUserWithEmailAndPassword(em2, p1);
+        FB.user = cred.user;
+        try { await fbReserveName(un); } catch (e) { FB.view = 'username'; return setMsg(e && e.code === 'taken' ? 'Ese usuario ya existe. Prueba otro.' : fbErr(e)); }
+        FB.busy = false; FB.view = 'in'; fbStart(); return;
+      }
+      if (a === 'fbPickName') {
+        var un2 = fbVal('fbUser').toLowerCase();
+        if (!UNAME_RX.test(un2)) return setMsg('El usuario debe tener de 3 a 20 letras, números, punto o guion bajo.');
+        try { await fbReserveName(un2); } catch (e) { return setMsg(e && e.code === 'taken' ? 'Ese usuario ya existe. Prueba otro.' : fbErr(e)); }
+        FB.busy = false; FB.view = 'in'; fbStart(); return;
+      }
+      if (a === 'fbReset') {
+        var em3 = fbVal('fbEmail');
+        if (!em3) return setMsg('Escribe tu correo arriba y vuelve a tocar «Olvidé mi contraseña».');
+        await FB.auth.sendPasswordResetEmail(em3);
+        return setMsg('Te mandamos un correo para cambiar la contraseña.');
+      }
+      if (a === 'fbLogout') { FB.busy = false; FB.view = 'login'; await FB.auth.signOut(); return; }
+      if (a === 'fbMigrate') {
+        var g = accts.find(isGuest) || accts[0]; var list = g ? loadCars(g.id) : [];
+        var n = 0;
+        for (var i = 0; i < list.length; i++) {
+          var c = Object.assign({}, list[i]), ex = c.extra || []; delete c.extra; delete c._n;
+          try {
+            await col.doc(c.id).set(c);
+            for (var j = 0; j < ex.length; j++) await col.doc(c.id).collection('photos').doc(ex[j].id).set(ex[j]);
+            n++;
+          } catch (e) {}
+        }
+        if (g && n === list.length) LS.set('garage.v1.d.' + g.id, JSON.stringify({ cars: [] }));
+        return setMsg(n + ' de ' + list.length + ' cartas pasadas a tu cuenta.');
+      }
+    } catch (e) { return setMsg(fbErr(e)); }
+    FB.busy = false;
+  }
+  function fbAcctHTML() {
+    var msg = '<p class="status err" id="acMsg" role="status">' + esc(FB.msg || '') + '</p>';
+    if (!FB.ready) return '<p class="status">Conectando…</p>';
+    if (FB.user && FB.view === 'username') {
+      return '<div class="acct-new"><h3 class="sub" style="margin:0">Escoge tu usuario</h3><p class="status">Es tu nombre público en GARAGE. Así te buscan y te siguen.</p>' +
+        '<div class="field"><label for="fbUser">Usuario</label><input type="text" id="fbUser" maxlength="20" autocomplete="username" autocapitalize="none" placeholder="elio.garage"></div>' + msg +
+        '<div class="actions"><button class="btn primary" type="button" data-act="fbPickName">Guardar usuario</button><button class="btn" type="button" data-act="fbLogout">Cancelar</button></div></div>';
+    }
+    if (FB.user && FB.prof) {
+      var g = accts.find(isGuest), gc = g ? loadCars(g.id).length : 0;
+      return '<div class="so-me">' + avHTML(FB.prof, FB.prof.name, 'ph-av sm') + '<div class="ph-who"><b>@' + esc(FB.prof.name) + '</b><span>' + esc(FB.user.email || '') + '</span></div><button class="btn" type="button" data-act="fbLogout">Cerrar sesión</button></div>' +
+        '<p class="status">Tus cartas, tu perfil y tus fotos se guardan en tu cuenta y las ves desde cualquier teléfono. Tu sesión se queda abierta en este dispositivo hasta que la cierres.</p>' +
+        (gc ? '<div class="actions"><button class="btn primary" type="button" data-act="fbMigrate">Pasar ' + gc + ' cartas del modo invitado a mi cuenta</button></div>' : '') + msg +
+        '<p class="status">Tu colección y tu portafolio son públicos: cualquiera en GARAGE puede verlos, seguirte y darte like.</p>';
+    }
+    if (FB.view === 'signup') {
+      return '<div class="acct-new"><h3 class="sub" style="margin:0">Crear cuenta</h3>' +
+        '<div class="field"><label for="fbUser">Usuario</label><input type="text" id="fbUser" maxlength="20" autocomplete="username" autocapitalize="none" placeholder="elio.garage"></div>' +
+        '<div class="field"><label for="fbEmail2">Correo</label><input type="email" id="fbEmail2" autocomplete="email" placeholder="tu@correo.com"></div>' +
+        '<div class="f2"><div class="field"><label for="fbPass1">Contraseña</label><input type="password" id="fbPass1" autocomplete="new-password" placeholder="Mínimo 6 caracteres"></div><div class="field"><label for="fbPass2">Repite la contraseña</label><input type="password" id="fbPass2" autocomplete="new-password"></div></div>' + msg +
+        '<div class="actions"><button class="btn primary" type="button" data-act="fbSignup">Crear cuenta</button><button class="btn" type="button" data-act="fbView" data-v="login">Ya tengo cuenta</button></div>' +
+        '<div class="or"><span>o</span></div><button class="btn google" type="button" data-act="fbGoogle">Continuar con Google</button></div>';
+    }
+    return '<div class="acct-new"><h3 class="sub" style="margin:0">Entrar</h3>' +
+      '<div class="field"><label for="fbEmail">Correo</label><input type="email" id="fbEmail" autocomplete="email" placeholder="tu@correo.com"></div>' +
+      '<div class="field"><label for="fbPass">Contraseña</label><input type="password" id="fbPass" autocomplete="current-password"></div>' + msg +
+      '<div class="actions"><button class="btn primary" type="button" data-act="fbLogin">Entrar</button><button class="btn" type="button" data-act="fbReset">Olvidé mi contraseña</button></div>' +
+      '<div class="or"><span>o</span></div><button class="btn google" type="button" data-act="fbGoogle">Continuar con Google</button>' +
+      '<div class="actions" style="margin-top:6px"><button class="btn" type="button" data-act="fbView" data-v="signup">+ Crear cuenta nueva</button></div>' +
+      '<p class="status">Sin cuenta estás en modo invitado: tus cartas se quedan solo en este dispositivo y nadie las ve.</p></div>';
+  }
+
+  /* ---- social en la nube ---- */
+  function fbMe() { return FB.user && FB.prof ? FB.user.uid : null; }
+  async function fbStats(id) {
+    var c = FB.cache.stats[id]; if (c && Date.now() - c.t < 20000) return c;
+    var q = FB.fs, kind = state.zone === 'spot' ? 'photo' : 'coll';
+    var r = await Promise.all([
+      q.collection('follows').where('to', '==', id).get(), q.collection('follows').where('from', '==', id).get(),
+      q.collection('likes').where('owner', '==', id).where('kind', '==', kind).get()
+    ]);
+    c = { followers: r[0].size, following: r[1].size, likes: r[2].size, t: Date.now() };
+    FB.cache.stats[id] = c; return c;
+  }
+  function fbStatLine(u, st) {
+    var spot = state.zone === 'spot', n = spot ? (u.photos || 0) : (u.cards || 0);
+    st = st || { followers: '…', following: '…', likes: '…' };
+    return '<span><b>' + st.followers + '</b> seguidores</span><span><b>' + st.following + '</b> siguiendo</span><span><b>' + n + '</b> ' + (spot ? 'fotos' : 'cartas') + '</span><span><b>' + st.likes + '</b> likes</span>';
+  }
+  function fbFollowBtn(id) {
+    if (!fbMe()) return '<button type="button" class="btn follow-btn" data-act="tab" data-tab="acct">Entra para seguir</button>';
+    var on = !!FB.follows[id]; return '<button type="button" class="btn' + (on ? '' : ' primary') + ' follow-btn" data-act="soFollow" data-id="' + esc(id) + '" aria-pressed="' + on + '">' + (on ? 'Siguiendo' : 'Seguir') + '</button>';
+  }
+  function fbName(u) { return (state.zone === 'spot' && u.display) || u.name || '—'; }
+  async function fbLoadUsers() {
+    var q = norm(state.soQ || '').replace(/[^a-z0-9._]/g, ''), ref = FB.fs.collection('users');
+    var snap = q ? await ref.orderBy('nameLower').startAt(q).endAt(q + '').limit(30).get() : await ref.orderBy('createdAt', 'desc').limit(40).get();
+    return snap.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; }).filter(function (u) { return u.name; });
+  }
+  var soSeq = 0;
+  async function renderSocialCloud() {
+    var box = $('#socialBox'), me = fbMe(), seq = ++soSeq;
+    if (state.prof) return fbRenderProfile(box, state.prof, seq);
+    if (!box.querySelector('#soList')) {
+      box.innerHTML = '<div class="panel-head"><h2>Gente</h2></div>' +
+        (me ? '<div class="so-me">' + avHTML(FB.prof, FB.prof.name, 'ph-av sm') + '<div class="ph-who"><b>@' + esc(FB.prof.name) + '</b><span class="so-stats" id="soMeStats">' + fbStatLine(FB.prof) + '</span></div><button class="btn" type="button" data-act="soOpen" data-id="' + esc(me) + '">Ver mi perfil</button></div>' : '<div class="note" style="margin-bottom:12px">Entra a tu cuenta para seguir gente y dar likes. <button class="btn" type="button" data-act="tab" data-tab="acct">Entrar</button></div>') +
+        '<div class="field so-search"><label class="sr" for="soQ">Buscar personas</label><input type="search" id="soQ" placeholder="Buscar personas por nombre…" autocomplete="off" autocapitalize="none" value="' + esc(state.soQ || '') + '"></div>' +
+        '<div class="radar-bar"><button type="button" class="chip" data-act="soFilter" data-v="all" aria-pressed="' + (state.soF !== 'follow') + '">Todos</button><button type="button" class="chip" data-act="soFilter" data-v="follow" aria-pressed="' + (state.soF === 'follow') + '">Siguiendo</button></div>' +
+        '<ul class="rank" id="soList"><li class="rank-empty">Cargando…</li></ul>';
+    } else {
+      box.querySelectorAll('[data-act=soFilter]').forEach(function (b) { b.setAttribute('aria-pressed', String((b.dataset.v === 'follow') === (state.soF === 'follow'))); });
+    }
+    if (me) fbStats(me).then(function (st) { var el = $('#soMeStats'); if (el && seq === soSeq) el.innerHTML = fbStatLine(FB.prof, st); }).catch(function () {});
+    var users = [];
+    try { users = await fbLoadUsers(); } catch (e) { var ul0 = $('#soList'); if (ul0) ul0.innerHTML = '<li class="rank-empty">No se pudo cargar la lista. Revisa tu conexión.</li>'; return; }
+    if (seq !== soSeq) return;
+    users = users.filter(function (u) { return u.id !== me && (state.soF !== 'follow' || FB.follows[u.id]); });
+    if (state.zone === 'spot') users.sort(function (a, b) { return (b.photos || 0) - (a.photos || 0); });
+    FB.cache.users = users;
+    var ul = $('#soList'); if (!ul) return;
+    ul.innerHTML = users.length ? users.map(function (u) {
+      return '<li class="so-row"><button type="button" class="so-open" data-act="soOpen" data-id="' + esc(u.id) + '">' + avHTML(u, fbName(u), 'ph-av sm') + '<span class="ph-who"><b>' + esc(fbName(u)) + '</b><span class="so-stats" data-st="' + esc(u.id) + '">' + fbStatLine(u) + '</span></span></button>' + fbFollowBtn(u.id) + '</li>';
+    }).join('') : '<li class="rank-empty">' + (state.soF === 'follow' ? 'Todavía no sigues a nadie.' : (state.soQ ? 'Nadie con ese nombre.' : 'Todavía no hay más personas. Comparte el link con tus amigos.')) + '</li>';
+    users.forEach(function (u) { fbStats(u.id).then(function (st) { var el = ul.querySelector('[data-st="' + u.id + '"]'); if (el && seq === soSeq) el.innerHTML = fbStatLine(u, st); }).catch(function () {}); });
+  }
+  function fbHeart(on, n, act, id, label) { return heart(on, n, fbMe() ? act : 'tab" data-tab="acct', id, label); }
+  async function fbRenderProfile(box, id, seq) {
+    var me = fbMe(), own = id === me, spot = state.zone === 'spot';
+    box.innerHTML = '<div class="panel-head"><button class="btn" type="button" data-act="soBack">← Gente</button></div><p class="status">Cargando…</p>';
+    try {
+      var ud = await FB.fs.collection('users').doc(id).get(); if (seq !== soSeq) return;
+      var u = ud.exists ? ud.data() : { name: '—' }; u.id = id;
+      var st = await fbStats(id); if (seq !== soSeq) return;
+      var links = SOCIALS.map(function (x) { var l = socialLink(x[0], (u.soc || {})[x[0]]); return l && !l.bad ? '<a class="chip soc" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer"><b>' + esc(x[1]) + '</b><span>' + esc(l.label) + '</span></a>' : ''; }).join('');
+      var h = '<div class="panel-head"><button class="btn" type="button" data-act="soBack">← Gente</button>' + (own ? '<span class="status">Tu perfil</span>' : fbFollowBtn(id)) + '</div>' +
+        '<div class="ph-card">' + avHTML(u, fbName(u), 'ph-av') + '<div class="ph-who"><b>' + esc(fbName(u)) + '</b>' + (spot && u.display ? '<span>@' + esc(u.name) + '</span>' : '') + (u.city ? '<span>' + esc(u.city) + '</span>' : '') + '<span class="so-stats">' + fbStatLine(u, st) + '</span></div></div>' +
+        (u.bio && spot ? '<p class="ph-bio">' + esc(u.bio) + '</p>' : '') + (links && spot ? '<div class="chips" style="margin:10px 0">' + links + '</div>' : '');
+      if (spot) {
+        var ps = await fbPhotosOf(id); if (seq !== soSeq) return;
+        var counts = await Promise.all(ps.map(function (x) { return FB.fs.collection('likes').where('kind', '==', 'photo').where('target', '==', x.id).get().then(function (s) { return s.size; }).catch(function () { return 0; }); }));
+        h += '<h3 class="sub">Portafolio</h3><div class="ph-grid">' + (ps.length ? ps.map(function (x, i) {
+          return '<div class="ph-item so-ph"><img src="' + esc(x.data) + '" alt="' + esc(x.cap || 'Foto') + '" loading="lazy"><span>' + (x.cap ? esc(x.cap) : '') + (x.cam ? '<small>' + esc(x.cam) + '</small>' : '') + '</span>' + (own ? '<em class="ph-likes">♥ ' + counts[i] + '</em>' : fbHeart(!!FB.likes['photo_' + x.id], counts[i], 'soLikePhoto', x.id, 'Me gusta esta foto')) + '</div>';
+        }).join('') : '<div class="empty"><span>Todavía no subió fotos.</span></div>') + '</div>';
+      } else {
+        var cs = await fbCarsOf(id); if (seq !== soSeq) return;
+        var cars = cs.filter(function (c) { return c.kind === 'spotted'; }).sort(function (a, b) { return b.rarity - a.rarity; }), garage = cs.filter(function (c) { return c.kind === 'garage'; });
+        var conv = function (c) { return cardHTML(c, false).replace('data-act="open" data-id="' + esc(c.id) + '"', 'data-act="soCard" data-own="' + esc(id) + '" data-id="' + esc(c.id) + '"'); };
+        h += '<div class="so-like-row">' + (own ? heart(false, st.likes, 'noop', id, 'Likes') : fbHeart(!!FB.likes['coll_' + id], st.likes, 'soLikeColl', id, 'Me gusta esta colección')) + '<span class="status">' + (own ? 'Likes a tu colección' : (me ? 'Dale like a su colección' : 'Entra para dar like')) + '</span></div>' +
+          '<h3 class="sub">Colección</h3><div class="grid so-grid">' + (cars.length ? cars.map(conv).join('') : '<div class="empty"><span>Todavía no tiene cartas.</span></div>') + '</div>' +
+          (garage.length ? '<h3 class="sub">Su garage</h3><div class="grid so-grid">' + garage.map(conv).join('') + '</div>' : '');
+      }
+      box.innerHTML = h;
+    } catch (e) { if (seq === soSeq) box.innerHTML = '<div class="panel-head"><button class="btn" type="button" data-act="soBack">← Gente</button></div><p class="status err">No se pudo cargar el perfil.</p>'; }
+  }
+  async function fbCarsOf(id) {
+    if (id === fbMe()) return state.cars;
+    var s = await FB.fs.collection('users').doc(id).collection('cars').get();
+    var l = s.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; }).sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+    l.forEach(function (c, i) { c._n = i + 1; }); FB.cache.cars[id] = l; return l;
+  }
+  async function fbPhotosOf(id) {
+    var s = await FB.fs.collection('photos').where('owner', '==', id).get();
+    return s.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; }).sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+  }
+  async function fbToggleFollow(id) {
+    var me = fbMe(); if (!me || me === id) return;
+    var ref = FB.fs.collection('follows').doc(me + '_' + id);
+    try { if (FB.follows[id]) { await ref.delete(); delete FB.follows[id]; } else { await ref.set({ from: me, to: id, ts: Date.now() }); FB.follows[id] = 1; } } catch (e) {}
+    delete FB.cache.stats[id]; delete FB.cache.stats[me];
+  }
+  async function fbToggleLike(kind, target, owner) {
+    var me = fbMe(); if (!me) return;
+    var key = kind + '_' + target, ref = FB.fs.collection('likes').doc(me + '_' + key);
+    try { if (FB.likes[key]) { await ref.delete(); delete FB.likes[key]; } else { await ref.set({ from: me, kind: kind, target: target, owner: owner, ts: Date.now() }); FB.likes[key] = 1; } } catch (e) {}
+    delete FB.cache.stats[owner];
+  }
+
   /* ================= gente: seguir y likes (cuentas de este dispositivo) ================= */
   var SO_KEY = 'garage.v1.social';
   function soGet() { var o = null; try { o = JSON.parse(LS.get(SO_KEY) || 'null'); } catch (e) {} o = o || {}; o.f = o.f || {}; o.lc = o.lc || {}; o.lp = o.lp || {}; return o; }
   function soSet(o) { LS.set(SO_KEY, JSON.stringify(o)); }
-  function meId() { return active && active !== 'cloud' ? active : null; }
+  function meId() { if (FB.on && FB.user) return fbMe(); return active && active !== 'cloud' ? active : null; }
   function isFollowing(b) { var me = meId(); return !!(me && (soGet().f[me] || []).indexOf(b) > -1); }
   function followersOf(b) { var f = soGet().f, n = 0; Object.keys(f).forEach(function (k) { if (accts.some(function (a) { return a.id === k; }) && f[k].indexOf(b) > -1) n++; }); return n; }
   function followingOf(a) { return (soGet().f[a] || []).filter(function (id) { return accts.some(function (x) { return x.id === id; }); }).length; }
@@ -2705,6 +3011,7 @@ body.zone-spot #addOpen { display: none; }
     return '<span><b>' + followersOf(id) + '</b> seguidores</span><span><b>' + followingOf(id) + '</b> siguiendo</span><span><b>' + n + '</b> ' + (spot ? 'fotos' : 'cartas') + '</span><span><b>' + likes + '</b> likes</span>';
   }
   async function renderSocial() {
+    if (FB.on) { if (state.tab === 'social') return renderSocialCloud(); return; }
     if (state.tab !== 'social') return;
     var box = $('#socialBox'), me = meId(), spot = state.zone === 'spot';
     if (spot) { await Promise.all(accts.map(async function (a) { soPhotos[a.id] = await photosOf(a.id); })); if (state.tab !== 'social') return; }
@@ -2974,7 +3281,7 @@ body.zone-spot #addOpen { display: none; }
     else if (a === 'phClose') { ph.view = null; ph.confirmDel = false; renderPhView(); }
     else if (a === 'phDel') { ph.confirmDel = true; renderPhView(); }
     else if (a === 'phDelNo') { ph.confirmDel = false; renderPhView(); }
-    else if (a === 'phDelYes') { var pid = ph.view; ph.view = null; ph.confirmDel = false; phDel(pid).then(phLoadPhotos).then(function () { $('#phMsg').textContent = 'Foto borrada.'; renderPhoto(); }); }
+    else if (a === 'phDelYes') { var pid = ph.view; ph.view = null; ph.confirmDel = false; phDel(pid).then(phLoadPhotos).then(function () { fbPhotoCount(); $('#phMsg').textContent = 'Foto borrada.'; renderPhoto(); }); }
     else if (a === 'phCapSave') { var px = ph.photos.find(function (q) { return q.id === ph.view; }); if (px) { px.cap = ($('#phCap').value || '').trim().slice(0, 100); px.cam = ($('#phCam').value || '').trim().slice(0, 60); px.lens = ($('#phLens').value || '').trim().slice(0, 60); px.set = ($('#phSet').value || '').trim().slice(0, 60); phPut(px).then(function () { ph.view = null; renderPhoto(); }); } }
     else if (a === 'acctToggle') { state.tab = state.tab === 'acct' ? 'spotted' : 'acct'; state.filter = null; pendingLogin = null; confirmDelAcct = null; render(); window.scrollTo(0, 0); }
     else if (a === 'filter') { var r = +t.dataset.r; state.filter = state.filter === r ? null : r; renderChips(); renderGrid(); }
@@ -3032,13 +3339,15 @@ body.zone-spot #addOpen { display: none; }
     else if (a === 'rm') { c = carById(state.sel); if (c) { var i = +t.dataset.i; setMods(c, (c.mods || []).filter(function (_, k) { return k !== i; })); } }
     else if (a === 'del') { state.confirmDel = true; renderSheet(); var cd = document.querySelector('.confirm-del'); if (cd) cd.scrollIntoView({ block: 'center' }); }
     else if (a === 'lang') setLang(t.dataset.v);
+    else if (/^fb(Login|Google|Signup|PickName|Reset|Logout|Migrate)$/.test(a)) fbAct(a);
+    else if (a === 'fbView') { FB.view = t.dataset.v; FB.msg = ''; acctSig = ''; renderAcct(true); }
     else if (a === 'soOpen') { state.prof = t.dataset.id; renderSocial(); window.scrollTo(0, 0); }
     else if (a === 'soBack') { state.prof = null; renderSocial(); }
-    else if (a === 'soFollow') { toggleFollow(t.dataset.id); renderSocial(); }
+    else if (a === 'soFollow') { if (FB.on) fbToggleFollow(t.dataset.id).then(renderSocial); else { toggleFollow(t.dataset.id); renderSocial(); } }
     else if (a === 'soFilter') { state.soF = t.dataset.v; renderSocial(); }
-    else if (a === 'soLikeColl') { toggleCollLike(t.dataset.id); renderSocial(); }
-    else if (a === 'soLikePhoto') { togglePhotoLike(t.dataset.id); renderSocial(); }
-    else if (a === 'soCard') { var oc = carsOf(t.dataset.own).find(function (x) { return x.id === t.dataset.id; }); if (oc) { fv.car = Object.assign({}, oc); fv.id = oc.id; fv.flip = false; fv.angle = 0; renderFv(); } }
+    else if (a === 'soLikeColl') { if (FB.on) fbToggleLike('coll', t.dataset.id, t.dataset.id).then(renderSocial); else { toggleCollLike(t.dataset.id); renderSocial(); } }
+    else if (a === 'soLikePhoto') { if (FB.on) fbToggleLike('photo', t.dataset.id, state.prof).then(renderSocial); else { togglePhotoLike(t.dataset.id); renderSocial(); } }
+    else if (a === 'soCard') { var oc = (FB.on ? (t.dataset.own === fbMe() ? state.cars : (FB.cache.cars[t.dataset.own] || [])) : carsOf(t.dataset.own)).find(function (x) { return x.id === t.dataset.id; }); if (oc) { fv.car = Object.assign({}, oc); fv.id = oc.id; fv.flip = false; fv.angle = 0; renderFv(); } }
     else if (a === 'zone') { state.zone = t.dataset.z; state.tab = state.zone === 'spot' ? 'photo' : 'spotted'; state.filter = null; closeAdd(); render(); window.scrollTo(0, 0); }
     else if (a === 'home') { if (fv.id) { fv.id = null; fv.car = null; renderFv(); } if (ph.view) { ph.view = null; renderPhView(); } if (state.sel) closeSheet(); closeAdd(); state.prof = null; state.zone = null; render(); window.scrollTo(0, 0); }
     else if (a === 'fvOpen') { fv.id = state.sel; fv.flip = false; fv.angle = 0; renderFv(); }
@@ -3064,7 +3373,7 @@ body.zone-spot #addOpen { display: none; }
   });
   document.addEventListener('input', function (e) {
     var t = e.target;
-    if (t.id === 'soQ') { state.soQ = t.value; renderSoList(); return; }
+    if (t.id === 'soQ') { state.soQ = t.value; if (FB.on) { clearTimeout(window.__soT); window.__soT = setTimeout(renderSocial, 350); } else renderSoList(); return; }
     if (t.closest && t.closest('#editForm')) { state.editDraft = readEdit(); if (t.id === 'eMake' || t.id === 'eModel') { var keep = t.id, pos = t.selectionStart; renderSheet(); var ne = $('#' + keep); if (ne) { ne.focus(); try { ne.setSelectionRange(pos, pos); } catch (e2) {} } } return; }
     if (t.id === 'make') { renderSug(); lookupModels(); }
     else if (t.id === 'model') { var mk0 = catMake($('#make').value); if (mk0 && catModel(mk0, t.value)) applyModelMatch(); else renderSug(); }
@@ -3144,6 +3453,7 @@ body.zone-spot #addOpen { display: none; }
     else ensureLocal();
   }
   init();
+  fbInit();
 })();
 </script>
 
