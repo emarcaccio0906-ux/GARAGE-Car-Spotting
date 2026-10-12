@@ -2988,7 +2988,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
       firebase.initializeApp(FB_CFG);
       // App Check (reCAPTCHA v3): prueba que las peticiones vienen de la web real de GARAGE, no de bots
       if (/\.github\.io$/.test(location.hostname)) {
-        try { await loadScript(base + 'firebase-app-check-compat.js'); firebase.appCheck().activate(APPCHECK_KEY, true); } catch (e) {}
+        try { await loadScript(base + 'firebase-app-check-compat.js'); firebase.appCheck().activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(APPCHECK_KEY), true); } catch (e) {}
       }
       FB.fs = firebase.firestore();
       try { FB.fs.settings({ ignoreUndefinedProperties: true, merge: true }); } catch (e) {}
