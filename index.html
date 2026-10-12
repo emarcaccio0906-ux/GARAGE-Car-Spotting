@@ -591,7 +591,7 @@ body.zone-spot #addOpen { display: none; }
     <div class="tabs" role="tablist" aria-label="Secciones">
       <button class="tab" role="tab" id="tabSpotted" data-act="tab" data-tab="spotted"></button>
       <button class="tab" role="tab" id="tabGarage" data-act="tab" data-tab="garage"></button>
-      <button class="tab" role="tab" id="tabSpot" data-act="tab" data-tab="spot">Spot now</button>
+      <button class="tab" role="tab" id="tabSpot" data-act="tab" data-tab="spot" hidden>Spot now</button>
       <button class="tab" role="tab" id="tabPhoto" data-act="tab" data-tab="photo">Mi portafolio</button>
       <button class="tab" role="tab" id="tabSocial" data-act="tab" data-tab="social">Gente</button>
       <button class="tab" role="tab" id="tabRadar" data-act="tab" data-tab="radar">Radar</button>
@@ -1595,7 +1595,7 @@ body.zone-spot #addOpen { display: none; }
     var box = $('#mineBox'); if (!box) return;
     var list = state.cars.slice().sort(function (a, b) { return b.rarity - a.rarity || (b.ts || 0) - (a.ts || 0); });
     var vis = myProfile ? (myProfile.vis === 'public' ? 'Pública' : 'Privada') : 'Sin usuario todavía';
-    if (!list.length) { box.innerHTML = '<p class="status">Todavía no tienes cartas. Usa «Spot now» o «+ Agregar carro».</p>'; return; }
+    if (!list.length) { box.innerHTML = '<p class="status">Todavía no tienes cartas. Usa «+ Agregar carro».</p>'; return; }
     box.innerHTML = '<p class="status">' + list.length + ' cartas · Visibilidad: ' + vis + '. Toca una para abrirla.</p><div class="peer-grid">' + list.map(function (c) { return cardHTML(c, false); }).join('') + '</div>';
   }
 
@@ -1871,11 +1871,18 @@ body.zone-spot #addOpen { display: none; }
     state.tab = 'spotted'; state.filter = null; acctSig = ''; ph.loadedFor = null; ph.view = null; state.prof = null;
     render();
   }
+  function isGuest(a) { return a && !a.pin && a.name === 'Invitado'; }
+  function logout() {
+    var g = accts.find(isGuest);
+    if (!g) { g = { id: 'l' + uid().slice(0, 8), name: 'Invitado', salt: '', pin: '' }; accts.push(g); saveAccts(); }
+    setActive(g.id); state.tab = 'acct'; render(); acctSig = ''; renderAcct(true);
+  }
   async function createAccount() {
     var n = ($('#acName').value || '').trim().replace(/\s+/g, ' ').slice(0, 24), pin = ($('#acPin').value || '').trim();
     if (n.length < 2) { acctMsg = 'El nombre necesita al menos 2 letras.'; return renderAcct(true); }
     if (accts.some(function (a) { return a.name.toLowerCase() === n.toLowerCase(); })) { acctMsg = 'Ya existe una cuenta con ese nombre en este dispositivo.'; return renderAcct(true); }
-    if (pin && (pin.length < 4 || pin.length > 12)) { acctMsg = 'El PIN debe tener entre 4 y 12 caracteres, o déjalo vacío.'; return renderAcct(true); }
+    if (!pin || pin.length < 4 || pin.length > 12) { acctMsg = 'Pon un PIN de 4 a 12 caracteres para proteger tu cuenta.'; return renderAcct(true); }
+    var pin2 = (($('#acPin2') || {}).value || '').trim(); if (pin2 !== pin) { acctMsg = 'Los PIN no coinciden.'; return renderAcct(true); }
     var salt = uid().slice(0, 8), a = { id: 'l' + uid().slice(0, 8), name: n, salt: salt, pin: pin ? await hashPin(pin, salt) : '' };
     accts.push(a);
     if (!saveAccts()) { accts.pop(); acctMsg = 'Este navegador no deja guardar datos, así que no se puede crear la cuenta.'; return renderAcct(true); }
@@ -1966,11 +1973,12 @@ body.zone-spot #addOpen { display: none; }
     if (cloudAvail) rows += '<div class="acct-row' + (active === 'cloud' ? ' on' : '') + '"><div class="who"><b>' + esc(cloudName || 'Cuenta de Claude') + '</b><span>En la nube. Es la única con Gente, Radar, Ranking e identificación con IA.</span></div><div class="rb">' + (active === 'cloud' ? '<span class="status">Sesión actual</span>' : '<button class="btn" type="button" data-act="acLogin" data-id="cloud">Entrar</button>') + '</div></div>';
     rows += accts.map(function (a) {
       var on = active === a.id;
-      var body = '<div class="who"><b>' + esc(a.name) + '</b><span>En este dispositivo' + (a.pin ? ' · con PIN' : '') + (on ? ' · ' + state.cars.length + ' cartas' : '') + '</span></div>';
+      var body = '<div class="who"><b>' + esc(a.name) + '</b><span>' + (isGuest(a) ? 'Invitado · sin PIN' : 'En este dispositivo') + (a.pin ? ' · protegida con PIN' : '') + (on ? ' · ' + state.cars.length + ' cartas' : '') + '</span></div>';
       var act = on ? '<span class="status">Sesión actual</span>' : '<button class="btn" type="button" data-act="acLogin" data-id="' + esc(a.id) + '">Entrar</button>';
       if (pendingLogin === a.id) act = '<input type="password" id="acPinIn" maxlength="12" placeholder="PIN" aria-label="PIN" autocomplete="off" style="max-width:120px"><button class="btn primary" type="button" data-act="acPin">Confirmar</button><button class="btn" type="button" data-act="acCancel">Cancelar</button>';
       var del = confirmDelAcct === a.id ? '<button class="btn danger" type="button" data-act="acDelYes" data-id="' + esc(a.id) + '">Sí, borrar con todas sus cartas</button><button class="btn" type="button" data-act="acCancel">Cancelar</button>' : '<button class="btn" type="button" data-act="acDel" data-id="' + esc(a.id) + '">Borrar</button>';
-      return '<div class="acct-row' + (on ? ' on' : '') + '">' + body + '<div class="rb">' + act + (pendingLogin === a.id ? '' : del) + '</div></div>';
+      if (on && !isGuest(a)) act = '<span class="status">Sesión actual</span><button class="btn" type="button" data-act="acLogout">Cerrar sesión</button>';
+      return '<div class="acct-row' + (on ? ' on' : '') + '">' + body + '<div class="rb">' + act + (pendingLogin === a.id || !on || isGuest(a) ? '' : del) + '</div></div>';
     }).join('');
     var cloudForm = '';
     if (cloudAvail) {
@@ -1981,8 +1989,9 @@ body.zone-spot #addOpen { display: none; }
         (active === 'cloud' ? '' : '<p class="status">Entra a la cuenta de Claude para editarla.</p>') +
         (accts.length && active === 'cloud' ? '<div class="field"><label for="lkSel">Pasar cartas de una cuenta de este dispositivo a mi cuenta de Claude</label><select id="lkSel">' + accts.map(function (a) { return '<option value="' + esc(a.id) + '">' + esc(a.name) + ' (' + loadCars(a.id).length + ' cartas)</option>'; }).join('') + '</select></div><div class="actions"><button class="btn" type="button" data-act="lkGo">Pasar cartas</button></div>' : '') + '</div>';
     }
-    if (acctView === 'new') { box.innerHTML = '<div class="acct-new"><h3 class="sub" style="margin:0">Crear cuenta nueva</h3><p class="status">Cada cuenta tiene sus propias cartas, su portafolio y su perfil.</p><div class="field"><label for="acName">Nombre de usuario</label><input type="text" id="acName" maxlength="24" autocomplete="off" placeholder="Nombre"></div>' +
-        '<div class="field"><label for="acPin">PIN (opcional)</label><input type="password" id="acPin" maxlength="12" autocomplete="off" placeholder="4 a 12 caracteres"></div>' +
+    if (acctView === 'new') { var keepName = ($('#acName') || {}).value || ''; box.innerHTML = '<div class="acct-new"><h3 class="sub" style="margin:0">Crear cuenta nueva</h3><p class="status">Cada cuenta tiene sus propias cartas, su portafolio y su perfil.</p><div class="field"><label for="acName">Nombre de usuario</label><input type="text" id="acName" maxlength="24" autocomplete="off" placeholder="Nombre" value="' + esc(keepName) + '"></div>' +
+        '<div class="f2"><div class="field"><label for="acPin">PIN</label><input type="password" id="acPin" inputmode="numeric" maxlength="12" autocomplete="new-password" placeholder="4 a 12 caracteres"></div><div class="field"><label for="acPin2">Repite el PIN</label><input type="password" id="acPin2" inputmode="numeric" maxlength="12" autocomplete="new-password" placeholder="4 a 12 caracteres"></div></div>' +
+        '<p class="status">Tu sesión se queda abierta en este dispositivo. Para entrar desde otra cuenta o volver después de cerrar sesión, se pide el PIN.</p>' +
         '<p class="status err" id="acMsg">' + esc(acctMsg) + '</p><div class="actions"><button class="btn primary" type="button" data-act="acNew">Crear cuenta</button><button class="btn" type="button" data-act="acBack">Volver</button></div></div>'; var an0 = $('#acName'); if (an0 && force !== 'keep') an0.focus(); return; }
     box.innerHTML = '<p class="status">Sesión actual: <b>' + esc(acctName()) + '</b>. ' + (active === 'cloud' ? 'Tus cartas están en tu cuenta de Claude.' : 'Tus cartas se guardan en este dispositivo.') + '</p>' + rows +
       '<div class="actions" style="margin-top:14px"><button class="btn primary" type="button" data-act="acGoNew">+ Crear cuenta nueva</button></div>' +
@@ -2108,6 +2117,7 @@ body.zone-spot #addOpen { display: none; }
 
   function render() {
     var z = state.zone || 'home';
+    if (state.tab === 'spot') state.tab = 'spotted';
     if (z === 'spot' && state.tab !== 'photo' && state.tab !== 'acct' && state.tab !== 'social') state.tab = 'photo';
     if (z === 'cards' && state.tab === 'photo') state.tab = 'spotted';
     document.body.classList.remove('zone-home', 'zone-cards', 'zone-spot'); document.body.classList.add('zone-' + z);
@@ -2536,7 +2546,7 @@ body.zone-spot #addOpen { display: none; }
     'Guardar look': 'Save look', 'Guardar perfil': 'Save profile', 'Hacer principal': 'Make main', 'Identificar con IA': 'Identify with AI', 'Importar copia': 'Import backup',
     'Inicio': 'Home', 'Intake, tune, rines…': 'Intake, tune, wheels…', 'Integral (AWD)': 'All-wheel (AWD)', 'Invertido': 'Invested',
     'Las cuentas de este dispositivo viven solo en este navegador: no se sincronizan entre teléfonos y se pierden si borras los datos del navegador. El PIN solo evita que alguien abra tu cuenta por accidente; no es seguridad real.': 'Accounts on this device live only in this browser: they don’t sync between phones and are lost if you clear browser data. The PIN only stops someone opening your account by accident; it isn’t real security.',
-    'Legendario': 'Legendary', 'Épico': 'Epic', 'Velocidad máxima': 'Top speed', 'Velocidad máx. (mph)': 'Top speed (mph)', 'Vel. máx.': 'Top speed', 'Transmisión': 'Transmission', '180 o 175/190': '180 or 175/190', 'Manual 6 velocidades': '6-speed manual', 'Manual 5 velocidades': '5-speed manual', 'Manual 7 velocidades': '7-speed manual', 'Automática 6 velocidades': '6-speed automatic', 'Automática 8 velocidades': '8-speed automatic', 'Automática 10 velocidades': '10-speed automatic', 'Doble embrague (DCT) 7 vel.': '7-speed dual-clutch (DCT)', 'Doble embrague (DCT) 8 vel.': '8-speed dual-clutch (DCT)', 'Secuencial': 'Sequential', 'Eléctrica (1 velocidad)': 'Electric (single-speed)', 'Exposición': 'Exposure', 'Torque (lb-ft)': 'Torque (lb-ft)', 'Arrastra la foto para encuadrarla. Pellizca o usa la rueda del mouse para hacer zoom. Así se verá en la carta.': 'Drag the photo to frame it. Pinch or use the mouse wheel to zoom. This is how it’ll look on the card.', 'El año no es válido. Usa 2020 o 2019/2023.': 'That year isn’t valid. Use 2020 or 2019/2023.', 'Revisa los números: usa un valor (400) o un rango (380/420).': 'Check the numbers: use one value (400) or a range (380/420).', '2025 o 2019/2023': '2025 or 2019/2023', '400 o 380/420': '400 or 380/420', '4.5 o 4.2/4.8': '4.5 or 4.2/4.8', '350 o 330/370': '350 or 330/370', '← Marcas': '← Makes', 'Marcas populares': 'Popular makes', 'Ejemplo': 'Sample', 'Nombre de usuario': 'Username', 'Mi perfil': 'My profile', 'Lente': 'Lens', 'Levantado': 'Lifted', 'Ligero': 'Light', 'Likes a tu colección': 'Likes on your collection',
+    'Legendario': 'Legendary', 'Épico': 'Epic', 'Pon un PIN de 4 a 12 caracteres para proteger tu cuenta.': 'Set a 4 to 12 character PIN to protect your account.', 'Los PIN no coinciden.': 'The PINs don’t match.', 'Repite el PIN': 'Repeat PIN', 'Tu sesión se queda abierta en este dispositivo. Para entrar desde otra cuenta o volver después de cerrar sesión, se pide el PIN.': 'Your session stays open on this device. The PIN is asked when switching from another account or coming back after logging out.', 'Cerrar sesión': 'Log out', 'Invitado · sin PIN': 'Guest · no PIN', '· protegida con PIN': '· PIN protected', 'Todavía no tienes cartas. Usa «+ Agregar carro».': 'You don’t have cards yet. Use “+ Add car”.', 'Velocidad máxima': 'Top speed', 'Velocidad máx. (mph)': 'Top speed (mph)', 'Vel. máx.': 'Top speed', 'Transmisión': 'Transmission', '180 o 175/190': '180 or 175/190', 'Manual 6 velocidades': '6-speed manual', 'Manual 5 velocidades': '5-speed manual', 'Manual 7 velocidades': '7-speed manual', 'Automática 6 velocidades': '6-speed automatic', 'Automática 8 velocidades': '8-speed automatic', 'Automática 10 velocidades': '10-speed automatic', 'Doble embrague (DCT) 7 vel.': '7-speed dual-clutch (DCT)', 'Doble embrague (DCT) 8 vel.': '8-speed dual-clutch (DCT)', 'Secuencial': 'Sequential', 'Eléctrica (1 velocidad)': 'Electric (single-speed)', 'Exposición': 'Exposure', 'Torque (lb-ft)': 'Torque (lb-ft)', 'Arrastra la foto para encuadrarla. Pellizca o usa la rueda del mouse para hacer zoom. Así se verá en la carta.': 'Drag the photo to frame it. Pinch or use the mouse wheel to zoom. This is how it’ll look on the card.', 'El año no es válido. Usa 2020 o 2019/2023.': 'That year isn’t valid. Use 2020 or 2019/2023.', 'Revisa los números: usa un valor (400) o un rango (380/420).': 'Check the numbers: use one value (400) or a range (380/420).', '2025 o 2019/2023': '2025 or 2019/2023', '400 o 380/420': '400 or 380/420', '4.5 o 4.2/4.8': '4.5 or 4.2/4.8', '350 o 330/370': '350 or 330/370', '← Marcas': '← Makes', 'Marcas populares': 'Popular makes', 'Ejemplo': 'Sample', 'Nombre de usuario': 'Username', 'Mi perfil': 'My profile', 'Lente': 'Lens', 'Levantado': 'Lifted', 'Ligero': 'Light', 'Likes a tu colección': 'Likes on your collection',
     'Listo. Identifícalo con IA o llena los datos a mano.': 'Done. Identify it with AI or fill in the details by hand.', 'Llena los datos a mano.': 'Fill in the details by hand.',
     'Lo vi en la calle': 'Spotted on the street', 'Los carros de tu garage no suman puntos.': 'Garage cars don’t earn points.', 'Malla': 'Mesh', 'Marca': 'Make',
     'Marcar en el Radar': 'Mark on Radar', 'Me gusta esta colección': 'Like this collection', 'Me gusta esta foto': 'Like this photo', 'Mi colección': 'My collection',
@@ -2987,6 +2997,7 @@ body.zone-spot #addOpen { display: none; }
     else if (a === 'caSave') saveCloudAcct();
     else if (a === 'lkGo') linkLocal();
     else if (a === 'acNew') createAccount();
+    else if (a === 'acLogout') logout();
     else if (a === 'acGoNew') { acctView = 'new'; acctMsg = ''; acctSig = ''; renderAcct(true); }
     else if (a === 'acBack') { acctView = 'list'; acctMsg = ''; acctSig = ''; renderAcct(true); }
     else if (a === 'acLogin') loginAccount(t.dataset.id);
