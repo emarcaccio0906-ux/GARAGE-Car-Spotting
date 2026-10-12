@@ -517,6 +517,7 @@ body.zone-home .home-btn { display: none; }
 @media (max-width: 520px) { .home-btn span { display: none; } .home-btn { padding: 4px 11px; } .acct-btn { right: 0; } .mast-r { gap: 8px; } }
 /* zonas: pestañas */
 body.zone-cards #tabPhoto { display: none; }
+body.zone-spot #tabReview { display: none !important; }
 body.zone-spot .bar .tab:not(#tabPhoto):not(#tabSocial):not(#tabFeed) { display: none; }
 body.zone-spot #addOpen { display: none; }
 /* gente */
@@ -684,6 +685,27 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
 .priv { gap: 10px; }
 .rpt-list { display: flex; flex-direction: column; }
 .danger-box { margin-top: 16px; padding: 14px; border: 1px solid var(--accent); border-radius: 12px; display: flex; flex-direction: column; gap: 10px; background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+/* revisión y perfil */
+.rev-tag { left: auto !important; right: 8px; background: color-mix(in srgb, #f2b13b 85%, #000) !important; color: #111 !important; border: 0 !important; }
+.rev-tag.bad { background: var(--accent) !important; color: var(--accent-fg) !important; }
+.rv-list { display: flex; flex-direction: column; gap: 14px; }
+.rv-item { display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 16px; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); }
+.rv-item.done { display: block; opacity: .8; }
+@media (max-width: 640px) { .rv-item { grid-template-columns: minmax(0, 1fr); } }
+.rv-main { position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: var(--surface-2); }
+.rv-main img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rv-main svg { width: 100%; height: 100%; }
+.rv-media .up-thumbs img { width: 56px; height: 56px; object-fit: cover; border-radius: 6px; }
+.rv-info { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.rv-title { font: 700 24px/1.05 var(--f-display); }
+.prof-tabs { margin: 14px 0 6px; }
+.gal-grid .ph-item.gal { padding: 0; }
+.mutuals { display: flex; flex-wrap: wrap; gap: 10px; }
+.mutual { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--glass); color: var(--fg); font: 600 13px var(--f-body); cursor: pointer; }
+.mutual .ph-av.sm { width: 32px; height: 32px; font-size: 15px; }
+.prof-info { display: flex; flex-direction: column; gap: 6px; }
+.gal-view { max-width: 720px; }
 </style>
 
 <div class="app">
@@ -714,6 +736,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
       <button class="tab" role="tab" id="tabSpot" data-act="tab" data-tab="spot" hidden>Spot now</button>
       <button class="tab" role="tab" id="tabPhoto" data-act="tab" data-tab="photo">Mi portafolio</button>
       <button class="tab" role="tab" id="tabFeed" data-act="tab" data-tab="feed">Feed</button>
+      <button class="tab" role="tab" id="tabReview" data-act="tab" data-tab="review" hidden>Revisar</button>
       <button class="tab" role="tab" id="tabSocial" data-act="tab" data-tab="social">Gente</button>
       <button class="tab" role="tab" id="tabRadar" data-act="tab" data-tab="radar">Radar</button>
       <button class="tab" role="tab" id="tabPeople" data-act="tab" data-tab="people">Gente</button>
@@ -857,6 +880,10 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     <div class="ph-grid" id="phGrid"></div>
     <datalist id="camList"><option value="iPhone 16 Pro"><option value="iPhone 15 Pro"><option value="Samsung Galaxy S24 Ultra"><option value="Google Pixel 9 Pro"><option value="Sony A7 IV"><option value="Sony A7R V"><option value="Sony A6700"><option value="Canon EOS R5"><option value="Canon EOS R6 Mark II"><option value="Nikon Z6 III"><option value="Nikon Z8"><option value="Fujifilm X-T5"><option value="Fujifilm X100VI"><option value="DJI Mini 4 Pro"><option value="GoPro HERO12"></datalist>
     <p class="status">Por ahora tu perfil y tus fotos se guardan en este dispositivo, en tu cuenta «<span id="phAcct"></span>». Las redes se enlazan con tu usuario o link; no se conectan a tus cuentas.</p>
+  </section>
+
+  <section class="panel" id="review" hidden aria-label="Revisar">
+    <div id="reviewBox"></div>
   </section>
 
   <section class="panel" id="feed" hidden aria-label="Feed">
@@ -1360,9 +1387,12 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
   }
   function scoreHTML(c) {
     var has = typeof c.q === 'number', qn = has ? clamp(Math.round(c.q), 0, 100) : 0;
-    var h = '<div class="score"><div class="qhead"><b>' + pointsOf(c.rarity, c.q) + ' pts</b><span>Base ' + (BASE[c.rarity] || BASE[0]) + (has ? ' × calidad ' + (.5 + qn / 100).toFixed(2) : '') + '</span></div>';
+    var h = '<div class="score"><div class="qhead"><b>' + cardPts(c) + ' pts</b><span>Base ' + (BASE[c.rarity] || BASE[0]) + (has ? ' × calidad ' + (.5 + qn / 100).toFixed(2) : '') + '</span></div>';
     if (has) h += '<div class="qhead"><span>Foto principal ' + qn + '/100 · ' + qLabel(qn) + '</span></div><div class="qbar"><span style="width:' + qn + '%"></span></div>' + (c.qd ? '<p class="status">' + esc(qualityTip(c.qd)) + '</p>' : '');
     else h += '<p class="status">Esta carta no tiene calificación de foto.</p>';
+    if (c._st === 'pending') h += '<p class="status">En revisión: los puntos cuentan cuando GARAGE apruebe esta carta y le ponga la rareza y la calidad final.</p>';
+    else if (c._st === 'rejected') h += '<p class="status err">Esta carta fue rechazada' + (c.rev && c.rev.note ? ': ' + esc(c.rev.note) : '.') + ' Edítala o cambia la foto y se vuelve a revisar.</p>';
+    else if (c._st === 'ok') h += '<p class="status">✓ Revisada por GARAGE.</p>';
     return h + '</div>';
   }
 
@@ -1585,7 +1615,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     var pts = 0, best = null, n = 0;
     state.cars.forEach(function (c) {
       if (c.kind !== 'spotted') return;
-      var p = pointsOf(c.rarity, c.q); pts += p; n++;
+      var p = cardPts(c); pts += p; n++;
       if (!best || c.rarity > best.rarity || (c.rarity === best.rarity && p > best.p)) best = { make: c.make, model: c.model, rarity: c.rarity, p: p };
     });
     return { pts: pts, cards: n, best: best ? { make: best.make, model: best.model, rarity: best.rarity } : null };
@@ -2183,9 +2213,9 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     if (spotted) foot = [yearOf(c), c.place || ''].filter(Boolean).join(' · ');
     else { var t = (c.mods || []).reduce(function (s, m) { return s + (+m.cost || 0); }, 0); foot = [yearOf(c), (c.mods || []).length + ' mods' + (t ? ' · ' + usd(t) : '')].filter(Boolean).join(' · '); }
     var inner = '<span class="c-top"><span>' + esc(serialOf(c)) + '</span><span class="rar"><i></i>' + RAR[r].n + '</span></span>' +
-      '<span class="art">' + artHTML(c) + (c.demo ? '<span class="tag">Ejemplo</span>' : '') + '</span><span class="c-bar"></span>' +
+      '<span class="art">' + artHTML(c) + (c.demo ? '<span class="tag">Ejemplo</span>' : '') + (c._st ? revBadge(c) : '') + '</span><span class="c-bar"></span>' +
       '<span class="c-meta"><span class="make">' + esc(c.make) + '</span><span class="model">' + esc(c.model) + '</span></span>' +
-      '<span class="c-foot"><span>' + esc(foot) + '</span>' + (spotted ? '<b>★ ' + pointsOf(c.rarity, c.q) + '</b>' : '') + '</span>';
+      '<span class="c-foot"><span>' + esc(foot) + '</span>' + (spotted ? '<b>★ ' + cardPts(c) + '</b>' : '') + '</span>';
     return big ? '<button type="button" class="card big r' + r + '" data-act="fvOpen" aria-label="Ver carta en grande">' + inner + '<span class="fv-hint">Toca para verla en grande</span></button>' : '<button type="button" class="card r' + r + '" data-act="open" data-id="' + esc(c.id) + '">' + inner + '</button>';
   }
 
@@ -2197,7 +2227,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     var best = spotted.reduce(function (m, c) { return Math.max(m, c.rarity); }, -1);
     var s = '<strong>' + spotted.length + '</strong> en la colección · <strong>' + garage.length + '</strong> míos';
     if (best >= 0) s += ' · mejor hallazgo: <strong>' + RAR[best].n + '</strong>';
-    s += ' · <strong>' + spotted.reduce(function (t, c) { return t + pointsOf(c.rarity, c.q); }, 0) + '</strong> puntos';
+    s += ' · <strong>' + spotted.reduce(function (t, c) { return t + cardPts(c); }, 0) + '</strong> puntos';
     $('#summary').innerHTML = s;
     var ts = $('#tabSpotted'), tg = $('#tabGarage');
     ts.textContent = 'Colección (' + spotted.length + ')';
@@ -2209,6 +2239,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     $('#tabPhoto').setAttribute('aria-selected', state.tab === 'photo');
     $('#tabSocial').setAttribute('aria-selected', state.tab === 'social');
     $('#tabFeed').setAttribute('aria-selected', state.tab === 'feed');
+    $('#tabReview').hidden = !isAdminMe(); $('#tabReview').setAttribute('aria-selected', state.tab === 'review');
     $('#tabAcct').setAttribute('aria-selected', state.tab === 'acct');
     var an = acctName() || 'Cuenta'; $('#acctLbl').textContent = an; var avp = null; if (FB.user && FB.prof) avp = FB.prof; else { try { avp = JSON.parse(LS.get('garage.v1.ph.' + (active || 'x') + '.prof') || 'null'); } catch (e) {} } var ai = $('#acctIni'); if (avp && avp.avatar) { ai.innerHTML = '<img src="' + esc(avp.avatar) + '" alt="">'; ai.classList.add('img'); } else { ai.textContent = an.trim().charAt(0).toUpperCase(); ai.classList.remove('img'); } $('#acctBtn').setAttribute('aria-pressed', state.tab === 'acct'); $('#acctBtn').title = 'Cuenta: ' + an + ' · cambiar o agregar cuentas';
     $('#tabRadar').setAttribute('aria-selected', state.tab === 'radar');
@@ -2306,6 +2337,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     var t = z === 'home' ? '' : state.tab, isCol = t === 'spotted' || t === 'garage';
     $('#chips').hidden = !isCol; $('#grid').hidden = !isCol; $('#board').hidden = t !== 'board'; $('#radar').hidden = t !== 'radar'; $('#spot').hidden = t !== 'spot'; if (t !== 'spot') stopCam(); $('#people').hidden = t !== 'people';
     $('#acct').hidden = t !== 'acct';
+    $('#review').hidden = t !== 'review'; if (t === 'review' && $('#review').dataset.on !== '1') { $('#review').dataset.on = '1'; renderReview(); } else if (t !== 'review') $('#review').dataset.on = '';
     $('#feed').hidden = t !== 'feed'; if (t === 'feed' && $('#feed').dataset.z !== z) { $('#feed').dataset.z = z; renderFeed(); } else if (t !== 'feed') $('#feed').dataset.z = '';
     $('#social').hidden = t !== 'social'; if (t === 'social') renderSocial(); else state.prof = null;
     $('#phSection').hidden = t !== 'photo'; if (t === 'photo') { if (ph.loadedFor !== phAcct()) phEnsure(); else renderPhoto(); } else if (ph.view) { ph.view = null; renderPhView(); }
@@ -2814,7 +2846,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     'Guardar look': 'Save look', 'Guardar perfil': 'Save profile', 'Hacer principal': 'Make main', 'Identificar con IA': 'Identify with AI', 'Importar copia': 'Import backup',
     'Inicio': 'Home', 'Intake, tune, rines…': 'Intake, tune, wheels…', 'Integral (AWD)': 'All-wheel (AWD)', 'Invertido': 'Invested',
     'Las cuentas de este dispositivo viven solo en este navegador: no se sincronizan entre teléfonos y se pierden si borras los datos del navegador. El PIN solo evita que alguien abra tu cuenta por accidente; no es seguridad real.': 'Accounts on this device live only in this browser: they don’t sync between phones and are lost if you clear browser data. The PIN only stops someone opening your account by accident; it isn’t real security.',
-    'Legendario': 'Legendary', 'Épico': 'Epic', "Qué es público.": "What’s public.", "Tu @usuario, foto de perfil, bio, ciudad, carro, equipo, redes, tus cartas (con notas y «dónde lo viste»), tus fotos, comentarios, likes y a quién sigues los puede ver cualquiera que abra GARAGE, aunque no tenga cuenta.": "Your @username, profile photo, bio, city, car, gear, socials, your cards (with notes and “where you saw it”), your photos, comments, likes and who you follow can be seen by anyone who opens GARAGE, even without an account.", "Qué es privado.": "What’s private.", "Tu correo y tu contraseña. La contraseña la guarda Google (Firebase) y nadie la puede ver, ni siquiera el dueño de la app.": "Your email and password. Your password is stored by Google (Firebase) and nobody can see it, not even the app owner.", "Cuida tu ubicación.": "Protect your location.", "No pongas direcciones de casas, placas completas ni caras de personas sin permiso. Al subir una foto, la app le quita la ubicación GPS que guarda el teléfono.": "Don’t post home addresses, full license plates or people’s faces without permission. When you upload a photo, the app removes the GPS location your phone saves.", "Si algo está mal.": "If something’s wrong.", "Puedes reportar cuentas, posts, cartas y comentarios, y bloquear a quien no quieras ver. Las personas bloqueadas no pueden seguirte, darte like ni comentarte.": "You can report accounts, posts, cards and comments, and block anyone you don’t want to see. Blocked people can’t follow, like or comment on you.", "Tu cuenta es tuya.": "Your account is yours.", "Puedes borrar tu cuenta y todo lo que subiste desde «Cuenta → Borrar mi cuenta».": "You can delete your account and everything you uploaded from “Account → Delete my account”.", "Modo invitado.": "Guest mode.", "Sin cuenta, tus cartas se quedan solo en este dispositivo. El PIN de las cuentas locales no es seguridad real.": "Without an account, your cards stay only on this device. The PIN on local accounts isn’t real security.", "GARAGE es una app de prueba. Úsala con cuidado y no subas nada que no quieras que sea público.": "GARAGE is a test app. Use it carefully and don’t upload anything you don’t want public.", "Tu colección y tu portafolio son públicos: cualquiera en GARAGE puede verlos, seguirte y darte like.": "Your collection and portfolio are public: anyone on GARAGE can see them, follow you and like them.",  'Privacidad y seguridad': 'Privacy & safety', 'Lee Privacidad y seguridad': 'Read Privacy & safety', 'Al crear tu cuenta, tu perfil, tus cartas y tus fotos serán públicos.': 'When you create an account, your profile, cards and photos will be public.', 'Borrar mi cuenta': 'Delete my account', 'Reportar': 'Report', 'Reportar cuenta': 'Report account', 'Reportar post': 'Report post', 'Reportar comentario': 'Report comment', 'Bloquear cuenta': 'Block account', 'Bloquear': 'Block', 'Desbloquear': 'Unblock', 'comentario': 'comment', 'Spam o publicidad': 'Spam or ads', 'Contenido inapropiado': 'Inappropriate content', 'Acoso o insultos': 'Harassment or insults', 'Se hace pasar por otra persona': 'Impersonating someone', 'Muestra datos privados (casa, placa, cara)': 'Shows private info (home, plate, face)', 'Otro': 'Other', 'Detalles (opcional)': 'Details (optional)', 'Cuéntanos qué pasó': 'Tell us what happened', 'Enviar reporte': 'Send report', 'Gracias': 'Thanks', 'Recibimos tu reporte y lo vamos a revisar. Si no quieres ver más a esta persona, puedes bloquearla desde su perfil.': 'We got your report and will review it. If you don’t want to see this person anymore, you can block them from their profile.', 'Listo': 'Done', 'Cuentas bloqueadas': 'Blocked accounts', 'Desbloquear @': 'Unblock @', 'Bloqueaste a @': 'You blocked @', '. No ves su contenido y no puede seguirte, darte like ni comentarte.': '. You don’t see their content and they can’t follow, like or comment on you.', 'Se borran para siempre tu perfil, tus cartas, tus fotos, tus comentarios, tus likes y a quién sigues. No se puede deshacer.': 'Your profile, cards, photos, comments, likes and follows are deleted forever. This can’t be undone.', 'Escribe tu @usuario para confirmar': 'Type your @username to confirm', 'Tu contraseña': 'Your password', 'Te vamos a pedir entrar con Google otra vez para confirmar.': 'We’ll ask you to sign in with Google again to confirm.', 'Borrar todo para siempre': 'Delete everything forever', 'Escribe tu @usuario exacto para confirmar.': 'Type your exact @username to confirm.', 'Confirmando que eres tú…': 'Confirming it’s you…', 'Escribe tu contraseña.': 'Enter your password.', 'Borrando tus datos…': 'Deleting your data…', 'Tu cuenta y todos tus datos se borraron.': 'Your account and all your data were deleted.', 'Contraseña incorrecta.': 'Wrong password.', 'Entendido': 'Got it', 'Toca para tomar o subir fotos': 'Tap to take or upload photos', 'Puedes escoger varias: la primera es la principal': 'You can pick several: the first one is the main photo', 'Principal +': 'Main +', 'foto extra': 'extra photo', 'fotos extra': 'extra photos', 'Quitar foto': 'Remove photo', 'Guardando': 'Saving', 'La primera foto es la principal del post: es la que sale primero en el feed y en tu portafolio.': 'The first photo is the post’s main photo: it shows first in the feed and your portfolio.', 'Foto anterior': 'Previous photo', 'Foto siguiente': 'Next photo', 'Agrupar fotos': 'Group photos', 'seleccionadas': 'selected', 'Agrupar en un post': 'Group into one post', 'Separar': 'Ungroup', 'Publicar como un solo post (álbum del mismo carro)': 'Publish as one post (album of the same car)', 'Guardando…': 'Saving…', 'fotos agrupadas en un post.': 'photos grouped into one post.', 'Fotos separadas.': 'Photos ungrouped.', 'Actualizar': 'Refresh', 'Entra a tu cuenta para dar like y comentar.': 'Log in to like and comment.', 'Las fotos más recientes de los fotógrafos.': 'The latest photos from photographers.', 'Las cartas más recientes de todos.': 'The latest cards from everyone.', 'No se pudo cargar el feed. Revisa tu conexión.': 'Couldn’t load the feed. Check your connection.', 'Todavía nadie ha subido fotos. ¡Sé el primero!': 'Nobody has uploaded photos yet. Be the first!', 'Todavía nadie ha agregado cartas. ¡Sé el primero!': 'Nobody has added cards yet. Be the first!', 'Agregó a su garage:': 'Added to their garage:', 'Vio un': 'Spotted a', 'Me gusta': 'Like', 'Ver': 'View', 'comentarios': 'comments', 'comentario': 'comment', 'Escribe un comentario…': 'Write a comment…', 'Enviar': 'Send', 'Entra a tu cuenta para comentar.': 'Log in to comment.', 'El feed necesita internet para ver las publicaciones de todos.': 'The feed needs internet to show everyone’s posts.', 'Borrar comentario': 'Delete comment', 'Comentario': 'Comment', 'Apariencia': 'Appearance', 'Modo': 'Mode', 'Claro': 'Light', 'Oscuro': 'Dark', 'Color de acento': 'Accent color', 'Rosado': 'Pink', 'Morado': 'Purple', 'Turquesa': 'Teal', '@usuario': '@username', 'Carro que manejo': 'Car I drive', 'Equipo / cámara': 'Gear / camera', 'Tu perfil': 'Your profile', 'Foto de perfil, @usuario, bio, carro, equipo y redes sociales.': 'Profile photo, @username, bio, car, gear and social media.', 'Editar perfil': 'Edit profile', 'Specs de la cámara': 'Camera specs', 'Edición': 'Editing', 'Lightroom, preset, sin editar…': 'Lightroom, preset, unedited…', 'Publicar': 'Publish', 'Subir': 'Upload', 'Leímos estos datos de la foto; corrígelos si hace falta.': 'We read this data from the photo; fix it if needed.', 'La foto no trae datos de cámara: ponlos a mano si quieres.': 'The photo has no camera data: add it by hand if you want.', 'Lo que escribas se aplica a todas; lo que dejes vacío se toma de cada foto.': 'What you type applies to all; anything left empty is taken from each photo.', 'Hola, @': 'Hi, @', 'Tu sesión está abierta.': 'You’re logged in.', 'Mi cuenta': 'My account', 'Tu cuenta': 'Your account', 'Entra o crea tu cuenta para guardar tus cartas en la nube, seguir gente y dar likes.': 'Log in or create an account to save your cards to the cloud, follow people and give likes.', 'Estás como «': 'You’re using “', 'Guardado en tu cuenta @': 'Saved to your account @', '. Lo ves desde cualquier teléfono.': '. You can see it from any phone.', 'Ese correo ya tiene cuenta. Entra con él.': 'That email already has an account. Log in with it.', 'Ese correo no es válido.': 'That email isn’t valid.', 'La contraseña necesita al menos 6 caracteres.': 'The password needs at least 6 characters.', 'Correo o contraseña incorrectos.': 'Wrong email or password.', 'No hay cuenta con ese correo.': 'No account with that email.', 'Demasiados intentos. Espera un momento y prueba otra vez.': 'Too many attempts. Wait a moment and try again.', 'Cerraste la ventana de Google antes de terminar.': 'You closed the Google window before finishing.', 'Sin conexión. Revisa tu internet.': 'No connection. Check your internet.', 'No tienes permiso para hacer eso.': 'You don’t have permission to do that.', 'Algo falló. Intenta otra vez.': 'Something went wrong. Try again.', 'Conectando…': 'Connecting…', 'Escoge tu usuario': 'Choose your username', 'Es tu nombre público en GARAGE. Así te buscan y te siguen.': 'It’s your public name on GARAGE. People find and follow you by it.', 'Usuario': 'Username', 'Guardar usuario': 'Save username', 'Tus cartas, tu perfil y tus fotos se guardan en tu cuenta y las ves desde cualquier teléfono. Tu sesión se queda abierta en este dispositivo hasta que la cierres.': 'Your cards, profile and photos are saved to your account and you can see them from any phone. You stay logged in on this device until you log out.', 'cartas del modo invitado a mi cuenta': 'guest-mode cards to my account', 'Pasar': 'Move', 'Tu colección y tu portafolio son públicos: cualquiera en GARAGE puede verlos, seguirte y darte like.': 'Your collection and portfolio are public: anyone on GARAGE can see them, follow you and like them.', 'Correo': 'Email', 'Contraseña': 'Password', 'Mínimo 6 caracteres': 'At least 6 characters', 'Repite la contraseña': 'Repeat password', 'Ya tengo cuenta': 'I have an account', 'Continuar con Google': 'Continue with Google', 'Olvidé mi contraseña': 'Forgot my password', 'Sin cuenta estás en modo invitado: tus cartas se quedan solo en este dispositivo y nadie las ve.': 'Without an account you’re in guest mode: your cards stay only on this device and nobody sees them.', 'Pon tu correo y tu contraseña.': 'Enter your email and password.', 'El usuario debe tener de 3 a 20 letras, números, punto o guion bajo.': 'Username must be 3–20 letters, numbers, dot or underscore.', 'Las contraseñas no coinciden.': 'The passwords don’t match.', 'Escribe tu correo arriba y vuelve a tocar «Olvidé mi contraseña».': 'Type your email above and tap “Forgot my password” again.', 'Te mandamos un correo para cambiar la contraseña.': 'We sent you an email to reset your password.', 'cartas pasadas a tu cuenta.': 'cards moved to your account.', 'Entra para seguir': 'Log in to follow', 'Entra a tu cuenta para seguir gente y dar likes.': 'Log in to follow people and give likes.', 'Cargando…': 'Loading…', 'No se pudo cargar la lista. Revisa tu conexión.': 'Couldn’t load the list. Check your connection.', 'Todavía no hay más personas. Comparte el link con tus amigos.': 'No other people yet. Share the link with your friends.', 'No se pudo cargar el perfil.': 'Couldn’t load the profile.', 'Entra para dar like': 'Log in to like', 'Entrar': 'Log in', 'tu@correo.com': 'you@email.com', 'Pon un PIN de 4 a 12 caracteres para proteger tu cuenta.': 'Set a 4 to 12 character PIN to protect your account.', 'Los PIN no coinciden.': 'The PINs don’t match.', 'Repite el PIN': 'Repeat PIN', 'Tu sesión se queda abierta en este dispositivo. Para entrar desde otra cuenta o volver después de cerrar sesión, se pide el PIN.': 'Your session stays open on this device. The PIN is asked when switching from another account or coming back after logging out.', 'Cerrar sesión': 'Log out', 'Invitado · sin PIN': 'Guest · no PIN', '· protegida con PIN': '· PIN protected', 'Todavía no tienes cartas. Usa «+ Agregar carro».': 'You don’t have cards yet. Use “+ Add car”.', 'Velocidad máxima': 'Top speed', 'Velocidad máx. (mph)': 'Top speed (mph)', 'Vel. máx.': 'Top speed', 'Transmisión': 'Transmission', '180 o 175/190': '180 or 175/190', 'Manual 6 velocidades': '6-speed manual', 'Manual 5 velocidades': '5-speed manual', 'Manual 7 velocidades': '7-speed manual', 'Automática 6 velocidades': '6-speed automatic', 'Automática 8 velocidades': '8-speed automatic', 'Automática 10 velocidades': '10-speed automatic', 'Doble embrague (DCT) 7 vel.': '7-speed dual-clutch (DCT)', 'Doble embrague (DCT) 8 vel.': '8-speed dual-clutch (DCT)', 'Secuencial': 'Sequential', 'Eléctrica (1 velocidad)': 'Electric (single-speed)', 'Exposición': 'Exposure', 'Torque (lb-ft)': 'Torque (lb-ft)', 'Arrastra la foto para encuadrarla. Pellizca o usa la rueda del mouse para hacer zoom. Así se verá en la carta.': 'Drag the photo to frame it. Pinch or use the mouse wheel to zoom. This is how it’ll look on the card.', 'El año no es válido. Usa 2020 o 2019/2023.': 'That year isn’t valid. Use 2020 or 2019/2023.', 'Revisa los números: usa un valor (400) o un rango (380/420).': 'Check the numbers: use one value (400) or a range (380/420).', '2025 o 2019/2023': '2025 or 2019/2023', '400 o 380/420': '400 or 380/420', '4.5 o 4.2/4.8': '4.5 or 4.2/4.8', '350 o 330/370': '350 or 330/370', '← Marcas': '← Makes', 'Marcas populares': 'Popular makes', 'Ejemplo': 'Sample', 'Nombre de usuario': 'Username', 'Mi perfil': 'My profile', 'Lente': 'Lens', 'Levantado': 'Lifted', 'Ligero': 'Light', 'Likes a tu colección': 'Likes on your collection',
+    'Legendario': 'Legendary', 'Épico': 'Epic', 'En revisión': 'In review', 'Rechazada': 'Rejected', 'Revisar': 'Review', 'Revisar cartas': 'Review cards', 'Ver solo pendientes': 'Pending only', 'Ver también revisadas': 'Show reviewed too', 'Tú decides la rareza y la calidad de la foto. Los puntos de cada carta cuentan solo después de que la apruebes.': 'You decide the rarity and photo quality. Each card’s points count only after you approve it.', 'No hay cartas pendientes. ✓': 'No pending cards. ✓', 'El usuario puso:': 'User picked:', 'calidad automática': 'auto quality', 'Estado actual:': 'Current status:', 'Aprobada': 'Approved', 'Rareza final': 'Final rarity', 'Calidad de la foto:': 'Photo quality:', 'Nota para el usuario (opcional)': 'Note for the user (optional)', 'Ej: la foto no muestra el carro completo': 'E.g. the photo doesn’t show the whole car', 'Valdría': 'Worth', 'Aprobar': 'Approve', 'Rechazar': 'Reject', 'En revisión: los puntos cuentan cuando GARAGE apruebe esta carta y le ponga la rareza y la calidad final.': 'In review: points count once GARAGE approves this card and sets the final rarity and quality.', 'Esta carta fue rechazada': 'This card was rejected', 'Edítala o cambia la foto y se vuelve a revisar.': 'Edit it or change the photo and it’ll be reviewed again.', '✓ Revisada por GARAGE.': '✓ Reviewed by GARAGE.', 'Galería': 'Gallery', 'Perfil': 'Profile', 'posts': 'posts', 'Carro que maneja': 'Drives', 'Equipo': 'Gear', 'En GARAGE desde': 'On GARAGE since', 'Todavía no escribió una bio.': 'No bio yet.', 'Redes': 'Socials', 'Amigos mutuos': 'Mutual friends', 'Mutuals': 'Mutuals', 'Personas que sigues y que también te siguen.': 'People you follow who also follow you.', 'Personas que tú sigues y que también siguen a @': 'People you follow who also follow @', 'Entra a tu cuenta para ver a quién tienen en común.': 'Log in to see who you have in common.', 'Todavía no tienes amigos mutuos.': 'No mutual friends yet.', 'No tienen a nadie en común todavía.': 'Nobody in common yet.', 'Todavía no hay fotos.': 'No photos yet.', 'Garage': 'Garage', 'Solo el administrador puede revisar cartas.': 'Only the admin can review cards.', "Qué es público.": "What’s public.", "Tu @usuario, foto de perfil, bio, ciudad, carro, equipo, redes, tus cartas (con notas y «dónde lo viste»), tus fotos, comentarios, likes y a quién sigues los puede ver cualquiera que abra GARAGE, aunque no tenga cuenta.": "Your @username, profile photo, bio, city, car, gear, socials, your cards (with notes and “where you saw it”), your photos, comments, likes and who you follow can be seen by anyone who opens GARAGE, even without an account.", "Qué es privado.": "What’s private.", "Tu correo y tu contraseña. La contraseña la guarda Google (Firebase) y nadie la puede ver, ni siquiera el dueño de la app.": "Your email and password. Your password is stored by Google (Firebase) and nobody can see it, not even the app owner.", "Cuida tu ubicación.": "Protect your location.", "No pongas direcciones de casas, placas completas ni caras de personas sin permiso. Al subir una foto, la app le quita la ubicación GPS que guarda el teléfono.": "Don’t post home addresses, full license plates or people’s faces without permission. When you upload a photo, the app removes the GPS location your phone saves.", "Si algo está mal.": "If something’s wrong.", "Puedes reportar cuentas, posts, cartas y comentarios, y bloquear a quien no quieras ver. Las personas bloqueadas no pueden seguirte, darte like ni comentarte.": "You can report accounts, posts, cards and comments, and block anyone you don’t want to see. Blocked people can’t follow, like or comment on you.", "Tu cuenta es tuya.": "Your account is yours.", "Puedes borrar tu cuenta y todo lo que subiste desde «Cuenta → Borrar mi cuenta».": "You can delete your account and everything you uploaded from “Account → Delete my account”.", "Modo invitado.": "Guest mode.", "Sin cuenta, tus cartas se quedan solo en este dispositivo. El PIN de las cuentas locales no es seguridad real.": "Without an account, your cards stay only on this device. The PIN on local accounts isn’t real security.", "GARAGE es una app de prueba. Úsala con cuidado y no subas nada que no quieras que sea público.": "GARAGE is a test app. Use it carefully and don’t upload anything you don’t want public.", "Tu colección y tu portafolio son públicos: cualquiera en GARAGE puede verlos, seguirte y darte like.": "Your collection and portfolio are public: anyone on GARAGE can see them, follow you and like them.",  'Privacidad y seguridad': 'Privacy & safety', 'Lee Privacidad y seguridad': 'Read Privacy & safety', 'Al crear tu cuenta, tu perfil, tus cartas y tus fotos serán públicos.': 'When you create an account, your profile, cards and photos will be public.', 'Borrar mi cuenta': 'Delete my account', 'Reportar': 'Report', 'Reportar cuenta': 'Report account', 'Reportar post': 'Report post', 'Reportar comentario': 'Report comment', 'Bloquear cuenta': 'Block account', 'Bloquear': 'Block', 'Desbloquear': 'Unblock', 'comentario': 'comment', 'Spam o publicidad': 'Spam or ads', 'Contenido inapropiado': 'Inappropriate content', 'Acoso o insultos': 'Harassment or insults', 'Se hace pasar por otra persona': 'Impersonating someone', 'Muestra datos privados (casa, placa, cara)': 'Shows private info (home, plate, face)', 'Otro': 'Other', 'Detalles (opcional)': 'Details (optional)', 'Cuéntanos qué pasó': 'Tell us what happened', 'Enviar reporte': 'Send report', 'Gracias': 'Thanks', 'Recibimos tu reporte y lo vamos a revisar. Si no quieres ver más a esta persona, puedes bloquearla desde su perfil.': 'We got your report and will review it. If you don’t want to see this person anymore, you can block them from their profile.', 'Listo': 'Done', 'Cuentas bloqueadas': 'Blocked accounts', 'Desbloquear @': 'Unblock @', 'Bloqueaste a @': 'You blocked @', '. No ves su contenido y no puede seguirte, darte like ni comentarte.': '. You don’t see their content and they can’t follow, like or comment on you.', 'Se borran para siempre tu perfil, tus cartas, tus fotos, tus comentarios, tus likes y a quién sigues. No se puede deshacer.': 'Your profile, cards, photos, comments, likes and follows are deleted forever. This can’t be undone.', 'Escribe tu @usuario para confirmar': 'Type your @username to confirm', 'Tu contraseña': 'Your password', 'Te vamos a pedir entrar con Google otra vez para confirmar.': 'We’ll ask you to sign in with Google again to confirm.', 'Borrar todo para siempre': 'Delete everything forever', 'Escribe tu @usuario exacto para confirmar.': 'Type your exact @username to confirm.', 'Confirmando que eres tú…': 'Confirming it’s you…', 'Escribe tu contraseña.': 'Enter your password.', 'Borrando tus datos…': 'Deleting your data…', 'Tu cuenta y todos tus datos se borraron.': 'Your account and all your data were deleted.', 'Contraseña incorrecta.': 'Wrong password.', 'Entendido': 'Got it', 'Toca para tomar o subir fotos': 'Tap to take or upload photos', 'Puedes escoger varias: la primera es la principal': 'You can pick several: the first one is the main photo', 'Principal +': 'Main +', 'foto extra': 'extra photo', 'fotos extra': 'extra photos', 'Quitar foto': 'Remove photo', 'Guardando': 'Saving', 'La primera foto es la principal del post: es la que sale primero en el feed y en tu portafolio.': 'The first photo is the post’s main photo: it shows first in the feed and your portfolio.', 'Foto anterior': 'Previous photo', 'Foto siguiente': 'Next photo', 'Agrupar fotos': 'Group photos', 'seleccionadas': 'selected', 'Agrupar en un post': 'Group into one post', 'Separar': 'Ungroup', 'Publicar como un solo post (álbum del mismo carro)': 'Publish as one post (album of the same car)', 'Guardando…': 'Saving…', 'fotos agrupadas en un post.': 'photos grouped into one post.', 'Fotos separadas.': 'Photos ungrouped.', 'Actualizar': 'Refresh', 'Entra a tu cuenta para dar like y comentar.': 'Log in to like and comment.', 'Las fotos más recientes de los fotógrafos.': 'The latest photos from photographers.', 'Las cartas más recientes de todos.': 'The latest cards from everyone.', 'No se pudo cargar el feed. Revisa tu conexión.': 'Couldn’t load the feed. Check your connection.', 'Todavía nadie ha subido fotos. ¡Sé el primero!': 'Nobody has uploaded photos yet. Be the first!', 'Todavía nadie ha agregado cartas. ¡Sé el primero!': 'Nobody has added cards yet. Be the first!', 'Agregó a su garage:': 'Added to their garage:', 'Vio un': 'Spotted a', 'Me gusta': 'Like', 'Ver': 'View', 'comentarios': 'comments', 'comentario': 'comment', 'Escribe un comentario…': 'Write a comment…', 'Enviar': 'Send', 'Entra a tu cuenta para comentar.': 'Log in to comment.', 'El feed necesita internet para ver las publicaciones de todos.': 'The feed needs internet to show everyone’s posts.', 'Borrar comentario': 'Delete comment', 'Comentario': 'Comment', 'Apariencia': 'Appearance', 'Modo': 'Mode', 'Claro': 'Light', 'Oscuro': 'Dark', 'Color de acento': 'Accent color', 'Rosado': 'Pink', 'Morado': 'Purple', 'Turquesa': 'Teal', '@usuario': '@username', 'Carro que manejo': 'Car I drive', 'Equipo / cámara': 'Gear / camera', 'Tu perfil': 'Your profile', 'Foto de perfil, @usuario, bio, carro, equipo y redes sociales.': 'Profile photo, @username, bio, car, gear and social media.', 'Editar perfil': 'Edit profile', 'Specs de la cámara': 'Camera specs', 'Edición': 'Editing', 'Lightroom, preset, sin editar…': 'Lightroom, preset, unedited…', 'Publicar': 'Publish', 'Subir': 'Upload', 'Leímos estos datos de la foto; corrígelos si hace falta.': 'We read this data from the photo; fix it if needed.', 'La foto no trae datos de cámara: ponlos a mano si quieres.': 'The photo has no camera data: add it by hand if you want.', 'Lo que escribas se aplica a todas; lo que dejes vacío se toma de cada foto.': 'What you type applies to all; anything left empty is taken from each photo.', 'Hola, @': 'Hi, @', 'Tu sesión está abierta.': 'You’re logged in.', 'Mi cuenta': 'My account', 'Tu cuenta': 'Your account', 'Entra o crea tu cuenta para guardar tus cartas en la nube, seguir gente y dar likes.': 'Log in or create an account to save your cards to the cloud, follow people and give likes.', 'Estás como «': 'You’re using “', 'Guardado en tu cuenta @': 'Saved to your account @', '. Lo ves desde cualquier teléfono.': '. You can see it from any phone.', 'Ese correo ya tiene cuenta. Entra con él.': 'That email already has an account. Log in with it.', 'Ese correo no es válido.': 'That email isn’t valid.', 'La contraseña necesita al menos 6 caracteres.': 'The password needs at least 6 characters.', 'Correo o contraseña incorrectos.': 'Wrong email or password.', 'No hay cuenta con ese correo.': 'No account with that email.', 'Demasiados intentos. Espera un momento y prueba otra vez.': 'Too many attempts. Wait a moment and try again.', 'Cerraste la ventana de Google antes de terminar.': 'You closed the Google window before finishing.', 'Sin conexión. Revisa tu internet.': 'No connection. Check your internet.', 'No tienes permiso para hacer eso.': 'You don’t have permission to do that.', 'Algo falló. Intenta otra vez.': 'Something went wrong. Try again.', 'Conectando…': 'Connecting…', 'Escoge tu usuario': 'Choose your username', 'Es tu nombre público en GARAGE. Así te buscan y te siguen.': 'It’s your public name on GARAGE. People find and follow you by it.', 'Usuario': 'Username', 'Guardar usuario': 'Save username', 'Tus cartas, tu perfil y tus fotos se guardan en tu cuenta y las ves desde cualquier teléfono. Tu sesión se queda abierta en este dispositivo hasta que la cierres.': 'Your cards, profile and photos are saved to your account and you can see them from any phone. You stay logged in on this device until you log out.', 'cartas del modo invitado a mi cuenta': 'guest-mode cards to my account', 'Pasar': 'Move', 'Tu colección y tu portafolio son públicos: cualquiera en GARAGE puede verlos, seguirte y darte like.': 'Your collection and portfolio are public: anyone on GARAGE can see them, follow you and like them.', 'Correo': 'Email', 'Contraseña': 'Password', 'Mínimo 6 caracteres': 'At least 6 characters', 'Repite la contraseña': 'Repeat password', 'Ya tengo cuenta': 'I have an account', 'Continuar con Google': 'Continue with Google', 'Olvidé mi contraseña': 'Forgot my password', 'Sin cuenta estás en modo invitado: tus cartas se quedan solo en este dispositivo y nadie las ve.': 'Without an account you’re in guest mode: your cards stay only on this device and nobody sees them.', 'Pon tu correo y tu contraseña.': 'Enter your email and password.', 'El usuario debe tener de 3 a 20 letras, números, punto o guion bajo.': 'Username must be 3–20 letters, numbers, dot or underscore.', 'Las contraseñas no coinciden.': 'The passwords don’t match.', 'Escribe tu correo arriba y vuelve a tocar «Olvidé mi contraseña».': 'Type your email above and tap “Forgot my password” again.', 'Te mandamos un correo para cambiar la contraseña.': 'We sent you an email to reset your password.', 'cartas pasadas a tu cuenta.': 'cards moved to your account.', 'Entra para seguir': 'Log in to follow', 'Entra a tu cuenta para seguir gente y dar likes.': 'Log in to follow people and give likes.', 'Cargando…': 'Loading…', 'No se pudo cargar la lista. Revisa tu conexión.': 'Couldn’t load the list. Check your connection.', 'Todavía no hay más personas. Comparte el link con tus amigos.': 'No other people yet. Share the link with your friends.', 'No se pudo cargar el perfil.': 'Couldn’t load the profile.', 'Entra para dar like': 'Log in to like', 'Entrar': 'Log in', 'tu@correo.com': 'you@email.com', 'Pon un PIN de 4 a 12 caracteres para proteger tu cuenta.': 'Set a 4 to 12 character PIN to protect your account.', 'Los PIN no coinciden.': 'The PINs don’t match.', 'Repite el PIN': 'Repeat PIN', 'Tu sesión se queda abierta en este dispositivo. Para entrar desde otra cuenta o volver después de cerrar sesión, se pide el PIN.': 'Your session stays open on this device. The PIN is asked when switching from another account or coming back after logging out.', 'Cerrar sesión': 'Log out', 'Invitado · sin PIN': 'Guest · no PIN', '· protegida con PIN': '· PIN protected', 'Todavía no tienes cartas. Usa «+ Agregar carro».': 'You don’t have cards yet. Use “+ Add car”.', 'Velocidad máxima': 'Top speed', 'Velocidad máx. (mph)': 'Top speed (mph)', 'Vel. máx.': 'Top speed', 'Transmisión': 'Transmission', '180 o 175/190': '180 or 175/190', 'Manual 6 velocidades': '6-speed manual', 'Manual 5 velocidades': '5-speed manual', 'Manual 7 velocidades': '7-speed manual', 'Automática 6 velocidades': '6-speed automatic', 'Automática 8 velocidades': '8-speed automatic', 'Automática 10 velocidades': '10-speed automatic', 'Doble embrague (DCT) 7 vel.': '7-speed dual-clutch (DCT)', 'Doble embrague (DCT) 8 vel.': '8-speed dual-clutch (DCT)', 'Secuencial': 'Sequential', 'Eléctrica (1 velocidad)': 'Electric (single-speed)', 'Exposición': 'Exposure', 'Torque (lb-ft)': 'Torque (lb-ft)', 'Arrastra la foto para encuadrarla. Pellizca o usa la rueda del mouse para hacer zoom. Así se verá en la carta.': 'Drag the photo to frame it. Pinch or use the mouse wheel to zoom. This is how it’ll look on the card.', 'El año no es válido. Usa 2020 o 2019/2023.': 'That year isn’t valid. Use 2020 or 2019/2023.', 'Revisa los números: usa un valor (400) o un rango (380/420).': 'Check the numbers: use one value (400) or a range (380/420).', '2025 o 2019/2023': '2025 or 2019/2023', '400 o 380/420': '400 or 380/420', '4.5 o 4.2/4.8': '4.5 or 4.2/4.8', '350 o 330/370': '350 or 330/370', '← Marcas': '← Makes', 'Marcas populares': 'Popular makes', 'Ejemplo': 'Sample', 'Nombre de usuario': 'Username', 'Mi perfil': 'My profile', 'Lente': 'Lens', 'Levantado': 'Lifted', 'Ligero': 'Light', 'Likes a tu colección': 'Likes on your collection',
     'Listo. Identifícalo con IA o llena los datos a mano.': 'Done. Identify it with AI or fill in the details by hand.', 'Llena los datos a mano.': 'Fill in the details by hand.',
     'Lo vi en la calle': 'Spotted on the street', 'Los carros de tu garage no suman puntos.': 'Garage cars don’t earn points.', 'Malla': 'Mesh', 'Marca': 'Make',
     'Marcar en el Radar': 'Mark on Radar', 'Me gusta esta colección': 'Like this collection', 'Me gusta esta foto': 'Like this photo', 'Mi colección': 'My collection',
@@ -2998,7 +3030,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     col = FB.fs.collection('users').doc(u.uid).collection('cars');
     state.cars = []; ph.loadedFor = null;
     FB.carsUnsub = col.onSnapshot(function (snap) {
-      state.cars = snap.docs.map(function (d) { var o = d.data() || {}; o.id = d.id; return o; }).sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+      state.cars = snap.docs.map(function (d) { var o = d.data() || {}; o.id = d.id; return applyRev(o); }).sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
       if (state.sel && !state.cars.some(function (x) { return x.id === state.sel; })) closeSheet();
       fbSyncStats(); render();
     }, function () {});
@@ -3013,7 +3045,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     FB.statT = setTimeout(function () {
       if (!FB.user || !FB.prof) return;
       var sp = state.cars.filter(function (c) { return c.kind === 'spotted'; });
-      var o = { cards: sp.length, garage: state.cars.length - sp.length, points: sp.reduce(function (t, c) { return t + pointsOf(c.rarity, c.q); }, 0) };
+      var o = { cards: sp.length, garage: state.cars.length - sp.length, points: sp.reduce(function (t, c) { return t + cardPts(c); }, 0) };
       if (o.cards === FB.prof.cards && o.points === FB.prof.points && o.garage === FB.prof.garage) return;
       Object.assign(FB.prof, o);
       FB.fs.collection('users').doc(FB.user.uid).set(o, { merge: true }).catch(function () {});
@@ -3190,37 +3222,75 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
   function fbHeart(on, n, act, id, label) { return heart(on, n, fbMe() ? act : 'tab" data-tab="acct', id, label); }
   async function fbRenderProfile(box, id, seq) {
     var me = fbMe(), own = id === me, spot = state.zone === 'spot';
-    box.innerHTML = '<div class="panel-head"><button class="btn" type="button" data-act="soBack">← Gente</button></div><p class="status">Cargando…</p>';
+    var back = '<button class="btn" type="button" data-act="soBack">← Gente</button>';
+    box.innerHTML = '<div class="panel-head">' + back + '</div><p class="status">Cargando…</p>';
     try {
       var ud = await FB.fs.collection('users').doc(id).get(); if (seq !== soSeq) return;
       var u = ud.exists ? ud.data() : { name: '—' }; u.id = id;
-      var st = await fbStats(id); if (seq !== soSeq) return;
-      var links = SOCIALS.map(function (x) { var l = socialLink(x[0], (u.soc || {})[x[0]]); return l && !l.bad ? '<a class="chip soc" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer"><b>' + esc(x[1]) + '</b><span>' + esc(l.label) + '</span></a>' : ''; }).join('');
-      if (!own && isBlocked(id)) { box.innerHTML = '<div class="panel-head"><button class="btn" type="button" data-act="soBack">← Gente</button></div><div class="note">Bloqueaste a @' + esc(u.name || '') + '. No ves su contenido y no puede seguirte, darte like ni comentarte.</div><div class="actions" style="margin-top:12px"><button class="btn" type="button" data-act="unblock" data-id="' + esc(id) + '">Desbloquear</button></div>'; return; }
-      var h = '<div class="panel-head"><button class="btn" type="button" data-act="soBack">← Gente</button>' + (own ? '<span class="status">Tu perfil</span>' : '<span class="actions" style="flex-wrap:nowrap">' + fbFollowBtn(id) + (me ? '<button class="btn icon-btn" type="button" data-act="report" data-kind="user" data-target="' + esc(id) + '" data-owner="' + esc(id) + '" data-label="@' + esc(u.name || '') + '" aria-label="Reportar cuenta" title="Reportar">⚑</button><button class="btn icon-btn" type="button" data-act="block" data-id="' + esc(id) + '" aria-label="Bloquear cuenta" title="Bloquear">⊘</button>' : '') + '</span>') + '</div>' +
-        '<div class="ph-card">' + avHTML(u, fbName(u), 'ph-av') + '<div class="ph-who"><b>' + esc(fbName(u)) + '</b>' + (u.display ? '<span>@' + esc(u.name) + '</span>' : '') + (u.city ? '<span>' + esc(u.city) + '</span>' : '') + (u.car ? '<span>🚗 ' + esc(u.car) + '</span>' : '') + (u.gear && spot ? '<span>📷 ' + esc(u.gear) + '</span>' : '') + '<span class="so-stats">' + fbStatLine(u, st) + '</span></div></div>' +
-        (u.bio ? '<p class="ph-bio">' + esc(u.bio) + '</p>' : '') + (links ? '<div class="chips" style="margin:10px 0">' + links + '</div>' : '');
-      if (spot) {
-        var ps = groupPhotos(await fbPhotosOf(id)).map(function (gr) { var f = Object.assign({}, gr.photos[0]); f.id = gr.id; f.n = gr.photos.length; f.all = gr.photos; return f; }); if (seq !== soSeq) return;
-        var counts = await Promise.all(ps.map(function (x) { return FB.fs.collection('likes').where('kind', '==', 'photo').where('target', '==', x.id).get().then(function (s) { return s.size; }).catch(function () { return 0; }); }));
-        h += '<h3 class="sub">Portafolio</h3><div class="ph-grid">' + (ps.length ? ps.map(function (x, i) {
-          return '<div class="ph-item so-ph">' + carouselHTML(x.all || [x]) + '<span>' + (x.cap ? esc(x.cap) : '') + (x.cam || x.set ? '<small>' + esc([x.cam, x.lens, x.set].filter(Boolean).join(' · ')) + '</small>' : '') + '</span>' + (own ? '<em class="ph-likes">♥ ' + counts[i] + '</em>' : fbHeart(!!FB.likes['photo_' + x.id], counts[i], 'soLikePhoto', x.id, 'Me gusta esta foto')) + '</div>';
-        }).join('') : '<div class="empty"><span>Todavía no subió fotos.</span></div>') + '</div>';
-      } else {
-        var cs = await fbCarsOf(id); if (seq !== soSeq) return;
+      if (!own && isBlocked(id)) { box.innerHTML = '<div class="panel-head">' + back + '</div><div class="note">Bloqueaste a @' + esc(u.name || '') + '. No ves su contenido y no puede seguirte, darte like ni comentarte.</div><div class="actions" style="margin-top:12px"><button class="btn" type="button" data-act="unblock" data-id="' + esc(id) + '">Desbloquear</button></div>'; return; }
+      var tab = state.profTab || (spot ? 'gallery' : 'cards');
+      var r = await Promise.all([fbStats(id), fbCarsOf(id), fbPhotosOf(id)]); if (seq !== soSeq) return;
+      var st = r[0], cs = r[1], photos = r[2];
+      var head = '<div class="panel-head">' + back + (own ? '<span class="status">Tu perfil</span>' : '<span class="actions" style="flex-wrap:nowrap">' + fbFollowBtn(id) + (me ? '<button class="btn icon-btn" type="button" data-act="report" data-kind="user" data-target="' + esc(id) + '" data-owner="' + esc(id) + '" data-label="@' + esc(u.name || '') + '" aria-label="Reportar cuenta" title="Reportar">⚑</button><button class="btn icon-btn" type="button" data-act="block" data-id="' + esc(id) + '" aria-label="Bloquear cuenta" title="Bloquear">⊘</button>' : '') + '</span>') + '</div>' +
+        '<div class="ph-card">' + avHTML(u, fbName(u), 'ph-av') + '<div class="ph-who"><b>' + esc(u.display || u.name) + '</b><span>@' + esc(u.name || '') + '</span><span class="so-stats"><span><b>' + cs.filter(function (c) { return c.kind === 'spotted'; }).length + '</b> cartas</span><span><b>' + groupPhotos(photos).length + '</b> posts</span><span><b>' + st.likes + '</b> likes</span></span></div></div>' +
+        '<div class="tabs prof-tabs" role="tablist">' + [['gallery', 'Galería'], ['cards', 'Cartas'], ['info', 'Perfil']].map(function (t) { return '<button class="tab" role="tab" type="button" data-act="profTab" data-v="' + t[0] + '" aria-selected="' + (tab === t[0]) + '">' + t[1] + '</button>'; }).join('') + '</div>';
+      var body = '';
+      if (tab === 'gallery') {
+        var items = groupPhotos(photos).map(function (gr) { return { t: gr.ts, h: '<button type="button" class="ph-item gal" data-act="galOpen" data-own="' + esc(id) + '" data-id="' + esc(gr.id) + '">' + '<img src="' + esc(gr.photos[0].data) + '" alt="' + esc(gr.photos[0].cap || 'Foto') + '" loading="lazy">' + (gr.photos.length > 1 ? '<em class="ph-stack">▣ ' + gr.photos.length + '</em>' : '') + (gr.photos[0].cap ? '<span>' + esc(gr.photos[0].cap) + '</span>' : '') + '</button>' }; });
+        cs.filter(function (c) { return c.photo; }).forEach(function (c) { items.push({ t: c.ts || 0, h: '<button type="button" class="ph-item gal" data-act="soCard" data-own="' + esc(id) + '" data-id="' + esc(c.id) + '"><img src="' + esc(c.photo) + '" alt="' + esc(c.make + ' ' + c.model) + '" loading="lazy" style="' + cropStyle(c.crop) + '"><em class="ph-stack">🃏 Carta</em><span>' + esc([c.make, c.model].join(' ')) + '</span></button>' }); });
+        items.sort(function (a, b) { return b.t - a.t; });
+        FB.cache.gal = { owner: id, groups: groupPhotos(photos) };
+        body = '<div class="ph-grid gal-grid">' + (items.length ? items.map(function (x) { return x.h; }).join('') : '<div class="empty"><span>Todavía no hay fotos.</span></div>') + '</div>';
+      } else if (tab === 'cards') {
         var cars = cs.filter(function (c) { return c.kind === 'spotted'; }).sort(function (a, b) { return b.rarity - a.rarity; }), garage = cs.filter(function (c) { return c.kind === 'garage'; });
         var conv = function (c) { return cardHTML(c, false).replace('data-act="open" data-id="' + esc(c.id) + '"', 'data-act="soCard" data-own="' + esc(id) + '" data-id="' + esc(c.id) + '"'); };
-        h += '<div class="so-like-row">' + (own ? heart(false, st.likes, 'noop', id, 'Likes') : fbHeart(!!FB.likes['coll_' + id], st.likes, 'soLikeColl', id, 'Me gusta esta colección')) + '<span class="status">' + (own ? 'Likes a tu colección' : (me ? 'Dale like a su colección' : 'Entra para dar like')) + '</span></div>' +
+        body = '<div class="so-like-row">' + (own ? heart(false, st.likes, 'noop', id, 'Likes') : fbHeart(!!FB.likes['coll_' + id], st.likes, 'soLikeColl', id, 'Me gusta esta colección')) + '<span class="status">' + (own ? 'Likes a tu colección' : (me ? 'Dale like a su colección' : 'Entra para dar like')) + '</span></div>' +
           '<h3 class="sub">Colección</h3><div class="grid so-grid">' + (cars.length ? cars.map(conv).join('') : '<div class="empty"><span>Todavía no tiene cartas.</span></div>') + '</div>' +
-          (garage.length ? '<h3 class="sub">Su garage</h3><div class="grid so-grid">' + garage.map(conv).join('') + '</div>' : '');
+          (garage.length ? '<h3 class="sub">Garage</h3><div class="grid so-grid">' + garage.map(conv).join('') + '</div>' : '');
+      } else {
+        var links = SOCIALS.map(function (x) { var l = socialLink(x[0], (u.soc || {})[x[0]]); return l && !l.bad ? '<a class="chip soc" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer"><b>' + esc(x[1]) + '</b><span>' + esc(l.label) + '</span></a>' : ''; }).join('');
+        var facts = [['Ciudad', u.city], ['Carro que maneja', u.car], ['Equipo', u.gear], ['En GARAGE desde', u.createdAt ? dateOf(u.createdAt) : '']].filter(function (f) { return f[1]; });
+        body = '<div class="prof-info">' + (u.bio ? '<p class="ph-bio">' + esc(u.bio) + '</p>' : '<p class="status">Todavía no escribió una bio.</p>') +
+          (facts.length ? '<dl class="facts">' + facts.map(function (f) { return '<div><dt>' + f[0] + '</dt><dd>' + esc(f[1]) + '</dd></div>'; }).join('') + '</dl>' : '') +
+          (links ? '<h3 class="sub">Redes</h3><div class="chips">' + links + '</div>' : '') +
+          '<h3 class="sub">' + (own ? 'Amigos mutuos' : 'Mutuals') + '</h3><p class="status">' + (own ? 'Personas que sigues y que también te siguen.' : (me ? 'Personas que tú sigues y que también siguen a @' + esc(u.name || '') + '.' : 'Entra a tu cuenta para ver a quién tienen en común.')) + '</p><div class="mutuals" id="mutuals"><span class="status">Cargando…</span></div></div>';
       }
-      box.innerHTML = h;
-    } catch (e) { if (seq === soSeq) box.innerHTML = '<div class="panel-head"><button class="btn" type="button" data-act="soBack">← Gente</button></div><p class="status err">No se pudo cargar el perfil.</p>'; }
+      box.innerHTML = head + body;
+      if (tab === 'info') fbMutuals(id, own, seq);
+    } catch (e) { if (seq === soSeq) box.innerHTML = '<div class="panel-head">' + back + '</div><p class="status err">No se pudo cargar el perfil.</p>'; }
+  }
+  async function fbMutuals(id, own, seq) {
+    var box = $('#mutuals'), me = fbMe(); if (!box) return;
+    if (!me) { box.innerHTML = ''; return; }
+    try {
+      var ids;
+      if (own) {
+        var s1 = await FB.fs.collection('follows').where('to', '==', me).get();
+        ids = s1.docs.map(function (d) { return d.data().from; }).filter(function (x) { return FB.follows[x]; });
+      } else {
+        var s2 = await FB.fs.collection('follows').where('to', '==', id).get();
+        ids = s2.docs.map(function (d) { return d.data().from; }).filter(function (x) { return FB.follows[x] && x !== me; });
+      }
+      ids = ids.filter(function (x) { return !isBlocked(x); });
+      if (seq !== soSeq) return;
+      if (!ids.length) { box.innerHTML = '<span class="status">' + (own ? 'Todavía no tienes amigos mutuos.' : 'No tienen a nadie en común todavía.') + '</span>'; return; }
+      var us = await Promise.all(ids.slice(0, 30).map(feedUser)); if (seq !== soSeq) return;
+      box.innerHTML = us.map(function (x) { return '<button type="button" class="mutual" data-act="soOpen" data-id="' + esc(x.id) + '">' + avHTML(x, x.name, 'ph-av sm') + '<span>@' + esc(x.name || '—') + '</span></button>'; }).join('') + (ids.length > 30 ? '<span class="status">y ' + (ids.length - 30) + ' más</span>' : '');
+    } catch (e) { box.innerHTML = '<span class="status">No se pudo cargar.</span>'; }
+  }
+  function openGallery(owner, gid) {
+    var gal = FB.cache.gal; if (!gal || gal.owner !== owner) return;
+    var gr = gal.groups.find(function (g) { return g.id === gid; }); if (!gr) return;
+    var p = gr.photos[0], spec = [p.cam, p.lens, p.set].filter(Boolean).join(' · ');
+    var root = $('#secModal'); if (!root) { root = document.createElement('div'); root.id = 'secModal'; document.body.appendChild(root); }
+    root.innerHTML = '<div class="scrim" data-act="secClose"></div><div class="ph-light gal-view" role="dialog" aria-modal="true" aria-label="Foto"><div class="post-m">' + carouselHTML(gr.photos) + '</div>' +
+      (p.cap ? '<p class="post-cap">' + esc(p.cap) + '</p>' : '') + (spec || p.edit ? '<p class="post-spec">' + (spec ? '📷 ' + esc(spec) : '') + (p.edit ? (spec ? ' · ' : '') + '🎛 ' + esc(p.edit) : '') + '</p>' : '') +
+      '<p class="status">' + dateOf(gr.ts) + '</p><div class="actions"><button class="btn" type="button" data-act="secClose">Cerrar</button></div></div>';
   }
   async function fbCarsOf(id) {
     if (id === fbMe()) return state.cars;
     var s = await FB.fs.collection('users').doc(id).collection('cars').get();
-    var l = s.docs.map(function (d) { var o = d.data(); o.id = d.id; return o; }).sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+    var l = s.docs.map(function (d) { var o = d.data(); o.id = d.id; return applyRev(o); }).sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
     l.forEach(function (c, i) { c._n = i + 1; }); FB.cache.cars[id] = l; return l;
   }
   async function fbPhotosOf(id) {
@@ -3264,7 +3334,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
       return groupPhotos(ph0).slice(0, 30).map(function (gr) { return { kind: 'photo', id: gr.id, owner: gr.owner, ts: gr.ts, p: gr.photos[0], all: gr.photos }; });
     }
     var g = await FB.fs.collectionGroup('cars').limit(300).get();
-    var items = g.docs.map(function (d) { var o = d.data(); o.id = d.id; var owner = d.ref.parent.parent ? d.ref.parent.parent.id : ''; o._owner = owner; return { kind: 'card', id: d.id, owner: owner, ts: o.ts || 0, c: o }; });
+    var items = g.docs.map(function (d) { var o = d.data(); o.id = d.id; var owner = d.ref.parent.parent ? d.ref.parent.parent.id : ''; o._owner = owner; applyRev(o); return { kind: 'card', id: d.id, owner: owner, ts: o.ts || 0, c: o }; });
     items.sort(function (a, b) { return b.ts - a.ts; });
     return items.slice(0, 30);
   }
@@ -3450,6 +3520,68 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     Object.keys(FB.blocks || {}).forEach(function (id) { feedUser(id).then(function (u) { if (!$('#blkList')) return; var b = document.createElement('button'); b.className = 'btn'; b.type = 'button'; b.dataset.act = 'unblock'; b.dataset.id = id; b.textContent = 'Desbloquear @' + (u.name || '—'); box.appendChild(b); }); });
   }
 
+
+  /* ================= revisión: el admin decide rareza y calidad ================= */
+  var ADMIN_UID = 'f3amZfMHIccH5tAfq35H3qzIIV63';
+  function isAdminMe() { return FB.on && fbMe() === ADMIN_UID; }
+  function applyRev(c) {
+    if (!c) return c;
+    var r = c.rev;
+    c._claim = { rarity: c.rarity, q: c.q };
+    if (r && r.status === 'ok') { c.rarity = r.rarity | 0; if (r.q != null) c.q = r.q; c._st = 'ok'; }
+    else if (r && r.status === 'rejected') c._st = 'rejected';
+    else c._st = 'pending';
+    return c;
+  }
+  function cardPts(c) { return c && (c._st === 'pending' || c._st === 'rejected') ? 0 : pointsOf(c.rarity, c.q); }
+  function revBadge(c) { return c._st === 'pending' ? '<span class="tag rev-tag">En revisión</span>' : c._st === 'rejected' ? '<span class="tag rev-tag bad">Rechazada</span>' : ''; }
+  var RV = { seq: 0, showAll: false };
+  async function renderReview() {
+    var box = $('#reviewBox'); if (!box || state.tab !== 'review') return;
+    if (!isAdminMe()) { box.innerHTML = '<p class="status">Solo el administrador puede revisar cartas.</p>'; return; }
+    var seq = ++RV.seq;
+    box.innerHTML = '<div class="panel-head"><h2>Revisar cartas</h2><div class="actions"><button class="btn" type="button" data-act="rvToggle">' + (RV.showAll ? 'Ver solo pendientes' : 'Ver también revisadas') + '</button><button class="btn" type="button" data-act="rvRefresh">Actualizar</button></div></div>' +
+      '<p class="status">Tú decides la rareza y la calidad de la foto. Los puntos de cada carta cuentan solo después de que la apruebes.</p><div class="rv-list" id="rvList"><p class="status">Cargando…</p></div>';
+    var items;
+    try {
+      var g = await FB.fs.collectionGroup('cars').limit(400).get();
+      items = g.docs.map(function (d) { var o = d.data(); o.id = d.id; o._owner = d.ref.parent.parent ? d.ref.parent.parent.id : ''; return o; });
+    } catch (e) { if (seq === RV.seq) $('#rvList').innerHTML = '<p class="status err">No se pudo cargar. ' + esc(fbErr(e)) + '</p>'; return; }
+    if (seq !== RV.seq) return;
+    items = items.filter(function (c) { return RV.showAll || !c.rev; }).sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+    var list = $('#rvList');
+    if (!items.length) { list.innerHTML = '<div class="empty"><span>No hay cartas pendientes. ✓</span></div>'; return; }
+    list.innerHTML = items.map(function (c) {
+      var r = c.rev || {}, rar = r.rarity != null ? r.rarity : (c.rarity | 0), q = r.q != null ? r.q : (typeof c.q === 'number' ? Math.round(c.q) : 60);
+      var sp = c.specs || {};
+      return '<article class="rv-item" id="rv-' + esc(c.id) + '" data-owner="' + esc(c._owner) + '">' +
+        '<div class="rv-media"><div class="rv-main">' + artHTML(c) + '</div><div class="up-thumbs" id="rvx-' + esc(c.id) + '"></div></div>' +
+        '<div class="rv-info"><span class="lbl" id="rvo-' + esc(c.id) + '">…</span><b class="rv-title">' + esc([c.make, c.model].join(' ')) + '</b>' +
+        '<span class="status">' + esc([yearOf(c), c.color, c.place].filter(Boolean).join(' · ')) + (c.kind === 'garage' ? ' · Garage' : '') + '</span>' +
+        (sp.engine || sp.hp ? '<span class="status">' + esc([sp.engine, sp.hp ? fmtR(sp.hp, sp.hp2) + ' hp' : ''].filter(Boolean).join(' · ')) + '</span>' : '') +
+        '<span class="status">El usuario puso: <b>' + RAR[c.rarity | 0].n + '</b>' + (typeof c.q === 'number' ? ' · calidad automática ' + Math.round(c.q) + '/100' : '') + '</span>' +
+        (c.rev ? '<span class="status">Estado actual: <b>' + (r.status === 'ok' ? 'Aprobada' : 'Rechazada') + '</b></span>' : '') +
+        '<div class="f2"><div class="field"><label for="rvR-' + esc(c.id) + '">Rareza final</label><select id="rvR-' + esc(c.id) + '">' + RAR.map(function (x, i) { return '<option value="' + i + '"' + (i === rar ? ' selected' : '') + '>' + x.n + '</option>'; }).join('') + '</select></div>' +
+        '<div class="field"><label for="rvQ-' + esc(c.id) + '">Calidad de la foto: <b id="rvQv-' + esc(c.id) + '">' + q + '</b>/100</label><input type="range" min="0" max="100" step="1" id="rvQ-' + esc(c.id) + '" data-rvq="' + esc(c.id) + '" value="' + q + '"></div></div>' +
+        '<div class="field"><label for="rvN-' + esc(c.id) + '">Nota para el usuario (opcional)</label><input type="text" id="rvN-' + esc(c.id) + '" maxlength="140" autocomplete="off" value="' + esc(r.note || '') + '" placeholder="Ej: la foto no muestra el carro completo"></div>' +
+        '<p class="status" id="rvP-' + esc(c.id) + '">Valdría ' + pointsOf(rar, q) + ' puntos</p>' +
+        '<div class="actions"><button class="btn primary" type="button" data-act="rvOk" data-id="' + esc(c.id) + '">Aprobar</button><button class="btn danger" type="button" data-act="rvNo" data-id="' + esc(c.id) + '">Rechazar</button></div></div></article>';
+    }).join('');
+    items.forEach(function (c) {
+      feedUser(c._owner).then(function (u) { var el = $('#rvo-' + c.id); if (el) el.textContent = '@' + (u.name || '—'); });
+      extraPhotosOf(c, c._owner).then(function (ps) { var el = $('#rvx-' + c.id); if (el && ps.length > 1) el.innerHTML = ps.map(function (x) { return '<img src="' + esc(x.data) + '" alt="">'; }).join(''); });
+    });
+  }
+  async function reviewSave(id, ok) {
+    var el = $('#rv-' + id); if (!el) return;
+    var owner = el.dataset.owner, rar = +$('#rvR-' + id).value, q = Math.round(+$('#rvQ-' + id).value), note = ($('#rvN-' + id).value || '').trim().slice(0, 140);
+    el.querySelectorAll('button').forEach(function (b) { b.disabled = true; });
+    try {
+      await FB.fs.collection('users').doc(owner).collection('cars').doc(id).update({ rev: { status: ok ? 'ok' : 'rejected', rarity: rar, q: q, by: fbMe(), ts: Date.now(), note: note } });
+      el.classList.add('done'); el.innerHTML = '<p class="status">' + (ok ? '✓ Aprobada: ' + RAR[rar].n + ', calidad ' + q + ' → ' + pointsOf(rar, q) + ' puntos.' : '✕ Rechazada.') + '</p>';
+    } catch (e) { el.querySelectorAll('button').forEach(function (b) { b.disabled = false; }); alert(fbErr(e)); }
+  }
+
   /* ================= gente: seguir y likes (cuentas de este dispositivo) ================= */
   var SO_KEY = 'garage.v1.social';
   function soGet() { var o = null; try { o = JSON.parse(LS.get(SO_KEY) || 'null'); } catch (e) {} o = o || {}; o.f = o.f || {}; o.lc = o.lc || {}; o.lp = o.lp || {}; return o; }
@@ -3538,7 +3670,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     var row = function (k, v) { return v ? '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>' : ''; };
     var specs = row('Motor', esc(sp.engine || '')) + row('Potencia', sp.hp ? fmtR(sp.hp, sp.hp2) + ' hp' : '') + row('Torque', sp.tq ? fmtR(sp.tq, sp.tq2) + ' lb-ft' : '') + row('0–60 mph', sp.zs ? fmtR(sp.zs, sp.zs2) + ' s' : '') + row('Vel. máx.', sp.vmax ? fmtR(sp.vmax, sp.vmax2) + ' mph' : '') + row('Transmisión', esc(sp.trans || '')) + row('Tracción', esc(sp.drive || ''));
     var extra = row('Tipo', esc(body)) + row('Rareza', RAR[r].n) + row('Año', yearOf(c)) + row('Color', esc(c.color || '')) +
-      (c.kind === 'spotted' ? row('Visto en', esc(c.place || '')) + row('Puntos', '★ ' + pointsOf(c.rarity, c.q)) : row('Mods', String((c.mods || []).length)));
+      (c.kind === 'spotted' ? row('Visto en', esc(c.place || '')) + row('Puntos', '★ ' + cardPts(c)) : row('Mods', String((c.mods || []).length)));
     var bars = '';
     if (sp.hp || sp.zs || sp.tq || sp.vmax) {
       var bar = function (lbl, pct, txt) { return '<div class="fv-meter"><span>' + lbl + '</span><i><b style="width:' + Math.round(clamp(pct, 4, 100)) + '%"></b></i><em>' + txt + '</em></div>'; };
@@ -3554,7 +3686,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
         '<span class="c-top"><span>' + esc(serialOf(c)) + '</span><span class="rar"><i></i>' + RAR[r].n + '</span></span>' +
         '<span class="art">' + fvArtHTML(c) + '</span><span class="c-bar"></span>' +
         '<span class="c-meta"><span class="make">' + esc(c.make) + '</span><span class="model">' + esc(c.model) + '</span>' + (sub ? '<span class="fv-sub">' + esc(sub) + '</span>' : '') + '</span>' +
-        '<span class="c-foot fv-foot"><span>' + esc(c.kind === 'spotted' ? (c.place || 'Visto en la calle') : ((c.mods || []).length + ' mods')) + '</span>' + (c.kind === 'spotted' ? '<b>★ ' + pointsOf(c.rarity, c.q) + '</b>' : '<b>Mi garage</b>') + '</span>' +
+        '<span class="c-foot fv-foot"><span>' + esc(c.kind === 'spotted' ? (c.place || 'Visto en la calle') : ((c.mods || []).length + ' mods')) + '</span>' + (c.kind === 'spotted' ? '<b>★ ' + cardPts(c) + '</b>' : '<b>Mi garage</b>') + '</span>' +
         '<span class="fv-shine"></span>' +
       '</span>' +
       '<span class="fv-face fv-back card big r' + r + '">' +
@@ -3728,6 +3860,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     var patch = { make: d.make.slice(0, 60), model: d.model.slice(0, 60), year: yr.a, year2: yr.b, rarity: clamp(+d.rarity || 0, 0, 4),
       body: BODIES[d.body] ? d.body : 'sedan', color: d.color.slice(0, 30), note: d.note.slice(0, 400), specs: (specs.engine || specs.hp || specs.zs || specs.tq || specs.vmax || specs.trans || specs.drive) ? specs : null };
     if (c.kind === 'spotted') patch.place = d.place.slice(0, 80);
+    if (FB.user && c.rev && (patch.make !== c.make || patch.model !== c.model || patch.rarity !== c.rarity)) patch.rev = firebase.firestore.FieldValue.delete();
     state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = ''; state.photoView = false;
     patchCar(c, patch, function () { syncBoardSafe(); });
   }
@@ -3872,7 +4005,12 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     else if (a === 'themeAccent') setTheme('accent', t.dataset.v);
     else if (/^fb(Login|Google|Signup|PickName|Reset|Logout|Migrate)$/.test(a)) fbAct(a);
     else if (a === 'fbView') { FB.view = t.dataset.v; FB.msg = ''; acctSig = ''; renderAcct(true); }
-    else if (a === 'soOpen') { state.prof = t.dataset.id; renderSocial(); window.scrollTo(0, 0); }
+    else if (a === 'profTab') { state.profTab = t.dataset.v; renderSocial(); }
+    else if (a === 'galOpen') openGallery(t.dataset.own, t.dataset.id);
+    else if (a === 'rvToggle') { RV.showAll = !RV.showAll; renderReview(); }
+    else if (a === 'rvRefresh') renderReview();
+    else if (a === 'rvOk' || a === 'rvNo') reviewSave(t.dataset.id, a === 'rvOk');
+    else if (a === 'soOpen') { state.profTab = null; state.prof = t.dataset.id; renderSocial(); window.scrollTo(0, 0); }
     else if (a === 'soBack') { state.prof = null; renderSocial(); }
     else if (a === 'soFollow') { if (FB.on) fbToggleFollow(t.dataset.id).then(renderSocial); else { toggleFollow(t.dataset.id); renderSocial(); } }
     else if (a === 'soFilter') { state.soF = t.dataset.v; renderSocial(); }
@@ -3889,7 +4027,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
     else if (a === 'delAcct') { state.delAcct = true; acctSig = ''; renderAcct(true); var dc = $('#delConfirm'); if (dc) dc.focus(); }
     else if (a === 'delAcctCancel') { state.delAcct = false; acctSig = ''; renderAcct(true); }
     else if (a === 'delAcctGo') fbDeleteAccount();
-    else if (a === 'feedProfile') { state.tab = 'social'; state.prof = t.dataset.id; render(); window.scrollTo(0, 0); }
+    else if (a === 'feedProfile') { state.profTab = null; state.tab = 'social'; state.prof = t.dataset.id; render(); window.scrollTo(0, 0); }
     else if (a === 'feedCard') { var fc0 = FEED.cars[t.dataset.id]; if (fc0) { fv.car = Object.assign({}, fc0); fv.id = fc0.id; fv.flip = false; fv.angle = 0; fv.photos = null; fv.pi = 0; fvLoadPhotos(fc0, fc0._owner); fv.pi = +(t.dataset.pi || 0); renderFv(); } }
     else if (a === 'feedLike') feedLike(t.dataset.id);
     else if (a === 'feedCmt') { FEED.open[t.dataset.id] = !FEED.open[t.dataset.id]; var pm = postMeta(t.dataset.id); if (pm) refreshPostActions(pm.kind, t.dataset.id, pm.owner).then(function () { var ci = $('#cin-' + t.dataset.id); if (ci) ci.focus(); }); }
@@ -3923,6 +4061,7 @@ body.zone-home .home-btn.tp-btn { display: inline-flex; }
   });
   document.addEventListener('input', function (e) {
     var t = e.target;
+    if (t.dataset && t.dataset.rvq) { var rid = t.dataset.rvq, qv = $('#rvQv-' + rid), pp = $('#rvP-' + rid), rr = $('#rvR-' + rid); if (qv) qv.textContent = t.value; if (pp && rr) pp.textContent = 'Valdría ' + pointsOf(+rr.value, +t.value) + ' puntos'; return; }
     if (t.id === 'soQ') { state.soQ = t.value; if (FB.on) { clearTimeout(window.__soT); window.__soT = setTimeout(renderSocial, 350); } else renderSoList(); return; }
     if (t.closest && t.closest('#editForm')) { state.editDraft = readEdit(); if (t.id === 'eMake' || t.id === 'eModel') { var keep = t.id, pos = t.selectionStart; renderSheet(); var ne = $('#' + keep); if (ne) { ne.focus(); try { ne.setSelectionRange(pos, pos); } catch (e2) {} } } return; }
     if (t.id === 'make') { renderSug(); lookupModels(); }
