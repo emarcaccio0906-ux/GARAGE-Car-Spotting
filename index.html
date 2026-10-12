@@ -332,12 +332,20 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
 .drop { background: repeating-linear-gradient(135deg, transparent 0 10px, var(--grid) 10px 11px), var(--bg); }
 
 @media (prefers-reduced-motion: reduce) { .card, .btn { transition: none; } .card:hover { transform: none !important; } }
+/* botón de cuenta (abre la pestaña oculta de Cuenta) */
+.mast-r { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; justify-content: flex-end; }
+.acct-btn { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; max-width: 220px; padding: 4px 14px 4px 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--glass); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--fg); font: 600 14px var(--f-body); cursor: pointer; box-shadow: var(--shadow); }
+.acct-btn i { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 50%; font: 700 15px/1 var(--f-display); font-style: normal; color: var(--accent-fg); background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, #fff), var(--accent)); }
+.acct-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-btn[aria-pressed="true"] { border-color: var(--accent); }
+.mast { position: relative; }
+@media (max-width: 520px) { .mast-r { width: 100%; justify-content: flex-start; } .acct-btn { position: absolute; top: 8px; right: 0; max-width: 130px; } .plate-brand b { font-size: 34px; } }
 </style>
 
 <div class="app">
   <header class="mast">
     <div class="plate-brand"><b>GARAGE</b></div>
-    <p class="summary" id="summary"></p>
+    <div class="mast-r"><p class="summary" id="summary"></p><button class="acct-btn" id="acctBtn" type="button" data-act="acctToggle" aria-label="Cuenta"><i id="acctIni"></i><span id="acctLbl">Cuenta</span></button></div>
   </header>
 
   <div class="bar">
@@ -348,7 +356,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
       <button class="tab" role="tab" id="tabRadar" data-act="tab" data-tab="radar">Radar</button>
       <button class="tab" role="tab" id="tabPeople" data-act="tab" data-tab="people">Gente</button>
       <button class="tab" role="tab" id="tabBoard" data-act="tab" data-tab="board">Ranking</button>
-      <button class="tab" role="tab" id="tabAcct" data-act="tab" data-tab="acct">Cuenta</button>
+      <button class="tab" role="tab" id="tabAcct" data-act="tab" data-tab="acct" hidden>Cuenta</button>
     </div>
     <button class="btn primary" id="addOpen" data-act="add" type="button">+ Agregar carro</button>
   </div>
@@ -407,7 +415,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   </section>
 
   <section class="panel" id="acct" hidden aria-label="Cuenta">
-    <div class="panel-head"><h2>Cuenta</h2></div>
+    <div class="panel-head"><h2>Cuenta</h2><button class="btn" type="button" data-act="acctToggle">Cerrar</button></div>
     <div id="acctBox"></div>
   </section>
 
@@ -1373,7 +1381,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     if (!active || active === 'cloud') return;
     clearTimeout(persistT); persistT = null;
     var ok = LS.set('garage.v1.d.' + active, JSON.stringify({ cars: state.cars }));
-    var f = $('#foot'); if (f && !ok) f.textContent = 'No hay espacio en este dispositivo: lo último que hiciste no se guardó. Borra fotos o exporta una copia desde Cuenta.';
+    var f = $('#foot'); if (f && !ok) f.textContent = 'No hay espacio en este dispositivo: lo último que hiciste no se guardó. Borra fotos o exporta una copia desde tu cuenta (botón de arriba).';
   }
   function persist() { if (!active || active === 'cloud') return; if (persistT) clearTimeout(persistT); persistT = setTimeout(persistNow, 400); }
   async function hashPin(pin, salt) {
@@ -1546,12 +1554,13 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     $('#tabBoard').setAttribute('aria-selected', state.tab === 'board');
     $('#tabSpot').setAttribute('aria-selected', state.tab === 'spot');
     $('#tabAcct').setAttribute('aria-selected', state.tab === 'acct');
+    var an = acctName() || 'Cuenta'; $('#acctLbl').textContent = an; $('#acctIni').textContent = an.trim().charAt(0).toUpperCase(); $('#acctBtn').setAttribute('aria-pressed', state.tab === 'acct'); $('#acctBtn').title = 'Cuenta: ' + an + ' · cambiar o agregar cuentas';
     $('#tabRadar').setAttribute('aria-selected', state.tab === 'radar');
     $('#tabPeople').setAttribute('aria-selected', state.tab === 'people');
     $('#demoNote').hidden = !usingDemos() || !(state.tab === 'spotted' || state.tab === 'garage');
     var f = '';
     if (state.mode === 'memory') f = 'Modo de prueba: lo que agregues no se guarda al cerrar esta página.';
-    else if (state.mode === 'local') f = 'Guardado en este dispositivo, cuenta «' + acctName() + '». No se sincroniza con otros teléfonos: exporta una copia desde Cuenta.';
+    else if (state.mode === 'local') f = 'Guardado en este dispositivo, cuenta «' + acctName() + '». No se sincroniza con otros teléfonos: exporta una copia desde tu cuenta (botón de arriba).';
     else if (state.mode === 'db') f = 'Tus cartas y fotos se guardan en tu cuenta y solo las ves tú, salvo lo que publiques en Gente, Radar o Ranking.';
     $('#foot').textContent = f;
   }
@@ -1814,6 +1823,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     var t = e.target.closest('[data-act]'); if (!t) return;
     var a = t.dataset.act, c;
     if (a === 'tab') { state.tab = t.dataset.tab; state.filter = null; render(); }
+    else if (a === 'acctToggle') { state.tab = state.tab === 'acct' ? 'spotted' : 'acct'; state.filter = null; pendingLogin = null; confirmDelAcct = null; render(); window.scrollTo(0, 0); }
     else if (a === 'filter') { var r = +t.dataset.r; state.filter = state.filter === r ? null : r; renderChips(); renderGrid(); }
     else if (a === 'add') openAdd(t.dataset.kind || state.tab);
     else if (a === 'addClose') closeAdd();
