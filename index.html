@@ -362,6 +362,28 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
 .diff s { color: var(--muted); }
 .confirm-del { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--accent); border-radius: 12px; background: color-mix(in srgb, var(--accent) 8%, transparent); }
 .confirm-del span { font-size: 14px; color: var(--muted); }
+
+/* fotógrafos */
+.ph-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+.ph-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 12px 0; }
+.ph-item { position: relative; display: block; padding: 0; aspect-ratio: 4 / 5; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface-2); cursor: pointer; box-shadow: var(--shadow); }
+.ph-item img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s ease; }
+@media (hover: hover) { .ph-item:hover img { transform: scale(1.04); } }
+.ph-item span { position: absolute; left: 0; right: 0; bottom: 0; padding: 20px 10px 8px; background: linear-gradient(transparent, rgba(0,0,0,.75)); color: #fff; font-size: 12px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ph-card { display: flex; align-items: center; gap: 14px; }
+.ph-av { display: grid; place-items: center; width: 64px; height: 64px; flex: none; border-radius: 50%; font: 700 30px/1 var(--f-display); color: var(--accent-fg); background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, #fff), var(--accent)); box-shadow: var(--shadow); }
+.ph-who { display: flex; flex-direction: column; min-width: 0; }
+.ph-who b { font: 700 26px/1.05 var(--f-display); overflow-wrap: anywhere; }
+.ph-who span { font-size: 13px; color: var(--muted); }
+.ph-bio { margin: 12px 0; }
+.chip.soc { text-decoration: none; gap: 6px; }
+.chip.soc b { font-weight: 600; }
+.chip.soc span { color: var(--muted); font-size: 13px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ph-form { display: flex; flex-direction: column; gap: 12px; }
+.soc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px 12px; }
+.ph-light { position: fixed; z-index: 11; inset: 16px; margin: auto; max-width: 900px; max-height: calc(100% - 32px); display: flex; flex-direction: column; gap: 12px; padding: 12px; overflow-y: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); box-shadow: 0 30px 80px -20px rgba(0,0,0,.8); height: fit-content; }
+.ph-light img { width: 100%; max-height: 65vh; object-fit: contain; border-radius: 10px; background: #000; }
+.ph-meta { display: flex; flex-direction: column; gap: 10px; }
 </style>
 
 <div class="app">
@@ -375,6 +397,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
       <button class="tab" role="tab" id="tabSpotted" data-act="tab" data-tab="spotted"></button>
       <button class="tab" role="tab" id="tabGarage" data-act="tab" data-tab="garage"></button>
       <button class="tab" role="tab" id="tabSpot" data-act="tab" data-tab="spot">Spot now</button>
+      <button class="tab" role="tab" id="tabPhoto" data-act="tab" data-tab="photo">Fotógrafos</button>
       <button class="tab" role="tab" id="tabRadar" data-act="tab" data-tab="radar">Radar</button>
       <button class="tab" role="tab" id="tabPeople" data-act="tab" data-tab="people">Gente</button>
       <button class="tab" role="tab" id="tabBoard" data-act="tab" data-tab="board">Ranking</button>
@@ -498,6 +521,15 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     </form>
     <div class="radar-bar" id="radarBar"></div>
     <ul class="sights" id="sightList"></ul>
+  </section>
+
+  <section class="panel" id="phSection" hidden aria-label="Fotógrafos">
+    <div class="panel-head"><h2>Fotógrafos</h2><button class="btn" type="button" data-act="phEdit" id="phEditBtn">Editar perfil</button></div>
+    <div id="phProfile"></div>
+    <div class="ph-bar"><h3 class="sub" style="margin:0">Mi portafolio</h3><label class="btn primary" for="phFile">+ Subir fotos</label><input class="sr" type="file" id="phFile" accept="image/*" multiple></div>
+    <p class="status" id="phMsg" role="status"></p>
+    <div class="ph-grid" id="phGrid"></div>
+    <p class="status">Por ahora tu perfil y tus fotos se guardan en este dispositivo, en tu cuenta «<span id="phAcct"></span>». Las redes se enlazan con tu usuario o link; no se conectan a tus cuentas.</p>
   </section>
 
   <section class="panel" id="people" hidden aria-label="Gente y colecciones">
@@ -1568,7 +1600,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     pendingLogin = null; confirmDelAcct = null; acctMsg = '';
     if (id === 'cloud' && cloud) { col = cloud.col; state.cars = cloudCars; state.mode = 'db'; }
     else { col = null; state.cars = loadCars(id); state.mode = 'local'; }
-    state.tab = 'spotted'; state.filter = null; acctSig = '';
+    state.tab = 'spotted'; state.filter = null; acctSig = ''; ph.loadedFor = null; ph.view = null;
     render();
   }
   async function createAccount() {
@@ -1725,6 +1757,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     tg.setAttribute('aria-selected', state.tab === 'garage');
     $('#tabBoard').setAttribute('aria-selected', state.tab === 'board');
     $('#tabSpot').setAttribute('aria-selected', state.tab === 'spot');
+    $('#tabPhoto').setAttribute('aria-selected', state.tab === 'photo');
     $('#tabAcct').setAttribute('aria-selected', state.tab === 'acct');
     var an = acctName() || 'Cuenta'; $('#acctLbl').textContent = an; $('#acctIni').textContent = an.trim().charAt(0).toUpperCase(); $('#acctBtn').setAttribute('aria-pressed', state.tab === 'acct'); $('#acctBtn').title = 'Cuenta: ' + an + ' · cambiar o agregar cuentas';
     $('#tabRadar').setAttribute('aria-selected', state.tab === 'radar');
@@ -1806,6 +1839,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     var t = state.tab, isCol = t === 'spotted' || t === 'garage';
     $('#chips').hidden = !isCol; $('#grid').hidden = !isCol; $('#board').hidden = t !== 'board'; $('#radar').hidden = t !== 'radar'; $('#spot').hidden = t !== 'spot'; if (t !== 'spot') stopCam(); $('#people').hidden = t !== 'people';
     $('#acct').hidden = t !== 'acct';
+    $('#phSection').hidden = t !== 'photo'; if (t === 'photo') { if (ph.loadedFor !== (active || 'x')) phEnsure(); else renderPhoto(); } else if (ph.view) { ph.view = null; renderPhView(); }
     renderHeader(); renderChips(); renderGrid(); renderBoard(); renderRadar(); renderPeople(); renderAcct(); renderSheet();
   }
 
@@ -1963,6 +1997,133 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   }
 
 
+
+  /* ================= fotógrafos ================= */
+  var SOCIALS = [
+    ['instagram', 'Instagram', 'https://instagram.com/', /instagram\.com/i],
+    ['tiktok', 'TikTok', 'https://www.tiktok.com/@', /tiktok\.com/i],
+    ['youtube', 'YouTube', 'https://www.youtube.com/@', /youtube\.com|youtu\.be/i],
+    ['x', 'X (Twitter)', 'https://x.com/', /(^|\.)x\.com|twitter\.com/i],
+    ['facebook', 'Facebook', 'https://facebook.com/', /facebook\.com|fb\.com/i],
+    ['snapchat', 'Snapchat', 'https://www.snapchat.com/add/', /snapchat\.com/i],
+    ['threads', 'Threads', 'https://www.threads.net/@', /threads\.(net|com)/i],
+    ['flickr', 'Flickr', 'https://www.flickr.com/photos/', /flickr\.com/i],
+    ['web', 'Sitio web', '', null]
+  ];
+  var ph = { prof: null, photos: [], editing: false, view: null, confirmDel: false, loadedFor: null };
+  function socialLink(key, raw) {
+    var v = String(raw || '').trim(); if (!v) return null;
+    var S = SOCIALS.find(function (x) { return x[0] === key; }); if (!S) return null;
+    if (/^https?:\/\//i.test(v) || /^[a-z0-9-]+(\.[a-z0-9-]+)+(\/|$)/i.test(v)) {
+      var url = /^https?:\/\//i.test(v) ? v : 'https://' + v;
+      try { var u = new URL(url); if (u.protocol !== 'https:' && u.protocol !== 'http:') return null; if (S[3] && !S[3].test(u.hostname)) return { bad: true }; return { url: u.href, label: S[0] === 'web' ? u.hostname.replace(/^www\./, '') : decodeURIComponent(u.pathname.replace(/^\/+|\/+$/g, '').replace(/^add\/|^photos\//, '')) || u.hostname }; } catch (e) { return null; }
+    }
+    if (key === 'web') return null;
+    var h = v.replace(/^@+/, '').replace(/[^A-Za-z0-9._-]/g, '');
+    return h ? { url: S[2] + encodeURIComponent(h), label: '@' + h } : null;
+  }
+  function phKey() { return 'garage.v1.ph.' + (active || 'x'); }
+  function phLoadProf() { try { ph.prof = JSON.parse(LS.get(phKey() + '.prof') || 'null'); } catch (e) { ph.prof = null; } }
+  var IDB = null;
+  function idb() {
+    if (IDB) return IDB;
+    IDB = new Promise(function (res) {
+      try { var r = indexedDB.open('garage-ph', 1); r.onupgradeneeded = function () { r.result.createObjectStore('p', { keyPath: 'id' }).createIndex('acct', 'acct'); }; r.onsuccess = function () { res(r.result); }; r.onerror = function () { res(null); }; } catch (e) { res(null); }
+    });
+    return IDB;
+  }
+  async function phLoadPhotos() {
+    var db = await idb(); var acct = active || 'x';
+    if (!db) { ph.photos = ph.mem && ph.memFor === acct ? ph.mem : []; return; }
+    ph.photos = await new Promise(function (res) {
+      try { var q = db.transaction('p').objectStore('p').index('acct').getAll(acct); q.onsuccess = function () { res((q.result || []).sort(function (a, b) { return b.ts - a.ts; })); }; q.onerror = function () { res([]); }; } catch (e) { res([]); }
+    });
+  }
+  async function phPut(rec) {
+    var db = await idb();
+    if (!db) { if (ph.memFor !== rec.acct) { ph.mem = []; ph.memFor = rec.acct; } ph.mem.unshift(rec); return true; }
+    return new Promise(function (res) { try { var tx = db.transaction('p', 'readwrite'); tx.objectStore('p').put(rec); tx.oncomplete = function () { res(true); }; tx.onerror = function () { res(false); }; } catch (e) { res(false); } });
+  }
+  async function phDel(id) {
+    var db = await idb();
+    if (!db) { ph.mem = (ph.mem || []).filter(function (x) { return x.id !== id; }); return; }
+    await new Promise(function (res) { try { var tx = db.transaction('p', 'readwrite'); tx.objectStore('p').delete(id); tx.oncomplete = res; tx.onerror = res; } catch (e) { res(); } });
+  }
+  async function phEnsure() {
+    var acct = active || 'x'; if (ph.loadedFor === acct) return;
+    ph.loadedFor = acct; ph.view = null; ph.editing = false; phLoadProf(); await phLoadPhotos(); renderPhoto();
+  }
+  function profHTML() {
+    var P = ph.prof, name = (P && P.name) || acctName() || 'Fotógrafo';
+    if (ph.editing || !P) {
+      var d = P || { name: acctName() || '', city: '', bio: '', soc: {} };
+      return '<form class="ph-form" id="phForm" onsubmit="return false">' + (P ? '' : '<p class="status">Crea tu perfil de fotógrafo: así la gente sabe quién tomó las fotos y dónde seguirte.</p>') +
+        '<div class="f2"><div class="field"><label for="phName">Nombre o alias</label><input type="text" id="phName" maxlength="40" autocomplete="off" value="' + esc(d.name) + '"></div>' +
+        '<div class="field"><label for="phCity">Ciudad</label><input type="text" id="phCity" maxlength="40" autocomplete="off" placeholder="Miami, FL" value="' + esc(d.city) + '"></div></div>' +
+        '<div class="field"><label for="phBio">Bio</label><textarea id="phBio" maxlength="240" placeholder="Qué fotografías, tu equipo, cómo contratarte…">' + esc(d.bio) + '</textarea></div>' +
+        '<span class="lbl">Redes sociales <span style="text-transform:none;letter-spacing:0">· pon tu @usuario o el link</span></span>' +
+        '<div class="soc-grid">' + SOCIALS.map(function (x) {
+          return '<div class="field"><label for="soc_' + x[0] + '">' + x[1] + '</label><input type="text" id="soc_' + x[0] + '" data-soc="' + x[0] + '" maxlength="120" autocomplete="off" placeholder="' + (x[0] === 'web' ? 'tusitio.com' : '@usuario') + '" value="' + esc((d.soc || {})[x[0]] || '') + '"></div>';
+        }).join('') + '</div>' +
+        '<p class="status err" id="phFormMsg"></p>' +
+        '<div class="actions"><button class="btn primary" type="button" data-act="phSave">Guardar perfil</button>' + (P ? '<button class="btn" type="button" data-act="phCancel">Cancelar</button>' : '') + '</div></form>';
+    }
+    var links = SOCIALS.map(function (x) { var l = socialLink(x[0], (P.soc || {})[x[0]]); return l && !l.bad ? '<a class="chip soc" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer"><b>' + esc(x[1]) + '</b><span>' + esc(l.label) + '</span></a>' : ''; }).join('');
+    return '<div class="ph-card"><div class="ph-av">' + esc(name.charAt(0).toUpperCase()) + '</div><div class="ph-who"><b>' + esc(name) + '</b>' + (P.city ? '<span>' + esc(P.city) + '</span>' : '') + '<span>' + ph.photos.length + ' fotos</span></div></div>' +
+      (P.bio ? '<p class="ph-bio">' + esc(P.bio) + '</p>' : '') + (links ? '<div class="chips">' + links + '</div>' : '<p class="status">Todavía no pusiste redes. Toca «Editar perfil».</p>');
+  }
+  function renderPhoto() {
+    if (state.tab !== 'photo') return;
+    $('#phAcct').textContent = acctName();
+    $('#phEditBtn').hidden = !ph.prof || ph.editing;
+    $('#phProfile').innerHTML = profHTML();
+    var g = $('#phGrid');
+    g.innerHTML = ph.photos.length ? ph.photos.map(function (x) {
+      return '<button type="button" class="ph-item" data-act="phOpen" data-id="' + esc(x.id) + '"><img src="' + esc(x.data) + '" alt="' + esc(x.cap || 'Foto') + '" loading="lazy">' + (x.cap ? '<span>' + esc(x.cap) + '</span>' : '') + '</button>';
+    }).join('') : '<div class="empty"><span>Sube tus mejores fotos de carros. Se ven aquí como portafolio.</span></div>';
+    renderPhView();
+  }
+  function renderPhView() {
+    var root = $('#phView'); if (!root) { root = document.createElement('div'); root.id = 'phView'; document.body.appendChild(root); }
+    var x = ph.view && ph.photos.find(function (p) { return p.id === ph.view; });
+    if (!x) { root.innerHTML = ''; return; }
+    var name = (ph.prof && ph.prof.name) || acctName();
+    root.innerHTML = '<div class="scrim" data-act="phClose"></div><div class="ph-light" role="dialog" aria-modal="true" aria-label="Foto"><img src="' + esc(x.data) + '" alt="' + esc(x.cap || 'Foto') + '">' +
+      '<div class="ph-meta"><div class="field"><label for="phCap">Descripción</label><input type="text" id="phCap" maxlength="100" autocomplete="off" placeholder="Carro, lugar, evento…" value="' + esc(x.cap || '') + '"></div>' +
+      '<p class="status">Foto de ' + esc(name) + ' · ' + dateOf(x.ts) + '</p>' +
+      (ph.confirmDel ? '<div class="confirm-del"><b>¿Seguro que quieres borrar esta foto?</b><span>No se puede deshacer.</span><div class="actions"><button class="btn danger" type="button" data-act="phDelYes">Sí, borrar</button><button class="btn" type="button" data-act="phDelNo">Cancelar</button></div></div>'
+        : '<div class="actions"><button class="btn primary" type="button" data-act="phCapSave">Guardar descripción</button><button class="btn" type="button" data-act="phDel">Borrar foto</button><button class="btn" type="button" data-act="phClose">Cerrar</button></div>') +
+      '</div></div>';
+  }
+  function phSaveProf() {
+    var name = ($('#phName').value || '').trim().slice(0, 40);
+    if (name.length < 2) { $('#phFormMsg').textContent = 'Pon tu nombre o alias (mínimo 2 letras).'; return; }
+    var soc = {}, bad = [];
+    document.querySelectorAll('[data-soc]').forEach(function (i) {
+      var v = i.value.trim(); if (!v) return; var l = socialLink(i.dataset.soc, v);
+      if (!l || l.bad) bad.push(SOCIALS.find(function (x) { return x[0] === i.dataset.soc; })[1]); else soc[i.dataset.soc] = v.slice(0, 120);
+    });
+    if (bad.length) { $('#phFormMsg').textContent = 'Revisa: ' + bad.join(', ') + '. Pon tu @usuario o un link de esa red.'; return; }
+    ph.prof = { name: name, city: ($('#phCity').value || '').trim().slice(0, 40), bio: ($('#phBio').value || '').trim().slice(0, 240), soc: soc };
+    if (!LS.set(phKey() + '.prof', JSON.stringify(ph.prof))) { $('#phFormMsg').textContent = 'Este navegador no deja guardar datos.'; return; }
+    ph.editing = false; renderPhoto();
+  }
+  async function phUpload(files) {
+    var list = Array.prototype.slice.call(files || []).filter(function (f) { return /^image\//.test(f.type); }).slice(0, 20);
+    if (!list.length) return;
+    var msg = $('#phMsg'), ok = 0, acct = active || 'x';
+    for (var i = 0; i < list.length; i++) {
+      msg.textContent = 'Subiendo ' + (i + 1) + ' de ' + list.length + '…';
+      try {
+        var r = await shrink(list[i], 1600), data = await toURL(r.blob);
+        if (await phPut({ id: uid(), acct: acct, data: data, cap: '', ts: Date.now() + i })) ok++;
+      } catch (e) {}
+    }
+    await phLoadPhotos();
+    msg.textContent = ok === list.length ? ok + (ok === 1 ? ' foto subida.' : ' fotos subidas.') : ok + ' de ' + list.length + ' fotos subidas. Algunas no se pudieron guardar (¿falta espacio?).';
+    renderPhoto();
+  }
+
   /* ================= editar carta ================= */
   function draftOf(c) {
     var sp = c.specs || {};
@@ -2077,6 +2238,15 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     else if (a === 'sugMake') { $('#make').value = t.dataset.v; $('#model').value = ''; renderSug(); lookupModels(); $('#model').focus(); }
     else if (a === 'sugModel') { $('#model').value = t.dataset.v; applyModelMatch(true); }
     else if (a === 'sugBack') { $('#make').value = ''; $('#model').value = ''; resetSpecs(); $('#make').focus(); }
+    else if (a === 'phEdit') { ph.editing = true; renderPhoto(); }
+    else if (a === 'phCancel') { ph.editing = false; renderPhoto(); }
+    else if (a === 'phSave') phSaveProf();
+    else if (a === 'phOpen') { ph.view = t.dataset.id; ph.confirmDel = false; renderPhView(); }
+    else if (a === 'phClose') { ph.view = null; ph.confirmDel = false; renderPhView(); }
+    else if (a === 'phDel') { ph.confirmDel = true; renderPhView(); }
+    else if (a === 'phDelNo') { ph.confirmDel = false; renderPhView(); }
+    else if (a === 'phDelYes') { var pid = ph.view; ph.view = null; ph.confirmDel = false; phDel(pid).then(phLoadPhotos).then(function () { $('#phMsg').textContent = 'Foto borrada.'; renderPhoto(); }); }
+    else if (a === 'phCapSave') { var px = ph.photos.find(function (q) { return q.id === ph.view; }); if (px) { px.cap = ($('#phCap').value || '').trim().slice(0, 100); phPut(px).then(function () { ph.view = null; renderPhoto(); }); } }
     else if (a === 'acctToggle') { state.tab = state.tab === 'acct' ? 'spotted' : 'acct'; state.filter = null; pendingLogin = null; confirmDelAcct = null; render(); window.scrollTo(0, 0); }
     else if (a === 'filter') { var r = +t.dataset.r; state.filter = state.filter === r ? null : r; renderChips(); renderGrid(); }
     else if (a === 'add') openAdd(t.dataset.kind || state.tab);
@@ -2160,6 +2330,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     if (t.id === 'make' || t.id === 'model') applyModelMatch();
     else if (t.id === 'spOk') { $('#specBox').classList.remove('warn'); setSpecStatus(t.checked ? 'Specs confirmados. Se guardan con la carta.' : 'Sin confirmar: no se guardan.'); }
     else if (t.id === 'spDrive') { if (!$('#spOk').checked) setSpecStatus('Cuando estén bien, marca «Confirmo estos specs».'); }
+    else if (t.id === 'phFile') { var pf = t.files; phUpload(pf).then(function () { t.value = ''; }); }
     else if (t.id === 'acImport') { var imf = t.files && t.files[0]; t.value = ''; if (imf) importData(imf); }
     else if (t.id === 'sFrom') { var fc = carById(t.value); if (fc) { $('#sMake').value = fc.make; $('#sModel').value = fc.model; $('#sRarity').value = String(fc.rarity | 0); $('#sBody').value = BODIES[fc.body] ? fc.body : 'sedan'; if (fc.place) $('#sArea').value = fc.place; } }
     else if (t.id === 'spotFile') { var sf = t.files && t.files[0]; t.value = ''; if (sf) spotWith(sf); }
