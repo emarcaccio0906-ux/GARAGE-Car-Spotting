@@ -435,7 +435,7 @@ html.fv-open { overflow: hidden; }
 .plate-brand { cursor: pointer; font: inherit; }
 body.zone-home .bar, body.zone-home #chips, body.zone-home #grid, body.zone-home #foot, body.zone-home .panel, body.zone-home #demoNote, body.zone-home .summary { display: none !important; }
 body:not(.zone-home) #home { display: none; }
-body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot #foot, body.zone-spot .summary { display: none !important; }
+body.zone-spot #chips, body.zone-spot #grid, body.zone-spot #foot, body.zone-spot .summary { display: none !important; }
 .home { display: flex; flex-direction: column; gap: 18px; padding: 24px 0 8px; }
 .home-kicker { margin: 0; font: 500 12px var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
 .home-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -510,12 +510,67 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
 .fv-card.r3 .fv-face { box-shadow: 0 40px 80px -30px rgba(0,0,0,.85), 0 0 70px 0 var(--rc) !important; }
 .fv-card.r4 .fv-face { box-shadow: 0 40px 80px -30px rgba(0,0,0,.85), 0 0 90px 8px var(--rc) !important; }
 .fv-card.r0 .fv-face { box-shadow: 0 40px 80px -30px rgba(0,0,0,.85) !important; }
+
+/* inicio siempre visible */
+.home-btn { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 4px 14px; border: 1px solid var(--line); border-radius: 999px; background: var(--glass); color: var(--fg); font: 600 14px var(--f-body); cursor: pointer; box-shadow: var(--shadow); }
+body.zone-home .home-btn { display: none; }
+@media (max-width: 520px) { .home-btn span { display: none; } .home-btn { padding: 4px 11px; } .acct-btn { right: 0; } .mast-r { gap: 8px; } }
+/* zonas: pestañas */
+body.zone-cards #tabPhoto { display: none; }
+body.zone-spot .bar .tab:not(#tabPhoto):not(#tabSocial) { display: none; }
+body.zone-spot #addOpen { display: none; }
+/* gente */
+.so-me { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--bg) 60%, transparent); margin-bottom: 12px; }
+.so-me .ph-who { flex: 1; min-width: 160px; }
+.ph-av.sm { width: 46px; height: 46px; font-size: 22px; }
+.so-search { margin: 4px 0 6px; }
+.so-search input { min-height: 46px; }
+.so-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+.so-open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 0; border: 0; background: none; color: var(--fg); font: inherit; text-align: left; cursor: pointer; }
+.so-open .ph-who b { font-size: 22px; }
+.so-stats { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.so-stats b { color: var(--fg); font: 600 13px var(--f-mono); }
+.follow-btn { min-height: 38px !important; padding: 6px 14px !important; font-size: 14px !important; flex: none; }
+.like { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--glass); color: var(--fg); font: 600 13px var(--f-mono); cursor: pointer; }
+.like svg { fill: none; stroke: currentColor; stroke-width: 2; }
+.like.on { border-color: var(--accent); color: var(--accent); }
+.like.on svg { fill: var(--accent); }
+@media (prefers-reduced-motion: no-preference) { .like.on svg { animation: likePop .35s ease; } @keyframes likePop { 50% { transform: scale(1.35); } } }
+.so-like-row { display: flex; align-items: center; gap: 10px; margin: 14px 0 4px; }
+.so-ph { cursor: default; }
+.so-ph .like { position: absolute; top: 8px; right: 8px; z-index: 2; background: rgba(10,11,14,.6); color: #fff; border-color: rgba(255,255,255,.25); }
+.ph-likes { position: absolute; top: 8px; right: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(10,11,14,.6); color: #fff; font: 600 12px var(--f-mono); font-style: normal; }
+.so-grid { margin-top: 8px; }
+
+.so-ph .like span { position: static; padding: 0; background: none; font-size: 13px; color: inherit; white-space: nowrap; }
+.so-ph .like.on { color: #ff6b70; border-color: #ff6b70; }
+
+/* idioma */
+.lang-tog { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--glass); box-shadow: var(--shadow); }
+.lang-tog button { min-width: 34px; min-height: 32px; padding: 0 8px; border: 0; border-radius: 999px; background: transparent; color: var(--muted); font: 600 12px var(--f-mono); letter-spacing: .08em; cursor: pointer; }
+.lang-tog button[aria-pressed="true"] { background: var(--accent); color: var(--accent-fg); }
+.lang-pick { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 16px; background: radial-gradient(ellipse at 50% 30%, rgba(30,34,44,.85), rgba(3,4,6,.96)); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.lp-box { width: min(420px, 100%); display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 28px 22px; text-align: center; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); box-shadow: 0 40px 80px -30px rgba(0,0,0,.9); }
+.lp-box b { font: 700 40px/1 var(--f-display); letter-spacing: .32em; margin-right: -.32em; }
+.lp-box p { margin: 0; color: var(--muted); }
+.lp-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+.lp-btns .btn { min-height: 54px; font-size: 17px; }
+.lp-box small { color: var(--muted); font-size: 12px; }
+@media (max-width: 520px) { .lang-tog button { min-width: 30px; padding: 0 6px; } }
+
+.fv-back { gap: 4px; }
+.fv-back .fv-specs { gap: 7px 12px; margin: 4px 0 2px; }
+.fv-back .fv-specs dd { font-size: 17px; }
+.fv-back .fv-specs.small { grid-template-columns: repeat(3, 1fr); }
+.fv-back .fv-specs.small dd { font-size: 12.5px; }
+.fv-back .fv-meter { font-size: 11px; }
+.fv-back .fv-bhead .model { font-size: 26px; }
 </style>
 
 <div class="app">
   <header class="mast">
     <button type="button" class="plate-brand brand" data-act="home" aria-label="GARAGE, ir al inicio"><b>GARAGE</b><small>Collect · Spot</small></button>
-    <div class="mast-r"><p class="summary" id="summary"></p><button class="acct-btn" id="acctBtn" type="button" data-act="acctToggle" aria-label="Cuenta"><i id="acctIni"></i><span id="acctLbl">Cuenta</span></button></div>
+    <div class="mast-r"><p class="summary" id="summary"></p><span class="lang-tog" role="group" aria-label="Idioma"><button type="button" data-act="lang" data-v="es" data-noi18n>ES</button><button type="button" data-act="lang" data-v="en" data-noi18n>EN</button></span><button class="home-btn" id="homeBtn" type="button" data-act="home" aria-label="Inicio"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5M5.5 9.5V20h5v-6h3v6h5V9.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Inicio</span></button><button class="acct-btn" id="acctBtn" type="button" data-act="acctToggle" aria-label="Cuenta"><i id="acctIni"></i><span id="acctLbl">Cuenta</span></button></div>
   </header>
 
   <section class="home" id="home" aria-label="Inicio">
@@ -537,7 +592,8 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
       <button class="tab" role="tab" id="tabSpotted" data-act="tab" data-tab="spotted"></button>
       <button class="tab" role="tab" id="tabGarage" data-act="tab" data-tab="garage"></button>
       <button class="tab" role="tab" id="tabSpot" data-act="tab" data-tab="spot">Spot now</button>
-      <button class="tab" role="tab" id="tabPhoto" data-act="tab" data-tab="photo" hidden>Fotógrafos</button>
+      <button class="tab" role="tab" id="tabPhoto" data-act="tab" data-tab="photo">Mi portafolio</button>
+      <button class="tab" role="tab" id="tabSocial" data-act="tab" data-tab="social">Gente</button>
       <button class="tab" role="tab" id="tabRadar" data-act="tab" data-tab="radar">Radar</button>
       <button class="tab" role="tab" id="tabPeople" data-act="tab" data-tab="people">Gente</button>
       <button class="tab" role="tab" id="tabBoard" data-act="tab" data-tab="board">Ranking</button>
@@ -566,7 +622,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
             <button class="btn" type="button" data-crop="center">Centrar</button>
             <label class="btn" for="photo">Cambiar foto</label>
           </div>
-          <p class="status">Arrastra la foto para encuadrarla. Así se verá en la carta.</p>
+          <p class="status">Arrastra la foto para encuadrarla. Pellizca o usa la rueda del mouse para hacer zoom. Así se verá en la carta.</p>
         </div>
         <button class="btn" id="idBtn" type="button" hidden disabled>Identificar con IA</button>
         <p class="status" id="idStatus" role="status"></p>
@@ -589,7 +645,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
           <div class="field"><label for="model">Modelo</label><input type="text" id="model" list="mdList" autocomplete="off" placeholder="Tacoma"><datalist id="mdList"></datalist></div>
         </div>
         <div class="f2">
-          <div class="field"><label for="year">Año</label><input type="number" id="year" inputmode="numeric" min="1900" max="2100" placeholder="2025"></div>
+          <div class="field"><label for="year">Año</label><input type="text" id="year" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="2025 o 2019/2023"></div>
           <div class="field"><label for="rarity">Rareza</label><select id="rarity"></select></div>
         </div>
         <div class="f2"><div class="field"><label for="bodyType">Tipo de carro</label><select id="bodyType"></select></div><div class="field"><label for="colorIn">Color</label><input type="text" id="colorIn" list="colorList" maxlength="30" autocomplete="off" placeholder="Rojo, Negro mate…"><datalist id="colorList"><option value="Negro"><option value="Blanco"><option value="Gris"><option value="Plata"><option value="Rojo"><option value="Azul"><option value="Verde"><option value="Amarillo"><option value="Naranja"><option value="Morado"><option value="Café"><option value="Negro mate"><option value="Gris Nardo"><option value="Blanco perla"></datalist></div></div>
@@ -597,10 +653,17 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
           <div class="specs-head"><span class="lbl">Specs</span><span class="specs-tag">Aproximados</span></div>
           <div class="f2">
             <div class="field"><label for="spEngine">Motor</label><input type="text" id="spEngine" autocomplete="off" maxlength="60" placeholder="3.5L V6 biturbo"></div>
-            <div class="field"><label for="spHp">Potencia (hp)</label><input type="number" id="spHp" inputmode="numeric" min="1" max="3000" placeholder="400"></div>
+            <div class="field"><label for="spHp">Potencia (hp)</label><input type="text" id="spHp" inputmode="decimal" maxlength="11" autocomplete="off" placeholder="400 o 380/420"></div>
           </div>
           <div class="f2">
-            <div class="field"><label for="spZs">0–60 mph (seg)</label><input type="number" id="spZs" inputmode="decimal" min="1" max="30" step="0.1" placeholder="4.5"></div>
+            <div class="field"><label for="spZs">0–60 mph (seg)</label><input type="text" id="spZs" inputmode="decimal" maxlength="11" autocomplete="off" placeholder="4.5 o 4.2/4.8"></div>
+            <div class="field"><label for="spTq">Torque (lb-ft)</label><input type="text" id="spTq" inputmode="decimal" maxlength="11" autocomplete="off" placeholder="350 o 330/370"></div>
+          </div>
+          <div class="f2">
+            <div class="field"><label for="spVmax">Velocidad máx. (mph)</label><input type="text" id="spVmax" inputmode="decimal" maxlength="11" autocomplete="off" placeholder="180 o 175/190"></div>
+            <div class="field"><label for="spTrans">Transmisión</label><input type="text" id="spTrans" list="transList" maxlength="40" autocomplete="off" placeholder="Manual 6 velocidades"><datalist id="transList"><option value="Manual 5 velocidades"><option value="Manual 6 velocidades"><option value="Manual 7 velocidades"><option value="Automática 6 velocidades"><option value="Automática 8 velocidades"><option value="Automática 10 velocidades"><option value="Doble embrague (DCT) 7 vel."><option value="Doble embrague (DCT) 8 vel."><option value="CVT"><option value="Secuencial"><option value="Eléctrica (1 velocidad)"></datalist></div>
+          </div>
+          <div class="f2">
             <div class="field"><label for="spDrive">Tracción</label><select id="spDrive"></select></div>
           </div>
           <p class="status" id="spStatus" role="status"></p>
@@ -673,6 +736,10 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     <p class="status">Por ahora tu perfil y tus fotos se guardan en este dispositivo, en tu cuenta «<span id="phAcct"></span>». Las redes se enlazan con tu usuario o link; no se conectan a tus cuentas.</p>
   </section>
 
+  <section class="panel" id="social" hidden aria-label="Gente">
+    <div id="socialBox"></div>
+  </section>
+
   <section class="panel" id="people" hidden aria-label="Gente y colecciones">
     <div class="panel-head"><h2>Gente</h2></div>
     <div id="profileBox"></div>
@@ -699,6 +766,14 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
   <p class="foot" id="foot"></p>
 </div>
 <div id="sheetRoot"></div>
+<div class="lang-pick" id="langPick" hidden data-noi18n>
+  <div class="lp-box" role="dialog" aria-modal="true" aria-label="Idioma / Language">
+    <b>GARAGE</b>
+    <p>Elige tu idioma · Choose your language</p>
+    <div class="lp-btns"><button type="button" class="btn" data-act="lang" data-v="es">Español</button><button type="button" class="btn" data-act="lang" data-v="en">English</button></div>
+    <small>Puedes cambiarlo arriba en cualquier momento · You can change it anytime at the top</small>
+  </div>
+</div>
 
 <script>
 (function () {
@@ -824,7 +899,23 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
       if (norm($('#make').value) === key) fillModelList();
     }, 450);
   }
-  function specInputs() { return { engine: $('#spEngine'), hp: $('#spHp'), zs: $('#spZs'), drive: $('#spDrive') }; }
+
+  /* rangos: "380", "380/420", "380-420", "2019 a 2023" */
+  function parseRange(v, lo, hi, dec) {
+    v = String(v == null ? '' : v).trim().replace(/,/g, '.'); if (!v) return { a: null, b: null, ok: true };
+    var parts = v.replace(/(\d)\s*-\s*(\d)/g, '$1/$2').split(/\s*(?:\/|–|—|\bto\b|\ba\b)\s*/i).filter(Boolean);
+    if (parts.length > 2) return { ok: false };
+    var nums = parts.map(function (x) { var n = parseFloat(x); return isFinite(n) && n >= lo && n <= hi ? (dec ? Math.round(n * 10) / 10 : Math.round(n)) : NaN; });
+    if (nums.some(isNaN)) return { ok: false };
+    var a = nums[0], b = nums.length > 1 ? nums[1] : null;
+    if (b != null && b < a) { var t = a; a = b; b = t; }
+    if (b === a) b = null;
+    return { a: a, b: b, ok: true };
+  }
+  function fmtR(a, b) { return a == null || a === '' ? '' : (b != null && b !== a ? a + '–' + b : String(a)); }
+  function yearOf(c) { return fmtR(c.year, c.year2); }
+
+  function specInputs() { return { engine: $('#spEngine'), hp: $('#spHp'), zs: $('#spZs'), tq: $('#spTq'), vmax: $('#spVmax'), trans: $('#spTrans'), drive: $('#spDrive') }; }
   function setSpecStatus(t) { var s = $('#spStatus'); if (s) s.textContent = t || ''; }
   function applyModelMatch(force) {
     var mk = catMake($('#make').value), m = mk ? catModel(mk, $('#model').value) : null;
@@ -847,13 +938,13 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
   }
   function readSpecs() {
     if (!$('#spOk').checked) return null;
-    var f = specInputs(), hp = parseInt(f.hp.value, 10), zs = parseFloat(f.zs.value);
-    var o = { engine: f.engine.value.trim().slice(0, 60), hp: hp > 0 && hp < 3000 ? hp : null, zs: zs > 0 && zs < 30 ? Math.round(zs * 10) / 10 : null, drive: f.drive.value };
-    return (o.engine || o.hp || o.zs || o.drive) ? o : null;
+    var f = specInputs(), hp = parseRange(f.hp.value, 1, 3000), zs = parseRange(f.zs.value, 1, 30, true), tq = parseRange(f.tq.value, 1, 3000), vm = parseRange(f.vmax.value, 20, 350);
+    var o = { engine: f.engine.value.trim().slice(0, 60), hp: hp.a, hp2: hp.b, zs: zs.a, zs2: zs.b, tq: tq.a, tq2: tq.b, vmax: vm.a, vmax2: vm.b, trans: f.trans.value.trim().slice(0, 40), drive: f.drive.value };
+    return (o.engine || o.hp || o.zs || o.tq || o.vmax || o.trans || o.drive) ? o : null;
   }
   function resetSpecs() {
     var f = specInputs(); if (!f.engine) return;
-    f.engine.value = ''; f.hp.value = ''; f.zs.value = ''; f.drive.value = '';
+    f.engine.value = ''; f.hp.value = ''; f.zs.value = ''; f.tq.value = ''; f.vmax.value = ''; f.trans.value = ''; f.drive.value = '';
     $('#spOk').checked = false; specSrc = ''; $('#specBox').classList.remove('found'); setSpecStatus('');
     renderSug();
   }
@@ -861,8 +952,11 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     if (!s) return '';
     var o = '';
     if (s.engine) o += '<div><dt>Motor</dt><dd>' + esc(s.engine) + '</dd></div>';
-    if (s.hp) o += '<div><dt>Potencia</dt><dd>' + s.hp + ' hp</dd></div>';
-    if (s.zs) o += '<div><dt>0–60 mph</dt><dd>' + s.zs + ' s</dd></div>';
+    if (s.hp) o += '<div><dt>Potencia</dt><dd>' + fmtR(s.hp, s.hp2) + ' hp</dd></div>';
+    if (s.tq) o += '<div><dt>Torque</dt><dd>' + fmtR(s.tq, s.tq2) + ' lb-ft</dd></div>';
+    if (s.zs) o += '<div><dt>0–60 mph</dt><dd>' + fmtR(s.zs, s.zs2) + ' s</dd></div>';
+    if (s.vmax) o += '<div><dt>Velocidad máxima</dt><dd>' + fmtR(s.vmax, s.vmax2) + ' mph</dd></div>';
+    if (s.trans) o += '<div><dt>Transmisión</dt><dd>' + esc(s.trans) + '</dd></div>';
     if (s.drive) o += '<div><dt>Tracción</dt><dd>' + esc(s.drive) + '</dd></div>';
     return o;
   }
@@ -1127,9 +1221,10 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
   var serialOf = function (c) {
     if (c.demo || c.peer) return c.serial;
     var i = state.cars.findIndex(function (x) { return x.id === c.id; });
+    if (i < 0 && c._n) return 'GAR-' + String(c._n).padStart(3, '0');
     return 'GAR-' + String(i + 1).padStart(3, '0');
   };
-  var dateOf = function (ts) { return ts ? new Date(ts).toLocaleDateString('es-US', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; };
+  var dateOf = function (ts) { return ts ? new Date(ts).toLocaleDateString(LANG === 'en' ? 'en-US' : 'es-US', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; };
 
   /* actualiza campos de un carro (db o memoria) */
   function patchCar(c, patch, done) {
@@ -1143,10 +1238,11 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
   }
 
   /* ================= fotos y encuadre ================= */
-  function normCrop(c) { c = c || {}; return { x: clamp(num(c.x, 50), 0, 100), y: clamp(num(c.y, 50), 0, 100), z: clamp(num(c.z, 1), 1, 3), b: clamp(num(c.b, 100), 50, 150), k: clamp(num(c.k, 100), 50, 150), s: clamp(num(c.s, 100), 0, 200), w: clamp(num(c.w, 0), -30, 30) }; }
+  function normCrop(c) { c = c || {}; return { x: clamp(num(c.x, 50), 0, 100), y: clamp(num(c.y, 50), 0, 100), z: clamp(num(c.z, 1), 1, 3), b: clamp(num(c.b, 100), 50, 150), k: clamp(num(c.k, 100), 50, 150), s: clamp(num(c.s, 100), 0, 200), w: clamp(num(c.w, 0), -30, 30), e: clamp(num(c.e, 0), -2, 1) }; }
   function fxFilter(k) {
     var f = [];
-    if (k.b !== 100) f.push('brightness(' + k.b / 100 + ')');
+    var br = k.b / 100 * Math.pow(2, k.e || 0);
+    if (Math.abs(br - 1) > 0.001) f.push('brightness(' + br.toFixed(3) + ')');
     if (k.k !== 100) f.push('contrast(' + k.k / 100 + ')');
     if (k.s !== 100) f.push('saturate(' + k.s / 100 + ')');
     if (k.w > 0) f.push('sepia(' + (k.w / 100).toFixed(2) + ')');
@@ -1154,7 +1250,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     return f.join(' ');
   }
   function cropStyle(c) { var k = normCrop(c), fl = fxFilter(k); return 'object-position:' + k.x + '% ' + k.y + '%;transform-origin:' + k.x + '% ' + k.y + '%;transform:scale(' + k.z + ')' + (fl ? ';filter:' + fl : ''); }
-  var FX_PRESETS = [['orig', 'Original', { b: 100, k: 100, s: 100, w: 0 }], ['vivo', 'Vivo', { b: 104, k: 112, s: 135, w: 0 }], ['cine', 'Cine', { b: 96, k: 118, s: 80, w: -12 }], ['calido', 'Cálido', { b: 104, k: 104, s: 110, w: 18 }], ['noche', 'Noche', { b: 88, k: 122, s: 90, w: -20 }], ['bn', 'B/N', { b: 102, k: 120, s: 0, w: 0 }]];
+  var FX_PRESETS = [['orig', 'Original', { b: 100, k: 100, s: 100, w: 0, e: 0 }], ['vivo', 'Vivo', { b: 104, k: 112, s: 135, w: 0 }], ['cine', 'Cine', { b: 96, k: 118, s: 80, w: -12 }], ['calido', 'Cálido', { b: 104, k: 104, s: 110, w: 18 }], ['noche', 'Noche', { b: 88, k: 122, s: 90, w: -20 }], ['bn', 'B/N', { b: 102, k: 120, s: 0, w: 0 }]];
 
   function photoList(c) {
     var out = [];
@@ -1174,24 +1270,35 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
       img.style.transformOrigin = st.x + '% ' + st.y + '%';
       img.style.transform = 'scale(' + st.z + ')';
       zi.value = st.z; xi.value = st.x; yi.value = st.y;
-      if (st.b != null) { img.style.filter = fxFilter(normCrop(st)); [['cb', 'b'], ['ck', 'k'], ['cs', 's'], ['cw', 'w']].forEach(function (q) { var el = root.querySelector('.' + q[0]); if (el) el.value = st[q[1]]; }); }
+      if (st.b != null || st.e != null) { img.style.filter = fxFilter(normCrop(st)); [['ce', 'e'], ['cb', 'b'], ['ck', 'k'], ['cs', 's'], ['cw', 'w']].forEach(function (q) { var el = root.querySelector('.' + q[0]); if (el) el.value = st[q[1]] || 0; }); }
     }
     function change() { apply(); if (onChange) onChange(st); }
     zi.oninput = function () { st.z = clamp(+zi.value, 1, 3); change(); };
     xi.oninput = function () { st.x = clamp(+xi.value, 0, 100); change(); };
     yi.oninput = function () { st.y = clamp(+yi.value, 0, 100); change(); };
     cb.onclick = function () { st.x = 50; st.y = 50; st.z = 1; change(); };
-    [['cb', 'b', 50, 150], ['ck', 'k', 50, 150], ['cs', 's', 0, 200], ['cw', 'w', -30, 30]].forEach(function (q) { var el = root.querySelector('.' + q[0]); if (el) el.oninput = function () { st[q[1]] = clamp(+el.value, q[2], q[3]); change(); }; });
+    [['ce', 'e', -2, 1], ['cb', 'b', 50, 150], ['ck', 'k', 50, 150], ['cs', 's', 0, 200], ['cw', 'w', -30, 30]].forEach(function (q) { var el = root.querySelector('.' + q[0]); if (el) el.oninput = function () { st[q[1]] = clamp(+el.value, q[2], q[3]); change(); }; });
     root.querySelectorAll('[data-fx]').forEach(function (bt) { bt.onclick = function () { var pr = FX_PRESETS.find(function (x) { return x[0] === bt.dataset.fx; }); if (pr) { Object.assign(st, pr[2]); change(); } }; });
-    stage.onpointerdown = function (e) { drag = { x: e.clientX, y: e.clientY, sx: st.x, sy: st.y }; try { stage.setPointerCapture(e.pointerId); } catch (err) { /* sin captura */ } };
+    var pts = {}, pinch = null;
+    function pinchDist() { var k = Object.keys(pts); if (k.length < 2) return 0; var a = pts[k[0]], b = pts[k[1]]; return Math.hypot(a.x - b.x, a.y - b.y); }
+    stage.onpointerdown = function (e) {
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      try { stage.setPointerCapture(e.pointerId); } catch (err) { /* sin captura */ }
+      if (Object.keys(pts).length === 2) { drag = null; pinch = { d: pinchDist(), z: st.z }; }
+      else drag = { x: e.clientX, y: e.clientY, sx: st.x, sy: st.y };
+    };
     stage.onpointermove = function (e) {
+      if (pts[e.pointerId]) pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (pinch && pinch.d) { st.z = clamp(pinch.z * pinchDist() / pinch.d, 1, 3); change(); return; }
       if (!drag) return;
-      var r = stage.getBoundingClientRect();
-      st.x = clamp(drag.sx - (e.clientX - drag.x) / r.width * 100, 0, 100);
-      st.y = clamp(drag.sy - (e.clientY - drag.y) / r.height * 100, 0, 100);
+      var r = stage.getBoundingClientRect(), sp = 1 / st.z;
+      st.x = clamp(drag.sx - (e.clientX - drag.x) / r.width * 100 * sp, 0, 100);
+      st.y = clamp(drag.sy - (e.clientY - drag.y) / r.height * 100 * sp, 0, 100);
       change();
     };
-    stage.onpointerup = stage.onpointercancel = function () { drag = null; };
+    stage.onwheel = function (e) { e.preventDefault(); st.z = clamp(st.z * Math.exp(-e.deltaY * 0.0015), 1, 3); change(); };
+    stage.ondblclick = function () { st.z = st.z > 1.4 ? 1 : 2; change(); };
+    stage.onpointerup = stage.onpointercancel = function (e) { delete pts[e.pointerId]; if (Object.keys(pts).length < 2) pinch = null; drag = null; };
     apply();
     return { apply: apply };
   }
@@ -1212,6 +1319,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
         '<label for="sY">Vertical</label><input class="cy" id="sY" type="range" min="0" max="100" step="1" value="' + k.y + '"></div>' +
         '<span class="lbl">Filtros</span><div class="opts fx-row">' + FX_PRESETS.map(function (pr) { return '<button type="button" class="chip" data-fx="' + pr[0] + '">' + pr[1] + '</button>'; }).join('') + '</div>' +
         '<span class="lbl">Ajustes</span><div class="crop-ctl">' +
+        '<label for="sE">Exposición</label><input class="ce" id="sE" type="range" min="-2" max="1" step="0.1" value="' + (k.e || 0) + '">' +
         '<label for="sB">Brillo</label><input class="cb" id="sB" type="range" min="50" max="150" step="1" value="' + k.b + '">' +
         '<label for="sK">Contraste</label><input class="ck" id="sK" type="range" min="50" max="150" step="1" value="' + k.k + '">' +
         '<label for="sS">Saturación</label><input class="cs" id="sS" type="range" min="0" max="200" step="1" value="' + k.s + '">' +
@@ -1255,7 +1363,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
   function saveCrop() {
     var c = carById(state.sel); if (!c) return;
     var sp = selPhoto(c); if (!sp || !state.crop) return;
-    var nk = normCrop(state.crop), crop = { x: Math.round(nk.x * 10) / 10, y: Math.round(nk.y * 10) / 10, z: r2(nk.z), b: Math.round(nk.b), k: Math.round(nk.k), s: Math.round(nk.s), w: Math.round(nk.w) };
+    var nk = normCrop(state.crop), crop = { x: Math.round(nk.x * 10) / 10, y: Math.round(nk.y * 10) / 10, z: r2(nk.z), b: Math.round(nk.b), k: Math.round(nk.k), s: Math.round(nk.s), w: Math.round(nk.w), e: Math.round(nk.e * 10) / 10 };
     enqueue(async function () {
       try {
         if (sp.primary) { if (col) await col.doc(c.id).update({ crop: crop }); else c.crop = crop; }
@@ -1735,7 +1843,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     set: function (k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
     del: function (k) { try { localStorage.removeItem(k); } catch (e) {} }
   };
-  var cloudName = '', cloudPhone = '', accts = [], active = '', cloudAvail = false, cloud = null, cloudCars = [], pendingLogin = null, confirmDelAcct = null, acctMsg = '', persistT = null, acctSig = '';
+  var acctView = 'list', cloudName = '', cloudPhone = '', accts = [], active = '', cloudAvail = false, cloud = null, cloudCars = [], pendingLogin = null, confirmDelAcct = null, acctMsg = '', persistT = null, acctSig = '';
   var cloudOn = function () { return active === 'cloud' && !!cloud; };
   function loadAccts() { try { accts = JSON.parse(LS.get('garage.v1.accts') || '[]'); } catch (e) { accts = []; } if (!Array.isArray(accts)) accts = []; }
   function saveAccts() { return LS.set('garage.v1.accts', JSON.stringify(accts)); }
@@ -1757,10 +1865,10 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     persistNow();
     closeSheet(); closeAdd();
     active = id; LS.set('garage.v1.active', id);
-    pendingLogin = null; confirmDelAcct = null; acctMsg = '';
+    pendingLogin = null; confirmDelAcct = null; acctMsg = ''; acctView = 'list';
     if (id === 'cloud' && cloud) { col = cloud.col; state.cars = cloudCars; state.mode = 'db'; }
     else { col = null; state.cars = loadCars(id); state.mode = 'local'; }
-    state.tab = 'spotted'; state.filter = null; acctSig = ''; ph.loadedFor = null; ph.view = null;
+    state.tab = 'spotted'; state.filter = null; acctSig = ''; ph.loadedFor = null; ph.view = null; state.prof = null;
     render();
   }
   async function createAccount() {
@@ -1850,7 +1958,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
   function renderAcct(force) {
     if (state.tab !== 'acct') return;
     var box = $('#acctBox');
-    var sig = JSON.stringify([active, accts.map(function (a) { return a.id + a.name + (a.pin ? 1 : 0); }), cloudAvail, pendingLogin, confirmDelAcct, acctMsg, cloudName, cloudPhone]);
+    var sig = JSON.stringify([acctView, active, accts.map(function (a) { return a.id + a.name + (a.pin ? 1 : 0); }), cloudAvail, pendingLogin, confirmDelAcct, acctMsg, cloudName, cloudPhone]);
     if (!force && sig === acctSig) return;
     if (!force && box.contains(document.activeElement) && box.innerHTML) return;
     acctSig = sig;
@@ -1873,10 +1981,11 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
         (active === 'cloud' ? '' : '<p class="status">Entra a la cuenta de Claude para editarla.</p>') +
         (accts.length && active === 'cloud' ? '<div class="field"><label for="lkSel">Pasar cartas de una cuenta de este dispositivo a mi cuenta de Claude</label><select id="lkSel">' + accts.map(function (a) { return '<option value="' + esc(a.id) + '">' + esc(a.name) + ' (' + loadCars(a.id).length + ' cartas)</option>'; }).join('') + '</select></div><div class="actions"><button class="btn" type="button" data-act="lkGo">Pasar cartas</button></div>' : '') + '</div>';
     }
+    if (acctView === 'new') { box.innerHTML = '<div class="acct-new"><h3 class="sub" style="margin:0">Crear cuenta nueva</h3><p class="status">Cada cuenta tiene sus propias cartas, su portafolio y su perfil.</p><div class="field"><label for="acName">Nombre de usuario</label><input type="text" id="acName" maxlength="24" autocomplete="off" placeholder="Nombre"></div>' +
+        '<div class="field"><label for="acPin">PIN (opcional)</label><input type="password" id="acPin" maxlength="12" autocomplete="off" placeholder="4 a 12 caracteres"></div>' +
+        '<p class="status err" id="acMsg">' + esc(acctMsg) + '</p><div class="actions"><button class="btn primary" type="button" data-act="acNew">Crear cuenta</button><button class="btn" type="button" data-act="acBack">Volver</button></div></div>'; var an0 = $('#acName'); if (an0 && force !== 'keep') an0.focus(); return; }
     box.innerHTML = '<p class="status">Sesión actual: <b>' + esc(acctName()) + '</b>. ' + (active === 'cloud' ? 'Tus cartas están en tu cuenta de Claude.' : 'Tus cartas se guardan en este dispositivo.') + '</p>' + rows +
-      '<div class="acct-new"><div class="field"><label for="acName">Crear cuenta nueva</label><input type="text" id="acName" maxlength="24" autocomplete="off" placeholder="Nombre"></div>' +
-      '<div class="field"><label for="acPin">PIN (opcional)</label><input type="password" id="acPin" maxlength="12" autocomplete="off" placeholder="4 a 12 caracteres"></div>' +
-      '<div class="actions"><button class="btn primary" type="button" data-act="acNew">Crear cuenta</button></div></div>' +
+      '<div class="actions" style="margin-top:14px"><button class="btn primary" type="button" data-act="acGoNew">+ Crear cuenta nueva</button></div>' +
       cloudForm + '<h3 class="sub">Copia de seguridad</h3><p class="status">Para pasar tus cartas a otro teléfono o guardarlas, exporta una copia e impórtala allá.</p>' +
       '<div class="actions" style="margin-top:8px"><button class="btn" type="button" data-act="acExport">Exportar copia</button><label class="btn" for="acImport">Importar copia</label><input class="sr" type="file" id="acImport" accept="application/json,.json"></div>' +
       '<p class="status err" id="acMsg">' + esc(acctMsg) + '</p>' +
@@ -1891,8 +2000,8 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
   }
   function cardHTML(c, big) {
     var r = clamp(c.rarity | 0, 0, 4), spotted = c.kind === 'spotted', foot;
-    if (spotted) foot = [c.year || '', c.place || ''].filter(Boolean).join(' · ');
-    else { var t = (c.mods || []).reduce(function (s, m) { return s + (+m.cost || 0); }, 0); foot = [c.year || '', (c.mods || []).length + ' mods' + (t ? ' · ' + usd(t) : '')].filter(Boolean).join(' · '); }
+    if (spotted) foot = [yearOf(c), c.place || ''].filter(Boolean).join(' · ');
+    else { var t = (c.mods || []).reduce(function (s, m) { return s + (+m.cost || 0); }, 0); foot = [yearOf(c), (c.mods || []).length + ' mods' + (t ? ' · ' + usd(t) : '')].filter(Boolean).join(' · '); }
     var inner = '<span class="c-top"><span>' + esc(serialOf(c)) + '</span><span class="rar"><i></i>' + RAR[r].n + '</span></span>' +
       '<span class="art">' + artHTML(c) + (c.demo ? '<span class="tag">Ejemplo</span>' : '') + '</span><span class="c-bar"></span>' +
       '<span class="c-meta"><span class="make">' + esc(c.make) + '</span><span class="model">' + esc(c.model) + '</span></span>' +
@@ -1918,6 +2027,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     $('#tabBoard').setAttribute('aria-selected', state.tab === 'board');
     $('#tabSpot').setAttribute('aria-selected', state.tab === 'spot');
     $('#tabPhoto').setAttribute('aria-selected', state.tab === 'photo');
+    $('#tabSocial').setAttribute('aria-selected', state.tab === 'social');
     $('#tabAcct').setAttribute('aria-selected', state.tab === 'acct');
     var an = acctName() || 'Cuenta'; $('#acctLbl').textContent = an; var avp = null; try { avp = JSON.parse(LS.get('garage.v1.ph.' + (active || 'x') + '.prof') || 'null'); } catch (e) {} var ai = $('#acctIni'); if (avp && avp.avatar) { ai.innerHTML = '<img src="' + esc(avp.avatar) + '" alt="">'; ai.classList.add('img'); } else { ai.textContent = an.trim().charAt(0).toUpperCase(); ai.classList.remove('img'); } $('#acctBtn').setAttribute('aria-pressed', state.tab === 'acct'); $('#acctBtn').title = 'Cuenta: ' + an + ' · cambiar o agregar cuentas';
     $('#tabRadar').setAttribute('aria-selected', state.tab === 'radar');
@@ -1960,7 +2070,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     var mods = c.mods || [];
     var total = mods.reduce(function (s, m) { return s + (+m.cost || 0); }, 0);
     var facts = '';
-    if (c.year) facts += '<div><dt>Año</dt><dd>' + c.year + '</dd></div>';
+    if (c.year) facts += '<div><dt>Año</dt><dd>' + yearOf(c) + '</dd></div>';
     if (c.color) facts += '<div><dt>Color</dt><dd>' + esc(c.color) + '</dd></div>';
     facts += specFacts(c.specs);
     if (c.place) facts += '<div><dt>Visto en</dt><dd>' + esc(c.place) + '</dd></div>';
@@ -1981,7 +2091,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     else tail = '<div class="actions">' + (c.kind === 'spotted' && sightCol && active === 'cloud' ? '<button class="btn" type="button" data-act="sightFromCar">Marcar en el Radar</button>' : '') + '<button class="btn" type="button" data-act="photoOpen">' + (c.photo ? 'Foto y edición' : 'Agregar foto') + '</button><button class="btn" type="button" data-act="editOpen">Editar carta</button><button class="btn" type="button" data-act="del">Eliminar carta</button></div>';
     root.innerHTML = '<div class="scrim" data-act="close"></div>' +
       '<aside class="sheet r' + clamp(c.rarity | 0, 0, 4) + '" role="dialog" aria-modal="true" aria-label="' + esc(c.make + ' ' + c.model) + '"><div class="sheet-body">' +
-      '<div class="sheet-top"><span class="lbl">Carta ' + esc(serialOf(c)) + '</span><button class="btn" type="button" id="sheetClose" data-act="close">Cerrar</button></div>' +
+      '<div class="sheet-top"><span class="lbl">Carta ' + esc(serialOf(c)) + '</span><span class="actions" style="flex-wrap:nowrap"><button class="btn" type="button" data-act="home">Inicio</button><button class="btn" type="button" id="sheetClose" data-act="close">Cerrar</button></span></div>' +
       cardHTML(c, true) +
       (state.photoView && !c.demo ? '<div class="edit-form">' + photosHTML(c) + '</div>' :
       (c.kind === 'spotted' ? scoreHTML(c) : '') +
@@ -1998,7 +2108,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
 
   function render() {
     var z = state.zone || 'home';
-    if (z === 'spot' && state.tab !== 'photo' && state.tab !== 'acct') state.tab = 'photo';
+    if (z === 'spot' && state.tab !== 'photo' && state.tab !== 'acct' && state.tab !== 'social') state.tab = 'photo';
     if (z === 'cards' && state.tab === 'photo') state.tab = 'spotted';
     document.body.classList.remove('zone-home', 'zone-cards', 'zone-spot'); document.body.classList.add('zone-' + z);
     var hc = $('#homeCards'), hs = $('#homeSpot');
@@ -2007,6 +2117,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     var t = z === 'home' ? '' : state.tab, isCol = t === 'spotted' || t === 'garage';
     $('#chips').hidden = !isCol; $('#grid').hidden = !isCol; $('#board').hidden = t !== 'board'; $('#radar').hidden = t !== 'radar'; $('#spot').hidden = t !== 'spot'; if (t !== 'spot') stopCam(); $('#people').hidden = t !== 'people';
     $('#acct').hidden = t !== 'acct';
+    $('#social').hidden = t !== 'social'; if (t === 'social') renderSocial(); else state.prof = null;
     $('#phSection').hidden = t !== 'photo'; if (t === 'photo') { if (ph.loadedFor !== (active || 'x')) phEnsure(); else renderPhoto(); } else if (ph.view) { ph.view = null; renderPhView(); }
     renderHeader(); renderChips(); renderGrid(); renderBoard(); renderRadar(); renderPeople(); renderAcct(); renderSheet();
   }
@@ -2140,12 +2251,15 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     var make = $('#make').value.trim(), model = $('#model').value.trim();
     if (!make || !model) { setStatus('Falta la marca y el modelo.', true); return; }
     var spf = specInputs();
-    if (!$('#spOk').checked && (spf.engine.value.trim() || spf.hp.value || spf.zs.value || spf.drive.value)) { setSpecStatus('Confirma los specs (o bórralos) antes de guardar.'); $('#specBox').classList.add('warn'); $('#spOk').focus(); return; }
-    var y = parseInt($('#year').value, 10);
+    if (!$('#spOk').checked && (spf.engine.value.trim() || spf.hp.value || spf.zs.value || spf.tq.value || spf.vmax.value || spf.trans.value.trim() || spf.drive.value)) { setSpecStatus('Confirma los specs (o bórralos) antes de guardar.'); $('#specBox').classList.add('warn'); $('#spOk').focus(); return; }
+    var yr = parseRange($('#year').value, 1900, 2100);
+    if (!yr.ok) { setStatus('El año no es válido. Usa 2020 o 2019/2023.', true); return; }
+    var bad = ['spHp', 'spZs', 'spTq', 'spVmax'].filter(function (id) { var r = parseRange($('#' + id).value, 1, id === 'spZs' ? 30 : id === 'spVmax' ? 350 : 3000, id === 'spZs'); return !r.ok; });
+    if ($('#spOk').checked && bad.length) { setSpecStatus('Revisa los números: usa un valor (400) o un rango (380/420).'); $('#specBox').classList.add('warn'); return; }
     var cq = currentQ();
     var car = {
       id: uid(), kind: kind, make: make.slice(0, 60), model: model.slice(0, 60),
-      year: (y >= 1900 && y <= 2100) ? y : null, rarity: +$('#rarity').value || 0, body: BODIES[$('#bodyType').value] ? $('#bodyType').value : 'sedan',
+      year: yr.a, year2: yr.b, rarity: +$('#rarity').value || 0, body: BODIES[$('#bodyType').value] ? $('#bodyType').value : 'sedan',
       place: kind === 'spotted' ? $('#place').value.trim().slice(0, 80) : '',
       note: $('#noteIn').value.trim().slice(0, 400), color: $('#colorIn').value.trim().slice(0, 30), why: lastWhy, photo: photo.url,
       crop: photo.url ? { x: Math.round(addCrop.x * 10) / 10, y: Math.round(addCrop.y * 10) / 10, z: r2(addCrop.z) } : null,
@@ -2253,7 +2367,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     $('#phProfile').innerHTML = profHTML();
     var g = $('#phGrid');
     g.innerHTML = ph.photos.length ? ph.photos.map(function (x) {
-      return '<button type="button" class="ph-item" data-act="phOpen" data-id="' + esc(x.id) + '"><img src="' + esc(x.data) + '" alt="' + esc(x.cap || 'Foto') + '" loading="lazy">' + ((x.cap || x.cam) ? '<span>' + (x.cap ? esc(x.cap) : '') + (x.cam ? '<small>📷 ' + esc(x.cam) + '</small>' : '') + '</span>' : '') + '</button>';
+      return '<button type="button" class="ph-item" data-act="phOpen" data-id="' + esc(x.id) + '"><img src="' + esc(x.data) + '" alt="' + esc(x.cap || 'Foto') + '" loading="lazy">' + (photoLikes(x.id) ? '<em class="ph-likes">♥ ' + photoLikes(x.id) + '</em>' : '') + ((x.cap || x.cam) ? '<span>' + (x.cap ? esc(x.cap) : '') + (x.cam ? '<small>📷 ' + esc(x.cam) + '</small>' : '') + '</span>' : '') + '</button>';
     }).join('') : '<div class="empty"><span>Sube tus mejores fotos de carros. Se ven aquí como portafolio.</span></div>';
     renderPhView();
   }
@@ -2270,7 +2384,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
       (x.cam || x.set ? '<p class="status">Datos leídos de la foto. Puedes corregirlos.</p>' : '') +
       '<p class="status">Foto de ' + esc(name) + ' · ' + dateOf(x.ts) + '</p>' +
       (ph.confirmDel ? '<div class="confirm-del"><b>¿Seguro que quieres borrar esta foto?</b><span>No se puede deshacer.</span><div class="actions"><button class="btn danger" type="button" data-act="phDelYes">Sí, borrar</button><button class="btn" type="button" data-act="phDelNo">Cancelar</button></div></div>'
-        : '<div class="actions"><button class="btn primary" type="button" data-act="phCapSave">Guardar</button><button class="btn" type="button" data-act="phDel">Borrar foto</button><button class="btn" type="button" data-act="phClose">Cerrar</button></div>') +
+        : '<div class="actions"><button class="btn primary" type="button" data-act="phCapSave">Guardar</button><button class="btn" type="button" data-act="phDel">Borrar foto</button><button class="btn" type="button" data-act="phClose">Cerrar</button><button class="btn" type="button" data-act="home">Inicio</button></div>') +
       '</div></div>';
   }
   function phSaveProf() {
@@ -2367,20 +2481,282 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
   }
 
 
+
+
+  /* ================= idioma (español / english) ================= */
+  var EN = {
+    '+ Agregar carro': '+ Add car', '+ Crear cuenta nueva': '+ Create new account', '+ Subir fotos': '+ Upload photos',
+    '(la IA puede subir o bajar la nota al evaluar el encuadre)': '(the AI may raise or lower the score after judging the framing)',
+    '(principal)': '(main)', '(sin fotos extra).': '(no extra photos).', 'No se puede deshacer.': 'This can’t be undone.',
+    'Pon tu @usuario o un link de esa red.': 'Enter your @username or a link from that network.',
+    'Son del modelo base o la versión más común: revísalos, corrige lo que no cuadre y confírmalos.': 'They’re for the base model or most common version: review them, fix anything off and confirm.',
+    'Toca una para abrirla.': 'Tap one to open it.', 'más que la principal. Ponla como principal para ganar más puntos.': 'more than the main one. Make it the main photo to earn more points.',
+    '0–60 mph (seg)': '0–60 mph (sec)', '4 a 12 caracteres': '4 to 12 characters', 'Alerón / spoiler': 'Wing / spoiler',
+    'Incluir también «Mis carros»': 'Also include “My cars”', 'Públicas': 'Public', 'Guardar cuenta': 'Save account', 'Guardar foto': 'Save photo',
+    '@usuario': '@username', 'Abrir cámara': 'Open camera', 'Aceleración': 'Acceleration', 'Agregar': 'Add', 'Agregar carro': 'Add car',
+    'Agregar foto': 'Add photo', 'Agregar foto de perfil': 'Add profile photo', 'Ajustes': 'Adjustments', 'Algunas no cupieron o no se pudieron guardar.': 'Some didn’t fit or couldn’t be saved.',
+    'Amarillo': 'Yellow', 'Analizando la foto…': 'Analyzing the photo…', 'Aproximados': 'Approximate',
+    'Aquí no se puede abrir la cámara directo. Usa el botón «Usar la cámara del teléfono».': 'The camera can’t open directly here. Use “Use phone camera”.',
+    'Aquí solo se comparten tus puntos, cuántas cartas tienes y tu mejor hallazgo. Las fotos son privadas. Cuentan los carros de la colección, no los de tu garage.': 'Only your points, card count and best find are shared here. Photos stay private. Collection cars count, garage cars don’t.',
+    'Arrastra la foto para encuadrarla. Así se verá en la carta.': 'Drag the photo to frame it. This is how it’ll look on the card.',
+    'Azul': 'Blue', 'Año': 'Year', 'Bio': 'Bio', 'Blanco': 'White', 'Borrar': 'Delete', 'Borrar foto': 'Delete photo', 'Borrar mi usuario': 'Delete my user',
+    'Brillo': 'Brightness', 'Bronce': 'Bronze', 'Buena': 'Good', 'Floja': 'Weak', 'Buscando tu ubicación…': 'Finding your location…', 'Buscar personas': 'Search people',
+    'Buscar personas por nombre…': 'Search people by name…', 'Cada cuenta tiene sus propias cartas, su portafolio y su perfil.': 'Each account has its own cards, portfolio and profile.',
+    'Cambiar foto': 'Change photo', 'Cambiar foto de perfil': 'Change profile photo', 'Cancelar': 'Cancel', 'Carro, lugar, evento…': 'Car, place, event…',
+    'Carta': 'Card', 'Carta de ejemplo. Desaparece cuando guardes tu primer carro.': 'Sample card. It disappears when you save your first car.',
+    'Carta. Desliza o toca para girarla': 'Card. Swipe or tap to flip it', 'Centrar': 'Center', 'Cerrar': 'Close', 'Cerrar cámara': 'Close camera', 'Cine': 'Cinema',
+    'Ciudad': 'City', 'Colecciones públicas': 'Public collections', 'Colección': 'Collection', 'Colección de cartas': 'Card Collection',
+    'Color de rines': 'Rim color', 'Color, detalles, algo que te llamó la atención': 'Color, details, anything that caught your eye', 'Común': 'Common',
+    'Confirma los specs (o bórralos) antes de guardar.': 'Confirm the specs (or clear them) before saving.', 'Confirmar': 'Confirm', 'Confirmo estos specs': 'I confirm these specs',
+    'Contraste': 'Contrast', 'Copia de seguridad': 'Backup', 'Copia lista.': 'Backup ready.', 'Costo': 'Cost',
+    'Crea tu perfil de fotógrafo: así la gente sabe quién tomó las fotos y dónde seguirte.': 'Create your photographer profile so people know who took the photos and where to follow you.',
+    'Crea tu usuario': 'Create your user', 'Crear cuenta': 'Create account', 'Crear cuenta nueva': 'Create new account', 'Crear usuario': 'Create user',
+    'Cuando estén bien, marca «Confirmo estos specs».': 'When they look right, check “I confirm these specs”.', 'Cuenta': 'Account', 'Cuenta de Claude': 'Claude account',
+    'Cuenta guardada.': 'Account saved.', 'Cuenta:': 'Account:', 'Cálido': 'Warm', 'Cámara': 'Camera', 'Dale like a su colección': 'Like their collection',
+    'Datos del avistamiento cargados. Ahora toma tu propia foto: la calidad de la foto da los puntos.': 'Sighting data loaded. Now take your own photo: photo quality earns the points.',
+    'Datos leídos de la foto. Puedes corregirlos.': 'Data read from the photo. You can correct it.', 'De fábrica': 'Stock', 'Delantera (FWD)': 'Front (FWD)',
+    'Demasiadas consultas seguidas. Espera un momento y vuelve a intentar.': 'Too many requests in a row. Wait a moment and try again.',
+    'Deportivo': 'Sports', 'Descripción': 'Description', 'Desde mi colección': 'From my collection', 'Desliza la carta para girarla': 'Swipe the card to flip it',
+    'Dónde lo viste': 'Where you saw it', 'Editar carta': 'Edit card', 'Editar perfil': 'Edit profile',
+    'El PIN debe tener entre 4 y 12 caracteres, o déjalo vacío.': 'The PIN must be 4 to 12 characters, or leave it empty.', 'El año no es válido.': 'That year isn’t valid.',
+    'El carro sale cortado o tapado: encuádralo completo.': 'The car is cut off or blocked: frame all of it.', 'El nombre necesita al menos 2 letras.': 'The name needs at least 2 letters.',
+    'El usuario necesita al menos 2 letras.': 'The username needs at least 2 letters.', 'Eliminar carta': 'Delete card', 'Empezar →': 'Start →',
+    'En este dispositivo': 'On this device', 'Encontré specs de': 'Found specs for', 'Encuadre de la foto': 'Photo framing', 'Entrar': 'Log in', 'Entrar →': 'Enter →',
+    'Es muy pequeña: usa la cámara, no una captura.': 'It’s too small: use the camera, not a screenshot.', 'Es mío': 'It’s mine', 'Esa foto no sirvió. Prueba con otra.': 'That photo didn’t work. Try another.',
+    'Ese archivo no es una copia de GARAGE.': 'That file isn’t a GARAGE backup.', 'Esta carta no tiene calificación de foto.': 'This card has no photo score.',
+    'Esta foto sacó': 'This photo scored', 'Este carro todavía no tiene foto. Toca + para agregar la primera.': 'This car has no photo yet. Tap + to add the first one.',
+    'Este navegador no deja guardar datos, así que no se puede crear la cuenta.': 'This browser won’t save data, so the account can’t be created.',
+    'Este navegador no deja guardar datos.': 'This browser won’t save data.', 'Está muy clara: evita el sol directo.': 'It’s too bright: avoid direct sun.', 'Está muy oscura: busca más luz.': 'It’s too dark: find more light.',
+    'Excelente': 'Excellent', 'Exportar copia': 'Export backup', 'Falta la marca y el modelo.': 'Make and model are missing.', 'Filtrar por rareza': 'Filter by rarity',
+    'Filtros': 'Filters', 'Foto': 'Photo', 'Foto agregada.': 'Photo added.', 'Foto bien tomada.': 'Well-taken photo.', 'Foto borrada.': 'Photo deleted.', 'Foto de': 'Photo by',
+    'Foto de perfil de': 'Profile photo of', 'Foto principal': 'Main photo', 'Foto y edición': 'Photo & editing', 'Fotógrafo': 'Photographer', 'Fotógrafos': 'Photographers',
+    'Fotógrafos de carros: portafolios, perfiles y sus redes.': 'Car photographers: portfolios, profiles and their socials.', 'GARAGE, ir al inicio': 'GARAGE, go home',
+    'Gente': 'People', 'Gente y colecciones': 'People and collections', 'Girar · ver specs': 'Flip · see specs', 'Gris': 'Gray',
+    'Guardado en este dispositivo, cuenta «': 'Saved on this device, account “', 'Guardar': 'Save', 'Guardar cambios': 'Save changes', 'Guardar carta': 'Save card',
+    'Guardar look': 'Save look', 'Guardar perfil': 'Save profile', 'Hacer principal': 'Make main', 'Identificar con IA': 'Identify with AI', 'Importar copia': 'Import backup',
+    'Inicio': 'Home', 'Intake, tune, rines…': 'Intake, tune, wheels…', 'Integral (AWD)': 'All-wheel (AWD)', 'Invertido': 'Invested',
+    'Las cuentas de este dispositivo viven solo en este navegador: no se sincronizan entre teléfonos y se pierden si borras los datos del navegador. El PIN solo evita que alguien abra tu cuenta por accidente; no es seguridad real.': 'Accounts on this device live only in this browser: they don’t sync between phones and are lost if you clear browser data. The PIN only stops someone opening your account by accident; it isn’t real security.',
+    'Legendario': 'Legendary', 'Épico': 'Epic', 'Velocidad máxima': 'Top speed', 'Velocidad máx. (mph)': 'Top speed (mph)', 'Vel. máx.': 'Top speed', 'Transmisión': 'Transmission', '180 o 175/190': '180 or 175/190', 'Manual 6 velocidades': '6-speed manual', 'Manual 5 velocidades': '5-speed manual', 'Manual 7 velocidades': '7-speed manual', 'Automática 6 velocidades': '6-speed automatic', 'Automática 8 velocidades': '8-speed automatic', 'Automática 10 velocidades': '10-speed automatic', 'Doble embrague (DCT) 7 vel.': '7-speed dual-clutch (DCT)', 'Doble embrague (DCT) 8 vel.': '8-speed dual-clutch (DCT)', 'Secuencial': 'Sequential', 'Eléctrica (1 velocidad)': 'Electric (single-speed)', 'Exposición': 'Exposure', 'Torque (lb-ft)': 'Torque (lb-ft)', 'Arrastra la foto para encuadrarla. Pellizca o usa la rueda del mouse para hacer zoom. Así se verá en la carta.': 'Drag the photo to frame it. Pinch or use the mouse wheel to zoom. This is how it’ll look on the card.', 'El año no es válido. Usa 2020 o 2019/2023.': 'That year isn’t valid. Use 2020 or 2019/2023.', 'Revisa los números: usa un valor (400) o un rango (380/420).': 'Check the numbers: use one value (400) or a range (380/420).', '2025 o 2019/2023': '2025 or 2019/2023', '400 o 380/420': '400 or 380/420', '4.5 o 4.2/4.8': '4.5 or 4.2/4.8', '350 o 330/370': '350 or 330/370', '← Marcas': '← Makes', 'Marcas populares': 'Popular makes', 'Ejemplo': 'Sample', 'Nombre de usuario': 'Username', 'Mi perfil': 'My profile', 'Lente': 'Lens', 'Levantado': 'Lifted', 'Ligero': 'Light', 'Likes a tu colección': 'Likes on your collection',
+    'Listo. Identifícalo con IA o llena los datos a mano.': 'Done. Identify it with AI or fill in the details by hand.', 'Llena los datos a mano.': 'Fill in the details by hand.',
+    'Lo vi en la calle': 'Spotted on the street', 'Los carros de tu garage no suman puntos.': 'Garage cars don’t earn points.', 'Malla': 'Mesh', 'Marca': 'Make',
+    'Marcar en el Radar': 'Mark on Radar', 'Me gusta esta colección': 'Like this collection', 'Me gusta esta foto': 'Like this photo', 'Mi colección': 'My collection',
+    'Mi cuenta en la nube': 'My cloud account', 'Mi garage': 'My garage', 'Mi portafolio': 'My portfolio', 'Modelo': 'Model', 'Modelos de': 'Models by',
+    'Modo de prueba: lo que agregues no se guarda al cerrar esta página.': 'Test mode: what you add isn’t saved when you close this page.', 'Mods': 'Mods', 'Motor': 'Engine',
+    'Máximo 6 fotos por carro.': 'Max 6 photos per car.', 'Nada en esta lista.': 'Nothing in this list.', 'Nadie con ese nombre.': 'No one with that name.', 'Naranja': 'Orange', 'Negro': 'Black',
+    'No cambiaste nada.': 'You didn’t change anything.', 'No estoy seguro, revisa los datos.': 'I’m not sure, check the details.',
+    'No hay espacio en este dispositivo: lo último que hiciste no se guardó. Borra fotos o exporta una copia desde tu cuenta (botón de arriba).': 'No space left on this device: your last change wasn’t saved. Delete photos or export a backup from your account (top button).',
+    'No hay más espacio para guardar cartas.': 'No more space to save cards.', 'No pude abrir la cámara (sin permiso o no disponible). Usa el botón «Usar la cámara del teléfono».': 'Couldn’t open the camera (no permission or unavailable). Use “Use phone camera”.',
+    'No pude leer esa foto. Prueba con otra.': 'Couldn’t read that photo. Try another.', 'No pude leer la respuesta. Intenta otra vez o llena los datos a mano.': 'Couldn’t read the response. Try again or fill in the details by hand.',
+    'No se pudo agregar la foto. Intenta con otra.': 'Couldn’t add the photo. Try another.', 'No se pudo borrar. Intenta otra vez.': 'Couldn’t delete. Try again.',
+    'No se pudo cambiar la foto principal.': 'Couldn’t change the main photo.', 'No se pudo descargar la copia desde aquí.': 'Couldn’t download the backup from here.',
+    'No se pudo guardar el encuadre.': 'Couldn’t save the framing.', 'No se pudo guardar. Intenta otra vez.': 'Couldn’t save. Try again.', 'No se pudo identificar ahora. Llena los datos a mano.': 'Couldn’t identify it now. Fill in the details by hand.',
+    'No se pudo leer esa imagen.': 'Couldn’t read that image.', 'No se pudo quitar la foto.': 'Couldn’t remove the photo.',
+    'No tengo specs guardados de ese modelo. Puedes escribirlos tú y confirmarlos.': 'I don’t have specs for that model. You can type them in and confirm them.',
+    'No tienes cartas de esa rareza todavía.': 'You don’t have cards of that rarity yet.', 'No veo un carro claro en esa foto. Prueba con otra o llena los datos a mano.': 'I don’t see a clear car in that photo. Try another or fill in the details by hand.',
+    'Noche': 'Night', 'Nombre': 'Name', 'Nombre de la cuenta': 'Account name', 'Nombre de usuario': 'Username', 'Nombre del mod': 'Mod name', 'Nombre o alias': 'Name or alias',
+    'Nota': 'Note', 'Nuevo carro': 'New car', 'Oscuro': 'Dark', 'PIN (opcional)': 'PIN (optional)', 'PIN incorrecto.': 'Wrong PIN.',
+    'Para pasar tus cartas a otro teléfono o guardarlas, exporta una copia e impórtala allá.': 'To move your cards to another phone or keep them safe, export a backup and import it there.',
+    'Parece una imagen de internet. Las fotos que tomas tú valen más.': 'Looks like an internet image. Photos you take yourself are worth more.',
+    'Pegado al piso': 'Slammed', 'Plata': 'Silver', 'Poco común': 'Uncommon', 'Pon tu nombre o alias (mínimo 2 letras).': 'Enter your name or alias (at least 2 letters).',
+    'Por ahora aquí aparecen las cuentas creadas en este dispositivo. Cuando conectemos la base de datos en línea, verás a todo el mundo.': 'For now this shows accounts created on this device. Once the online database is connected, you’ll see everyone.',
+    'Por ahora tu perfil y tus fotos se guardan en este dispositivo, en tu cuenta «': 'For now your profile and photos are saved on this device, in your account “',
+    'Portafolio': 'Portfolio', 'Potencia': 'Power', 'Potencia (hp)': 'Power (hp)', 'Preparando la foto…': 'Preparing the photo…', 'Principal': 'Main', 'Puntos': 'Points',
+    'Pública': 'Public', 'Quitar': 'Remove', 'Qué fotografías, tu equipo, cómo contratarte…': 'What you shoot, your gear, how to hire you…', 'Ranking entre amigos': 'Friends ranking',
+    'Radar de avistamientos': 'Sightings radar', 'Rareza': 'Rarity', 'Raro': 'Rare', 'Redes sociales': 'Social media', 'Rines': 'Wheels', 'Rojo': 'Red', 'Rojo, Negro mate…': 'Red, matte black…',
+    'Sale borrosa: acércate o toca la pantalla para enfocar.': 'It’s blurry: get closer or tap the screen to focus.', 'Saturación': 'Saturation', 'Se borra la carta con sus fotos': 'The card and its photos are deleted',
+    'Sedán': 'Sedan', 'Seguir': 'Follow', 'Seguir editando': 'Keep editing', 'Sesión actual': 'Current session', 'Sesión actual:': 'Current session:', 'Siguiendo': 'Following',
+    'Sin confirmar: no se guardan.': 'Not confirmed: they won’t be saved.', 'Sin specs todavía. Edita la carta para agregarlos.': 'No specs yet. Edit the card to add them.', 'Sin tinte': 'No tint',
+    'Sitio web': 'Website', 'Specs confirmados. Se guardan con la carta.': 'Specs confirmed. They’re saved with the card.', 'Su garage': 'Their garage',
+    'Sube tus mejores fotos de carros. Se ven aquí como portafolio.': 'Upload your best car photos. They show here as your portfolio.', 'Sugerencias de marcas y modelos': 'Make and model suggestions',
+    'Suspensión': 'Suspension', 'Sí, borrar': 'Yes, delete', 'Sí, borrar con todas sus cartas': 'Yes, delete with all its cards', 'Sí, eliminar': 'Yes, delete', 'Sí, guardar cambios': 'Yes, save changes',
+    'Teléfono (privado)': 'Phone (private)', 'Temperatura': 'Temperature', 'Tinte de vidrios': 'Window tint', 'Tipo': 'Type', 'Tipo de carro': 'Body type',
+    'Toca para tomar o subir una foto': 'Tap to take or upload a photo', 'Toca para verla en grande': 'Tap to view it large', 'Todavía no hay cartas aquí.': 'No cards here yet.',
+    'Todavía no hay mods anotados.': 'No mods logged yet.', 'Todavía no hay más personas. Crea otra cuenta desde el botón de tu cuenta para probar.': 'No other people yet. Create another account from your account button to try it.',
+    'Todavía no pusiste redes. Toca «Editar perfil».': 'You haven’t added socials yet. Tap “Edit profile”.', 'Todavía no sigues a nadie.': 'You’re not following anyone yet.',
+    'Todavía no subió fotos.': 'No photos uploaded yet.', 'Todavía no tiene cartas.': 'No cards yet.', 'Todavía no tienes carros tuyos. Agrega uno con foto y después anota los mods.': 'You don’t have your own cars yet. Add one with a photo, then log the mods.',
+    'Todos': 'All', 'Tomar foto': 'Take photo', 'Tracción': 'Drivetrain', 'Trasera (RWD)': 'Rear (RWD)', 'Tu perfil': 'Your profile',
+    'Tus cartas de carros vistos en la calle, tu garage, mods y puntos.': 'Your cards of cars spotted on the street, your garage, mods and points.',
+    'Tus cartas se guardan en este dispositivo.': 'Your cards are saved on this device.', 'Usar la cámara del teléfono': 'Use phone camera', 'Usar mi ubicación': 'Use my location',
+    'Usar specs sugeridos': 'Use suggested specs', 'Valdría ≈': 'Worth ≈', 'Ver carta en grande': 'View card large', 'Ver frente': 'See front', 'Ver mi perfil': 'View my profile',
+    'Verde': 'Green', 'Ves un carro bueno en la calle: abre la cámara, toma la foto en el momento y la IA lo identifica. Una foto bien encuadrada y con buena luz vale más puntos.': 'See a great car on the street? Open the camera, snap it on the spot and the AI identifies it. A well-framed, well-lit photo is worth more points.',
+    'Vista estilizada para probar ideas. No es una foto de tu carro modificado.': 'Stylized view to try ideas. It’s not a photo of your modified car.', 'Vista lateral del carro': 'Car side view',
+    'Vista previa. Los ejemplos no se guardan.': 'Preview. Samples aren’t saved.', 'Visto en': 'Spotted at', 'Visto en la calle': 'Spotted on the street', 'Visualizador': 'Visualizer', 'Vivo': 'Vivid',
+    'Volver': 'Back', 'Ya existe una cuenta con ese nombre en este dispositivo.': 'An account with that name already exists on this device.', 'Zona 01': 'Zone 01', 'Zona 02': 'Zone 02',
+    'Zona o calle': 'Area or street', 'en la colección ·': 'in collection ·', 'foto subida.': 'photo uploaded.', 'fotos subidas.': 'photos uploaded.',
+    'fotos subidas. Algunas no se pudieron guardar (¿falta espacio?).': 'photos uploaded. Some couldn’t be saved (out of space?).', 'y mods': 'and mods',
+    '· cambiar o agregar cuentas': '· switch or add accounts', '· con PIN': '· with PIN', '· pon tu @usuario o el link': '· enter your @username or link',
+    '». Las redes se enlazan con tu usuario o link; no se conectan a tus cuentas.': '”. Socials link by username or URL; they don’t connect to your accounts.',
+    '». No se sincroniza con otros teléfonos: exporta una copia desde tu cuenta (botón de arriba).': '”. It doesn’t sync to other phones: export a backup from your account (top button).',
+    '¿A dónde vas hoy?': 'Where to today?', '¿De quién es?': 'Whose is it?', '¿Guardar estos cambios?': 'Save these changes?', '¿Seguro que quieres borrar esta foto?': 'Delete this photo?',
+    '¿Seguro que quieres eliminar': 'Are you sure you want to delete', '× calidad': '× quality', '← Gente': '← People',
+    'Car Spotting': 'Car Spotting', 'Fecha': 'Date', 'Agregado': 'Added', 'mejor hallazgo:': 'best find:', 'míos': 'mine', 'puntos': 'points', 'seguidores': 'followers', 'siguiendo': 'following',
+    'fotos': 'photos', 'cartas': 'cards', 'carta': 'card', 'Colección (': 'Collection (', 'Mis carros (': 'My cars (', 'Base': 'Base', 'Original': 'Original', 'Color': 'Color',
+    'Nueva': 'New', 'Ver y comparar': 'View and compare', 'Lo encontré': 'Found it', 'Voy a buscarlo': 'I’ll go find it', 'Ver en el mapa': 'View on map',
+    'Datos leídos': 'Data read', 'mods': 'mods', 'Invitado': 'Guest', 'Mis carros': 'My cars', 'Spot now': 'Spot now', 'Agregar carro ': 'Add car',
+    'Escribe la zona o usa tu ubicación para que otros lo encuentren.': 'Type the area or use your location so others can find it.', 'Ubicación lista (aproximada, a unos 100 m).': 'Location ready (approximate, about 100 m).',
+    'No pude obtener tu ubicación. Escribe la zona o la calle.': 'Couldn’t get your location. Type the area or street.', 'Detalle': 'Detail',
+    'Los avistamientos los ve quien tenga esta página. Marca calles y sitios públicos, nunca casas ni direcciones privadas. La ubicación se redondea a unos 100 metros.': 'Anyone with this page sees sightings. Mark streets and public places, never homes or private addresses. Location is rounded to about 100 meters.',
+    'Publicar': 'Publish', '+ Marcar avistamiento': '+ Mark sighting', 'Marca dónde viste un carro raro. Los demás pueden seguirlo e ir a buscarlo.': 'Mark where you saw a rare car. Others can follow and go find it.',
+    'Tipo de vista': 'View type', 'Toca + para agregar la primera.': 'Tap + to add the first one.', 'Elige tu idioma': 'Choose your language', 'Idioma': 'Language'
+  };
+  var LANG = 'es';
+  try { LANG = localStorage.getItem('garage.v1.lang') || ''; } catch (e) { LANG = ''; }
+  var EN_KEYS = Object.keys(EN).filter(function (k) { return k.length >= 4; }).sort(function (a, b) { return b.length - a.length; });
+  var EN_RX = null;
+  function enRx() {
+    if (EN_RX) return EN_RX;
+    var escRx = function (k) { return k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
+    EN_RX = new RegExp('(' + EN_KEYS.map(escRx).join('|') + ')', 'g');
+    return EN_RX;
+  }
+  function trText(t) {
+    if (!t || !/[A-Za-zÀ-ÿ]/.test(t)) return t;
+    var lead = t.match(/^\s*/)[0], trail = t.match(/\s*$/)[0], core = t.trim();
+    if (EN[core] !== undefined) return lead + EN[core] + trail;
+    var L = /[A-Za-zÀ-ÿ]/;
+    var out = t.replace(enRx(), function (key, k2, off, str) { if (L.test(key[0]) && off > 0 && L.test(str[off - 1])) return key; var nx = str[off + key.length]; if (L.test(key[key.length - 1]) && nx && L.test(nx)) return key; return EN[key]; });
+    return out;
+  }
+  var SKIP_SEL = '.make,.model,.ph-bio,.why,.so-open b,.ph-who b,.who b,textarea,input,script,style,[data-noi18n]';
+  function trNode(n) {
+    if (LANG !== 'en') return;
+    if (n.nodeType === 3) {
+      var p = n.parentElement; if (!p || p.closest(SKIP_SEL)) return;
+      var v = trText(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v;
+      return;
+    }
+    if (n.nodeType !== 1) return;
+    ['placeholder', 'aria-label', 'title'].forEach(function (a) { var v = n.getAttribute(a); if (v) { var w = trText(v); if (w !== v) n.setAttribute(a, w); } });
+    if (n.matches && n.matches(SKIP_SEL)) return;
+    var w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT), x = w.nextNode();
+    while (x) {
+      if (x.nodeType === 1) { ['placeholder', 'aria-label', 'title'].forEach(function (a) { var v = x.getAttribute(a); if (v) { var ww = trText(v); if (ww !== v) x.setAttribute(a, ww); } }); if (x.tagName === 'OPTION' && x.parentElement && x.parentElement.tagName === 'DATALIST' && EN[x.value]) x.value = EN[x.value]; }
+      else { var pp = x.parentElement; if (pp && !pp.closest(SKIP_SEL)) { var vv = trText(x.nodeValue); if (vv !== x.nodeValue) x.nodeValue = vv; } }
+      x = w.nextNode();
+    }
+  }
+  var trObs = null;
+  function applyLang() {
+    document.documentElement.lang = LANG === 'en' ? 'en' : 'es';
+    document.querySelectorAll('[data-act=lang]').forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.v === LANG)); });
+    if (LANG === 'en') {
+      trNode(document.body);
+      if (!trObs) {
+        trObs = new MutationObserver(function (muts) {
+          if (LANG !== 'en') return;
+          muts.forEach(function (m) {
+            if (m.type === 'characterData') trNode(m.target);
+            else if (m.type === 'attributes') trNode(m.target);
+            else m.addedNodes.forEach(trNode);
+          });
+        });
+        trObs.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['placeholder', 'aria-label', 'title'] });
+      }
+    }
+  }
+  function setLang(l) {
+    var was = LANG; LANG = l === 'en' ? 'en' : 'es';
+    try { localStorage.setItem('garage.v1.lang', LANG); } catch (e) {}
+    var pk = $('#langPick'); if (pk) pk.hidden = true;
+    if (was === 'en' && LANG === 'es') { location.reload(); return; }
+    applyLang(); render();
+  }
+
+  /* ================= gente: seguir y likes (cuentas de este dispositivo) ================= */
+  var SO_KEY = 'garage.v1.social';
+  function soGet() { var o = null; try { o = JSON.parse(LS.get(SO_KEY) || 'null'); } catch (e) {} o = o || {}; o.f = o.f || {}; o.lc = o.lc || {}; o.lp = o.lp || {}; return o; }
+  function soSet(o) { LS.set(SO_KEY, JSON.stringify(o)); }
+  function meId() { return active && active !== 'cloud' ? active : null; }
+  function isFollowing(b) { var me = meId(); return !!(me && (soGet().f[me] || []).indexOf(b) > -1); }
+  function followersOf(b) { var f = soGet().f, n = 0; Object.keys(f).forEach(function (k) { if (accts.some(function (a) { return a.id === k; }) && f[k].indexOf(b) > -1) n++; }); return n; }
+  function followingOf(a) { return (soGet().f[a] || []).filter(function (id) { return accts.some(function (x) { return x.id === id; }); }).length; }
+  function toggleIn(map, key, val) { var l = map[key] || []; var i = l.indexOf(val); if (i > -1) l.splice(i, 1); else l.push(val); map[key] = l; return i === -1; }
+  function toggleFollow(b) { var me = meId(); if (!me || me === b) return; var o = soGet(); toggleIn(o.f, me, b); soSet(o); }
+  function collLikes(id) { return (soGet().lc[id] || []).length; }
+  function likedColl(id) { var me = meId(); return !!(me && (soGet().lc[id] || []).indexOf(me) > -1); }
+  function toggleCollLike(id) { var me = meId(); if (!me || me === id) return; var o = soGet(); toggleIn(o.lc, id, me); soSet(o); }
+  function photoLikes(pid) { return (soGet().lp[pid] || []).length; }
+  function likedPhoto(pid) { var me = meId(); return !!(me && (soGet().lp[pid] || []).indexOf(me) > -1); }
+  function togglePhotoLike(pid) { var me = meId(); if (!me) return; var o = soGet(); toggleIn(o.lp, pid, me); soSet(o); }
+  function profOf(id) { try { return JSON.parse(LS.get('garage.v1.ph.' + id + '.prof') || 'null'); } catch (e) { return null; } }
+  function nameOf(id) { var a = accts.find(function (x) { return x.id === id; }); var P = profOf(id); return (state.zone === 'spot' && P && P.name) || (a ? a.name : '—'); }
+  function carsOf(id) { return id === active ? state.cars : loadCars(id).map(function (c, i) { c._n = i + 1; return c; }); }
+  var soPhotos = {};
+  async function photosOf(id) {
+    var db = await idb(); if (!db) return [];
+    return new Promise(function (res) { try { var q = db.transaction('p').objectStore('p').index('acct').getAll(id); q.onsuccess = function () { res((q.result || []).sort(function (a, b) { return b.ts - a.ts; })); }; q.onerror = function () { res([]); }; } catch (e) { res([]); } });
+  }
+  function avatarOf(id, cls) { var P = profOf(id); return avHTML(P, nameOf(id), cls); }
+  function heart(on, n, act, id, label) { return '<button type="button" class="like' + (on ? ' on' : '') + '" data-act="' + act + '" data-id="' + esc(id) + '" aria-pressed="' + on + '" aria-label="' + label + '"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 20s-7-4.4-9.2-8.6C1.3 8.4 3.2 5 6.6 5c2 0 3.4 1.1 4.4 2.6C12 6.1 13.4 5 15.4 5c3.4 0 5.3 3.4 3.8 6.4C19 15.6 12 20 12 20Z"/></svg><span>' + n + '</span></button>'; }
+  function followBtn(id) { var on = isFollowing(id); return '<button type="button" class="btn' + (on ? '' : ' primary') + ' follow-btn" data-act="soFollow" data-id="' + esc(id) + '" aria-pressed="' + on + '">' + (on ? 'Siguiendo' : 'Seguir') + '</button>'; }
+  function statLine(id) {
+    var spot = state.zone === 'spot', n = spot ? (soPhotos[id] ? soPhotos[id].length : 0) : carsOf(id).length;
+    var likes = spot ? (soPhotos[id] || []).reduce(function (t, p) { return t + photoLikes(p.id); }, 0) : collLikes(id);
+    return '<span><b>' + followersOf(id) + '</b> seguidores</span><span><b>' + followingOf(id) + '</b> siguiendo</span><span><b>' + n + '</b> ' + (spot ? 'fotos' : 'cartas') + '</span><span><b>' + likes + '</b> likes</span>';
+  }
+  async function renderSocial() {
+    if (state.tab !== 'social') return;
+    var box = $('#socialBox'), me = meId(), spot = state.zone === 'spot';
+    if (spot) { await Promise.all(accts.map(async function (a) { soPhotos[a.id] = await photosOf(a.id); })); if (state.tab !== 'social') return; }
+    if (state.prof && accts.some(function (a) { return a.id === state.prof; })) return renderProfile(box, state.prof);
+    state.prof = null;
+    var others = accts.filter(function (a) { return a.id !== me; });
+    var head = '<div class="panel-head"><h2>Gente</h2></div>' +
+      (me ? '<div class="so-me">' + avatarOf(me, 'ph-av sm') + '<div class="ph-who"><b>' + esc(nameOf(me)) + '</b><span class="so-stats">' + statLine(me) + '</span></div><button class="btn" type="button" data-act="soOpen" data-id="' + esc(me) + '">Ver mi perfil</button></div>' : '') +
+      '<div class="field so-search"><label class="sr" for="soQ">Buscar personas</label><input type="search" id="soQ" placeholder="Buscar personas por nombre…" autocomplete="off" value="' + esc(state.soQ || '') + '"></div>' +
+      '<div class="radar-bar"><button type="button" class="chip" data-act="soFilter" data-v="all" aria-pressed="' + (state.soF !== 'follow') + '">Todos</button><button type="button" class="chip" data-act="soFilter" data-v="follow" aria-pressed="' + (state.soF === 'follow') + '">Siguiendo</button></div>' +
+      '<ul class="rank" id="soList"></ul>' +
+      '<p class="status">Por ahora aquí aparecen las cuentas creadas en este dispositivo. Cuando conectemos la base de datos en línea, verás a todo el mundo.</p>';
+    if (!box.querySelector('#soList')) box.innerHTML = head; else { var keepQ = $('#soQ').value; box.innerHTML = head; $('#soQ').value = keepQ; }
+    renderSoList(others);
+  }
+  function renderSoList(others) {
+    var q = norm(state.soQ || ''), list = (others || accts.filter(function (a) { return a.id !== meId(); })).filter(function (a) {
+      if (state.soF === 'follow' && !isFollowing(a.id)) return false;
+      return !q || norm(a.name).indexOf(q) > -1 || norm(nameOf(a.id)).indexOf(q) > -1;
+    });
+    var ul = $('#soList'); if (!ul) return;
+    ul.innerHTML = list.length ? list.map(function (a) {
+      return '<li class="so-row">' + '<button type="button" class="so-open" data-act="soOpen" data-id="' + esc(a.id) + '">' + avatarOf(a.id, 'ph-av sm') + '<span class="ph-who"><b>' + esc(nameOf(a.id)) + '</b><span class="so-stats">' + statLine(a.id) + '</span></span></button>' + followBtn(a.id) + '</li>';
+    }).join('') : '<li class="rank-empty">' + (accts.length < 2 ? 'Todavía no hay más personas. Crea otra cuenta desde el botón de tu cuenta para probar.' : (state.soF === 'follow' ? 'Todavía no sigues a nadie.' : 'Nadie con ese nombre.')) + '</li>';
+  }
+  function renderProfile(box, id) {
+    var me = meId(), own = id === me, spot = state.zone === 'spot', P = profOf(id);
+    var links = P ? SOCIALS.map(function (x) { var l = socialLink(x[0], (P.soc || {})[x[0]]); return l && !l.bad ? '<a class="chip soc" href="' + esc(l.url) + '" target="_blank" rel="noopener noreferrer"><b>' + esc(x[1]) + '</b><span>' + esc(l.label) + '</span></a>' : ''; }).join('') : '';
+    var h = '<div class="panel-head"><button class="btn" type="button" data-act="soBack">← Gente</button>' + (own ? '<span class="status">Tu perfil</span>' : followBtn(id)) + '</div>' +
+      '<div class="ph-card">' + avatarOf(id, 'ph-av') + '<div class="ph-who"><b>' + esc(nameOf(id)) + '</b>' + (P && P.city ? '<span>' + esc(P.city) + '</span>' : '') + '<span class="so-stats">' + statLine(id) + '</span></div></div>' +
+      (P && P.bio && spot ? '<p class="ph-bio">' + esc(P.bio) + '</p>' : '') + (links && spot ? '<div class="chips" style="margin:10px 0">' + links + '</div>' : '');
+    if (spot) {
+      var ps = soPhotos[id] || [];
+      h += '<h3 class="sub">Portafolio</h3><div class="ph-grid">' + (ps.length ? ps.map(function (x) {
+        return '<div class="ph-item so-ph"><img src="' + esc(x.data) + '" alt="' + esc(x.cap || 'Foto') + '" loading="lazy"><span>' + (x.cap ? esc(x.cap) : '') + (x.cam ? '<small>' + esc(x.cam) + '</small>' : '') + '</span>' + heart(likedPhoto(x.id), photoLikes(x.id), 'soLikePhoto', x.id, 'Me gusta esta foto') + '</div>';
+      }).join('') : '<div class="empty"><span>Todavía no subió fotos.</span></div>') + '</div>';
+    } else {
+      var cars = carsOf(id).filter(function (c) { return c.kind === 'spotted'; }).sort(function (a, b) { return b.rarity - a.rarity; });
+      var garage = carsOf(id).filter(function (c) { return c.kind === 'garage'; });
+      h += '<div class="so-like-row">' + heart(likedColl(id), collLikes(id), own ? 'noop' : 'soLikeColl', id, 'Me gusta esta colección') + '<span class="status">' + (own ? 'Likes a tu colección' : 'Dale like a su colección') + '</span></div>' +
+        '<h3 class="sub">Colección</h3><div class="grid so-grid">' + (cars.length ? cars.map(function (c) { return cardHTML(c, false).replace('data-act="open" data-id="' + esc(c.id) + '"', 'data-act="soCard" data-own="' + esc(id) + '" data-id="' + esc(c.id) + '"'); }).join('') : '<div class="empty"><span>Todavía no tiene cartas.</span></div>') + '</div>' +
+        (garage.length ? '<h3 class="sub">Su garage</h3><div class="grid so-grid">' + garage.map(function (c) { return cardHTML(c, false).replace('data-act="open" data-id="' + esc(c.id) + '"', 'data-act="soCard" data-own="' + esc(id) + '" data-id="' + esc(c.id) + '"'); }).join('') + '</div>' : '');
+    }
+    box.innerHTML = h;
+  }
+
   /* ================= carta en grande (flota y gira) ================= */
   var fv = { id: null, flip: false, angle: 0 };
   function fvHTML(c) {
     var r = clamp(c.rarity | 0, 0, 4), sp = c.specs || {}, body = (BODYLIST.find(function (b) { return b[0] === c.body; }) || [0, '—'])[1];
-    var sub = [c.year || '', c.color || ''].filter(Boolean).join(' · ');
+    var sub = [yearOf(c), c.color || ''].filter(Boolean).join(' · ');
     var row = function (k, v) { return v ? '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>' : ''; };
-    var specs = row('Motor', esc(sp.engine || '')) + row('Potencia', sp.hp ? sp.hp + ' hp' : '') + row('0–60 mph', sp.zs ? sp.zs + ' s' : '') + row('Tracción', esc(sp.drive || ''));
-    var extra = row('Tipo', esc(body)) + row('Rareza', RAR[r].n) + row('Año', c.year || '') + row('Color', esc(c.color || '')) +
+    var specs = row('Motor', esc(sp.engine || '')) + row('Potencia', sp.hp ? fmtR(sp.hp, sp.hp2) + ' hp' : '') + row('Torque', sp.tq ? fmtR(sp.tq, sp.tq2) + ' lb-ft' : '') + row('0–60 mph', sp.zs ? fmtR(sp.zs, sp.zs2) + ' s' : '') + row('Vel. máx.', sp.vmax ? fmtR(sp.vmax, sp.vmax2) + ' mph' : '') + row('Transmisión', esc(sp.trans || '')) + row('Tracción', esc(sp.drive || ''));
+    var extra = row('Tipo', esc(body)) + row('Rareza', RAR[r].n) + row('Año', yearOf(c)) + row('Color', esc(c.color || '')) +
       (c.kind === 'spotted' ? row('Visto en', esc(c.place || '')) + row('Puntos', '★ ' + pointsOf(c.rarity, c.q)) : row('Mods', String((c.mods || []).length)));
     var bars = '';
-    if (sp.hp || sp.zs) {
+    if (sp.hp || sp.zs || sp.tq || sp.vmax) {
       var bar = function (lbl, pct, txt) { return '<div class="fv-meter"><span>' + lbl + '</span><i><b style="width:' + Math.round(clamp(pct, 4, 100)) + '%"></b></i><em>' + txt + '</em></div>'; };
-      if (sp.hp) bars += bar('Potencia', sp.hp / 10, sp.hp + ' hp');
-      if (sp.zs) bars += bar('Aceleración', (10 - sp.zs) / 8 * 100, sp.zs + ' s');
+      if (sp.hp) bars += bar('Potencia', (sp.hp2 || sp.hp) / 10, fmtR(sp.hp, sp.hp2) + ' hp');
+      if (sp.tq) bars += bar('Torque', (sp.tq2 || sp.tq) / 10, fmtR(sp.tq, sp.tq2) + ' lb-ft');
+      if (sp.vmax) bars += bar('Vel. máx.', ((sp.vmax2 || sp.vmax) - 80) / 2.2, fmtR(sp.vmax, sp.vmax2) + ' mph');
+      if (sp.zs) bars += bar('Aceleración', (10 - sp.zs) / 8 * 100, fmtR(sp.zs, sp.zs2) + ' s');
     }
     return '<div class="fv-scrim" data-act="fvClose"></div>' +
       '<div class="fv" role="dialog" aria-modal="true" aria-label="Carta ' + esc(c.make + ' ' + c.model) + '">' +
@@ -2399,12 +2775,12 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
         '<span class="c-bar"></span><dl class="fv-specs small">' + extra + '</dl>' +
       '</span>' +
       '</button></div></div>' +
-      '<span class="fv-hint2">Desliza la carta para girarla</span><div class="fv-actions"><button class="btn" type="button" data-act="fvFlip">' + (fv.flip ? 'Ver frente' : 'Girar · ver specs') + '</button><button class="btn" type="button" data-act="fvClose">Cerrar</button></div>' +
+      '<span class="fv-hint2">Desliza la carta para girarla</span><div class="fv-actions"><button class="btn" type="button" data-act="home">Inicio</button><button class="btn" type="button" data-act="fvFlip">' + (fv.flip ? 'Ver frente' : 'Girar · ver specs') + '</button><button class="btn" type="button" data-act="fvClose">Cerrar</button></div>' +
       '</div>';
   }
   function renderFv() {
     var root = $('#fvRoot'); if (!root) { root = document.createElement('div'); root.id = 'fvRoot'; document.body.appendChild(root); }
-    var c = fv.id && (carById(fv.id) || all().find(function (x) { return x.id === fv.id; }));
+    var c = fv.car || (fv.id && (carById(fv.id) || all().find(function (x) { return x.id === fv.id; })));
     if (!c) { root.innerHTML = ''; document.documentElement.classList.remove('fv-open'); return; }
     root.innerHTML = fvHTML(c); document.documentElement.classList.add('fv-open');
     var tilt = $('#fvTilt'), card = $('#fvCard'); if (!card) return;
@@ -2465,15 +2841,15 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
   /* ================= editar carta ================= */
   function draftOf(c) {
     var sp = c.specs || {};
-    return { make: c.make || '', model: c.model || '', year: c.year ? String(c.year) : '', rarity: String(c.rarity | 0), body: c.body || 'sedan',
-      place: c.place || '', color: c.color || '', note: c.note || '', engine: sp.engine || '', hp: sp.hp ? String(sp.hp) : '', zs: sp.zs ? String(sp.zs) : '', drive: sp.drive || '' };
+    return { make: c.make || '', model: c.model || '', year: yearOf(c), rarity: String(c.rarity | 0), body: c.body || 'sedan',
+      place: c.place || '', color: c.color || '', note: c.note || '', engine: sp.engine || '', hp: fmtR(sp.hp, sp.hp2), zs: fmtR(sp.zs, sp.zs2), tq: fmtR(sp.tq, sp.tq2), vmax: fmtR(sp.vmax, sp.vmax2), trans: sp.trans || '', drive: sp.drive || '' };
   }
   function readEdit() {
     var g = function (id) { var el = $('#' + id); return el ? el.value : ''; };
     return { make: g('eMake').trim(), model: g('eModel').trim(), year: g('eYear').trim(), rarity: g('eRarity'), body: g('eBody'),
-      place: g('ePlace').trim(), color: g('eColor').trim(), note: g('eNote').trim(), engine: g('eEngine').trim(), hp: g('eHp').trim(), zs: g('eZs').trim(), drive: g('eDrive') };
+      place: g('ePlace').trim(), color: g('eColor').trim(), note: g('eNote').trim(), engine: g('eEngine').trim(), hp: g('eHp').trim(), zs: g('eZs').trim(), tq: g('eTq').trim(), vmax: g('eVmax').trim(), trans: g('eTrans').trim(), drive: g('eDrive') };
   }
-  var EDIT_LABELS = { make: 'Marca', model: 'Modelo', year: 'Año', rarity: 'Rareza', body: 'Tipo', color: 'Color', place: 'Dónde lo viste', note: 'Nota', engine: 'Motor', hp: 'Potencia (hp)', zs: '0–60 mph (s)', drive: 'Tracción' };
+  var EDIT_LABELS = { make: 'Marca', model: 'Modelo', year: 'Año', rarity: 'Rareza', body: 'Tipo', color: 'Color', place: 'Dónde lo viste', note: 'Nota', engine: 'Motor', hp: 'Potencia (hp)', tq: 'Torque (lb-ft)', vmax: 'Velocidad máx. (mph)', trans: 'Transmisión', zs: '0–60 mph (s)', drive: 'Tracción' };
   function showVal(k, v) {
     if (v === '' || v == null) return '—';
     if (k === 'rarity') return (RAR[+v] || RAR[0]).n;
@@ -2498,16 +2874,19 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     return '<div class="edit-form" id="editForm"><h3>Editar carta</h3>' +
       '<div class="f2"><div class="field"><label for="eMake">Marca</label><input type="text" id="eMake" list="mkList" maxlength="60" autocomplete="off" value="' + esc(d.make) + '"></div>' +
       '<div class="field"><label for="eModel">Modelo</label><input type="text" id="eModel" list="eMdList" maxlength="60" autocomplete="off" value="' + esc(d.model) + '"><datalist id="eMdList">' + mdl + '</datalist></div></div>' +
-      '<div class="f2"><div class="field"><label for="eYear">Año</label><input type="number" id="eYear" inputmode="numeric" min="1900" max="2100" value="' + esc(d.year) + '"></div>' +
+      '<div class="f2"><div class="field"><label for="eYear">Año</label><input type="text" id="eYear" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="2025 o 2019/2023" value="' + esc(d.year) + '"></div>' +
       '<div class="field"><label for="eRarity">Rareza</label><select id="eRarity">' + opt(RAR.map(function (r, i) { return [String(i), r.n]; }), d.rarity) + '</select></div></div>' +
       '<div class="f2"><div class="field"><label for="eBody">Tipo de carro</label><select id="eBody">' + opt(BODYLIST, d.body) + '</select></div><div class="field"><label for="eColor">Color</label><input type="text" id="eColor" list="colorList" maxlength="30" autocomplete="off" value="' + esc(d.color) + '"></div></div>' +
       (c.kind === 'spotted' ? '<div class="field"><label for="ePlace">Dónde lo viste</label><input type="text" id="ePlace" maxlength="80" autocomplete="off" value="' + esc(d.place) + '"></div>' : '') +
       '<div class="field"><label for="eNote">Nota</label><textarea id="eNote" maxlength="400">' + esc(d.note) + '</textarea></div>' +
       '<div class="specs"><div class="specs-head"><span class="lbl">Specs</span>' + (mk && catModel(mk, d.model) ? '<button class="btn" type="button" data-act="editSpecs" style="min-height:34px;padding:4px 10px;font-size:13px">Usar specs sugeridos</button>' : '') + '</div>' +
       '<div class="f2"><div class="field"><label for="eEngine">Motor</label><input type="text" id="eEngine" maxlength="60" autocomplete="off" value="' + esc(d.engine) + '"></div>' +
-      '<div class="field"><label for="eHp">Potencia (hp)</label><input type="number" id="eHp" min="1" max="3000" value="' + esc(d.hp) + '"></div></div>' +
-      '<div class="f2"><div class="field"><label for="eZs">0–60 mph (seg)</label><input type="number" id="eZs" min="1" max="30" step="0.1" value="' + esc(d.zs) + '"></div>' +
-      '<div class="field"><label for="eDrive">Tracción</label><select id="eDrive">' + opt(DRIVES, d.drive) + '</select></div></div></div>' +
+      '<div class="field"><label for="eHp">Potencia (hp)</label><input type="text" id="eHp" inputmode="decimal" maxlength="11" autocomplete="off" placeholder="400 o 380/420" value="' + esc(d.hp) + '"></div></div>' +
+      '<div class="f2"><div class="field"><label for="eZs">0–60 mph (seg)</label><input type="text" id="eZs" inputmode="decimal" maxlength="11" autocomplete="off" placeholder="4.5 o 4.2/4.8" value="' + esc(d.zs) + '"></div>' +
+      '<div class="field"><label for="eTq">Torque (lb-ft)</label><input type="text" id="eTq" inputmode="decimal" maxlength="11" autocomplete="off" placeholder="350 o 330/370" value="' + esc(d.tq || '') + '"></div></div>' +
+      '<div class="f2"><div class="field"><label for="eVmax">Velocidad máx. (mph)</label><input type="text" id="eVmax" inputmode="decimal" maxlength="11" autocomplete="off" placeholder="180 o 175/190" value="' + esc(d.vmax || '') + '"></div>' +
+      '<div class="field"><label for="eTrans">Transmisión</label><input type="text" id="eTrans" list="transList" maxlength="40" autocomplete="off" placeholder="Manual 6 velocidades" value="' + esc(d.trans || '') + '"></div></div>' +
+      '<div class="f2"><div class="field"><label for="eDrive">Tracción</label><select id="eDrive">' + opt(DRIVES, d.drive) + '</select></div></div></div>' +
       '<p class="status err" id="editMsg">' + esc(state.editMsg || '') + '</p>' +
       '<div class="actions"><button class="btn primary" type="button" data-act="editSave">Guardar</button><button class="btn" type="button" data-act="editCancel">Cancelar</button></div></div>';
   }
@@ -2515,16 +2894,17 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     var c = carById(state.sel); if (!c) return;
     var d = readEdit(); state.editDraft = d; state.editMsg = '';
     if (!d.make || !d.model) { state.editMsg = 'Falta la marca y el modelo.'; return renderSheet(); }
-    var y = parseInt(d.year, 10); if (d.year && !(y >= 1900 && y <= 2100)) { state.editMsg = 'El año no es válido.'; return renderSheet(); }
+    if (!parseRange(d.year, 1900, 2100).ok) { state.editMsg = 'El año no es válido. Usa 2020 o 2019/2023.'; return renderSheet(); }
+    if (!parseRange(d.hp, 1, 3000).ok || !parseRange(d.zs, 1, 30, true).ok || !parseRange(d.tq, 1, 3000).ok || !parseRange(d.vmax, 20, 350).ok) { state.editMsg = 'Revisa los números: usa un valor (400) o un rango (380/420).'; return renderSheet(); }
     if (!editDiff(c, d).length) { state.editMsg = 'No cambiaste nada.'; return renderSheet(); }
     state.editConfirm = true; renderSheet();
   }
   function editCommit() {
     var c = carById(state.sel), d = state.editDraft; if (!c || !d) return;
-    var y = parseInt(d.year, 10), hp = parseInt(d.hp, 10), zs = parseFloat(d.zs);
-    var specs = { engine: d.engine.slice(0, 60), hp: hp > 0 && hp < 3000 ? hp : null, zs: zs > 0 && zs < 30 ? Math.round(zs * 10) / 10 : null, drive: d.drive };
-    var patch = { make: d.make.slice(0, 60), model: d.model.slice(0, 60), year: (y >= 1900 && y <= 2100) ? y : null, rarity: clamp(+d.rarity || 0, 0, 4),
-      body: BODIES[d.body] ? d.body : 'sedan', color: d.color.slice(0, 30), note: d.note.slice(0, 400), specs: (specs.engine || specs.hp || specs.zs || specs.drive) ? specs : null };
+    var yr = parseRange(d.year, 1900, 2100), hp = parseRange(d.hp, 1, 3000), zs = parseRange(d.zs, 1, 30, true), tq = parseRange(d.tq, 1, 3000), vm = parseRange(d.vmax, 20, 350);
+    var specs = { engine: d.engine.slice(0, 60), hp: hp.a, hp2: hp.b, zs: zs.a, zs2: zs.b, tq: tq.a, tq2: tq.b, vmax: vm.a, vmax2: vm.b, trans: (d.trans || '').slice(0, 40), drive: d.drive };
+    var patch = { make: d.make.slice(0, 60), model: d.model.slice(0, 60), year: yr.a, year2: yr.b, rarity: clamp(+d.rarity || 0, 0, 4),
+      body: BODIES[d.body] ? d.body : 'sedan', color: d.color.slice(0, 30), note: d.note.slice(0, 400), specs: (specs.engine || specs.hp || specs.zs || specs.tq || specs.vmax || specs.trans || specs.drive) ? specs : null };
     if (c.kind === 'spotted') patch.place = d.place.slice(0, 80);
     state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = ''; state.photoView = false;
     patchCar(c, patch, function () { syncBoardSafe(); });
@@ -2607,6 +2987,8 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     else if (a === 'caSave') saveCloudAcct();
     else if (a === 'lkGo') linkLocal();
     else if (a === 'acNew') createAccount();
+    else if (a === 'acGoNew') { acctView = 'new'; acctMsg = ''; acctSig = ''; renderAcct(true); }
+    else if (a === 'acBack') { acctView = 'list'; acctMsg = ''; acctSig = ''; renderAcct(true); }
     else if (a === 'acLogin') loginAccount(t.dataset.id);
     else if (a === 'acPin') confirmPin();
     else if (a === 'acCancel') { pendingLogin = null; confirmDelAcct = null; acctMsg = ''; renderAcct(true); }
@@ -2638,11 +3020,19 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     else if (a === 'peerCmp') { peerCmp = t.dataset.v; renderPeer(); }
     else if (a === 'rm') { c = carById(state.sel); if (c) { var i = +t.dataset.i; setMods(c, (c.mods || []).filter(function (_, k) { return k !== i; })); } }
     else if (a === 'del') { state.confirmDel = true; renderSheet(); var cd = document.querySelector('.confirm-del'); if (cd) cd.scrollIntoView({ block: 'center' }); }
+    else if (a === 'lang') setLang(t.dataset.v);
+    else if (a === 'soOpen') { state.prof = t.dataset.id; renderSocial(); window.scrollTo(0, 0); }
+    else if (a === 'soBack') { state.prof = null; renderSocial(); }
+    else if (a === 'soFollow') { toggleFollow(t.dataset.id); renderSocial(); }
+    else if (a === 'soFilter') { state.soF = t.dataset.v; renderSocial(); }
+    else if (a === 'soLikeColl') { toggleCollLike(t.dataset.id); renderSocial(); }
+    else if (a === 'soLikePhoto') { togglePhotoLike(t.dataset.id); renderSocial(); }
+    else if (a === 'soCard') { var oc = carsOf(t.dataset.own).find(function (x) { return x.id === t.dataset.id; }); if (oc) { fv.car = Object.assign({}, oc); fv.id = oc.id; fv.flip = false; fv.angle = 0; renderFv(); } }
     else if (a === 'zone') { state.zone = t.dataset.z; state.tab = state.zone === 'spot' ? 'photo' : 'spotted'; state.filter = null; closeAdd(); render(); window.scrollTo(0, 0); }
-    else if (a === 'home') { if (state.sel) closeSheet(); closeAdd(); state.zone = null; render(); window.scrollTo(0, 0); }
+    else if (a === 'home') { if (fv.id) { fv.id = null; fv.car = null; renderFv(); } if (ph.view) { ph.view = null; renderPhView(); } if (state.sel) closeSheet(); closeAdd(); state.prof = null; state.zone = null; render(); window.scrollTo(0, 0); }
     else if (a === 'fvOpen') { fv.id = state.sel; fv.flip = false; fv.angle = 0; renderFv(); }
     else if (a === 'fvFlip') fvFlip();
-    else if (a === 'fvClose') { fv.id = null; fv.flip = false; renderFv(); }
+    else if (a === 'fvClose') { fv.id = null; fv.car = null; fv.flip = false; renderFv(); }
     else if (a === 'photoOpen') { state.photoView = true; state.edit = false; state.confirmDel = false; state.crop = null; state.cropDirty = false; renderSheet(); var sh0 = document.querySelector('.sheet'); if (sh0) sh0.scrollTop = 0; }
     else if (a === 'photoBack') { state.photoView = false; state.crop = null; state.cropDirty = false; renderSheet(); }
     else if (a === 'editOpen') { var ec = carById(state.sel); if (ec) { state.photoView = false; state.edit = true; state.editConfirm = false; state.editDraft = draftOf(ec); state.editMsg = ''; renderSheet(); var ef = $('#editForm'); if (ef) ef.scrollIntoView({ block: 'start' }); } }
@@ -2650,23 +3040,24 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
     else if (a === 'editSave') editSave();
     else if (a === 'editBack') { state.editConfirm = false; renderSheet(); }
     else if (a === 'editYes') editCommit();
-    else if (a === 'editSpecs') { var dd = readEdit(), mk1 = catMake(dd.make), m1 = mk1 ? catModel(mk1, dd.model) : null; if (m1) { dd.make = mk1; dd.model = m1.model; dd.engine = m1.engine; dd.hp = String(m1.hp); dd.zs = String(m1.zs); dd.drive = m1.drive; dd.body = m1.body; state.editDraft = dd; state.editMsg = ''; renderSheet(); } }
+    else if (a === 'editSpecs') { var dd = readEdit(), mk1 = catMake(dd.make), m1 = mk1 ? catModel(mk1, dd.model) : null; if (m1) { dd.make = mk1; dd.model = m1.model; dd.engine = m1.engine; dd.hp = String(m1.hp); dd.zs = String(m1.zs); dd.tq = dd.tq || ''; dd.drive = m1.drive; dd.body = m1.body; state.editDraft = dd; state.editMsg = ''; renderSheet(); } }
     else if (a === 'delNo') { state.confirmDel = false; renderSheet(); }
     else if (a === 'delYes') deleteCar();
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
-      if (fv.id) { fv.id = null; fv.flip = false; renderFv(); }
+      if (fv.id) { fv.id = null; fv.car = null; fv.flip = false; renderFv(); }
       else if (state.sel) closeSheet();
       else if (!$('#add').hidden) closeAdd();
     } else if (e.key === 'Enter' && e.target && e.target.id === 'modName') { e.preventDefault(); modAdd(); }
   });
   document.addEventListener('input', function (e) {
     var t = e.target;
+    if (t.id === 'soQ') { state.soQ = t.value; renderSoList(); return; }
     if (t.closest && t.closest('#editForm')) { state.editDraft = readEdit(); if (t.id === 'eMake' || t.id === 'eModel') { var keep = t.id, pos = t.selectionStart; renderSheet(); var ne = $('#' + keep); if (ne) { ne.focus(); try { ne.setSelectionRange(pos, pos); } catch (e2) {} } } return; }
     if (t.id === 'make') { renderSug(); lookupModels(); }
     else if (t.id === 'model') { var mk0 = catMake($('#make').value); if (mk0 && catModel(mk0, t.value)) applyModelMatch(); else renderSug(); }
-    else if (t.id === 'spEngine' || t.id === 'spHp' || t.id === 'spZs') { $('#specBox').classList.remove('warn'); if ($('#spOk').checked) return; setSpecStatus('Cuando estén bien, marca «Confirmo estos specs».'); }
+    else if (t.id === 'spEngine' || t.id === 'spHp' || t.id === 'spZs' || t.id === 'spTq' || t.id === 'spVmax' || t.id === 'spTrans') { $('#specBox').classList.remove('warn'); if ($('#spOk').checked) return; setSpecStatus('Cuando estén bien, marca «Confirmo estos specs».'); }
     else if (t.id === 'lookDrop') setLook('drop', t.value);
     else if (t.id === 'lookColor') setLook('color', t.value);
     else if (t.id === 'lookWing') setLook('wing', t.checked);
@@ -2700,6 +3091,7 @@ body.zone-spot .bar, body.zone-spot #chips, body.zone-spot #grid, body.zone-spot
   $('#sBody').innerHTML = BODYLIST.map(function (b) { return '<option value="' + b[0] + '">' + b[1] + '</option>'; }).join('');
   syncKind();
   render();
+  if (!LANG) { var lp = $('#langPick'); if (lp) lp.hidden = false; } else applyLang();
 
   /* ================= capacidades (todas opcionales; la página funciona sola) ================= */
   async function init() {
