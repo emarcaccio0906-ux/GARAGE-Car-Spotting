@@ -665,7 +665,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   var addCrop = { x: 50, y: 50, z: 1 }, addCropper = null, sheetCropper = null;
   var board = [], joined = false, userNS = null, selfId = null, boardCol = null, lastPub = '', canWrite = null;
 
-  var usingDemos = function () { return state.cars.length === 0; };
+  var usingDemos = function () { return false; };
   var all = function () { return usingDemos() ? DEMOS : state.cars; };
   var carById = function (id) { return state.cars.find(function (c) { return c.id === id; }); };
   var selCar = function () { return state.sel ? all().find(function (x) { return x.id === state.sel; }) : null; };
@@ -1111,7 +1111,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
     var grid = show.length ? '<div class="peer-grid">' + show.map(function (c, i) { return mini(c, i, peerCmp !== 'mine'); }).join('') + '</div>' : '<p class="status">Nada por aquí.</p>';
     var gh = (peerCmp === 'all' && garage.length) ? '<h3 class="sub">Su garage</h3><div class="peer-grid">' + garage.map(function (c, i) { return mini(c, i, true); }).join('') + '</div>' : '';
     var note = peerCmp === 'all' ? '<p class="status">Las cartas con borde son las que tú también tienes (se comparan por marca y modelo).</p>' : '';
-    box.innerHTML = head + '<p class="status">' + Math.round(pr.cards) + ' cartas · ' + Math.round(pr.pts) + ' puntos' + (usingDemos() ? ' · Aún no tienes cartas, así que te faltan todas.' : '') + '</p><div class="peer-sum">' + chips + '</div>' + note + grid + gh;
+    box.innerHTML = head + '<p class="status">' + Math.round(pr.cards) + ' cartas · ' + Math.round(pr.pts) + ' puntos' + (state.cars.length === 0 ? ' · Aún no tienes cartas, así que te faltan todas.' : '') + '</p><div class="peer-sum">' + chips + '</div>' + note + grid + gh;
   }
 
   /* ---- Radar de avistamientos ---- */
