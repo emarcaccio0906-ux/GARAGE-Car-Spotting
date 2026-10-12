@@ -351,6 +351,17 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
 .specs.warn { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
 .specs-head { display: flex; justify-content: space-between; align-items: center; }
 .specs-tag { font: 500 10px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; }
+
+/* editar y confirmar */
+.edit-form { display: flex; flex-direction: column; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--bg) 60%, transparent); }
+.edit-form.confirm { border-color: var(--accent); }
+.diff { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.diff li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.diff .dk { color: var(--muted); flex: none; }
+.diff .dv { text-align: right; overflow-wrap: anywhere; }
+.diff s { color: var(--muted); }
+.confirm-del { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--accent); border-radius: 12px; background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.confirm-del span { font-size: 14px; color: var(--muted); }
 </style>
 
 <div class="app">
@@ -1772,18 +1783,19 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     }
     var tail;
     if (c.demo) tail = '<p class="note">Carta de ejemplo. Desaparece cuando guardes tu primer carro.</p>';
-    else if (state.confirmDel) tail = '<div class="actions"><button class="btn danger" type="button" data-act="delYes">Sí, eliminar</button><button class="btn" type="button" data-act="delNo">Cancelar</button></div>';
-    else tail = '<div class="actions">' + (c.kind === 'spotted' && sightCol && active === 'cloud' ? '<button class="btn" type="button" data-act="sightFromCar">Marcar en el Radar</button>' : '') + '<button class="btn" type="button" data-act="del">Eliminar carta</button></div>';
+    else if (state.confirmDel) tail = '<div class="confirm-del"><b>¿Seguro que quieres eliminar ' + esc(c.make + ' ' + c.model) + '?</b><span>Se borra la carta con sus fotos' + (c.kind === 'garage' ? ' y mods' : '') + '. No se puede deshacer.</span><div class="actions"><button class="btn danger" type="button" data-act="delYes">Sí, eliminar</button><button class="btn" type="button" data-act="delNo">Cancelar</button></div></div>';
+    else tail = '<div class="actions">' + (c.kind === 'spotted' && sightCol && active === 'cloud' ? '<button class="btn" type="button" data-act="sightFromCar">Marcar en el Radar</button>' : '') + '<button class="btn" type="button" data-act="editOpen">Editar carta</button><button class="btn" type="button" data-act="del">Eliminar carta</button></div>';
     root.innerHTML = '<div class="scrim" data-act="close"></div>' +
       '<aside class="sheet r' + clamp(c.rarity | 0, 0, 4) + '" role="dialog" aria-modal="true" aria-label="' + esc(c.make + ' ' + c.model) + '"><div class="sheet-body">' +
       '<div class="sheet-top"><span class="lbl">Carta ' + esc(serialOf(c)) + '</span><button class="btn" type="button" id="sheetClose" data-act="close">Cerrar</button></div>' +
       cardHTML(c, true) +
       (c.demo ? '' : photosHTML(c)) +
       (c.kind === 'spotted' ? scoreHTML(c) : '') +
+      (state.edit && !c.demo ? editHTML(c) :
       (facts ? '<dl class="facts">' + facts + '</dl>' : '') +
       (c.why ? '<p class="why">' + esc(c.why) + '</p>' : '') +
       (c.note ? '<p>' + esc(c.note) + '</p>' : '') +
-      modsHTML + tail + '</div></aside>';
+      modsHTML + tail) + '</div></aside>';
     var sc = $('#sheetCrop');
     sheetCropper = sc ? mountCropper(sc, state.crop, function () { state.cropDirty = true; var b = $('#cropSave'); if (b) b.disabled = false; }) : null;
     var ns = root.querySelector('.sheet'); if (ns && prev) ns.scrollTop = prevTop;
@@ -1950,6 +1962,76 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     });
   }
 
+
+  /* ================= editar carta ================= */
+  function draftOf(c) {
+    var sp = c.specs || {};
+    return { make: c.make || '', model: c.model || '', year: c.year ? String(c.year) : '', rarity: String(c.rarity | 0), body: c.body || 'sedan',
+      place: c.place || '', note: c.note || '', engine: sp.engine || '', hp: sp.hp ? String(sp.hp) : '', zs: sp.zs ? String(sp.zs) : '', drive: sp.drive || '' };
+  }
+  function readEdit() {
+    var g = function (id) { var el = $('#' + id); return el ? el.value : ''; };
+    return { make: g('eMake').trim(), model: g('eModel').trim(), year: g('eYear').trim(), rarity: g('eRarity'), body: g('eBody'),
+      place: g('ePlace').trim(), note: g('eNote').trim(), engine: g('eEngine').trim(), hp: g('eHp').trim(), zs: g('eZs').trim(), drive: g('eDrive') };
+  }
+  var EDIT_LABELS = { make: 'Marca', model: 'Modelo', year: 'Año', rarity: 'Rareza', body: 'Tipo', place: 'Dónde lo viste', note: 'Nota', engine: 'Motor', hp: 'Potencia (hp)', zs: '0–60 mph (s)', drive: 'Tracción' };
+  function showVal(k, v) {
+    if (v === '' || v == null) return '—';
+    if (k === 'rarity') return (RAR[+v] || RAR[0]).n;
+    if (k === 'body') { var b = BODYLIST.find(function (x) { return x[0] === v; }); return b ? b[1] : v; }
+    return v;
+  }
+  function editDiff(c, d) {
+    var o = draftOf(c), out = [];
+    Object.keys(EDIT_LABELS).forEach(function (k) { if (c.kind !== 'spotted' && k === 'place') return; if (String(o[k]) !== String(d[k])) out.push({ k: k, from: o[k], to: d[k] }); });
+    return out;
+  }
+  function editHTML(c) {
+    var d = state.editDraft || draftOf(c);
+    var opt = function (list, v) { return list.map(function (x) { return '<option value="' + esc(x[0]) + '"' + (String(x[0]) === String(v) ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join(''); };
+    var mk = catMake(d.make), mdl = mk ? CAT[mk].map(function (m) { return '<option value="' + esc(m.model) + '">'; }).join('') : '';
+    if (state.editConfirm) {
+      var diff = editDiff(c, d);
+      return '<div class="edit-form confirm"><h3>¿Guardar estos cambios?</h3>' +
+        '<ul class="diff">' + diff.map(function (x) { return '<li><span class="dk">' + EDIT_LABELS[x.k] + '</span><span class="dv"><s>' + esc(showVal(x.k, x.from)) + '</s> → <b>' + esc(showVal(x.k, x.to)) + '</b></span></li>'; }).join('') + '</ul>' +
+        '<div class="actions"><button class="btn primary" type="button" data-act="editYes">Sí, guardar cambios</button><button class="btn" type="button" data-act="editBack">Seguir editando</button></div></div>';
+    }
+    return '<div class="edit-form" id="editForm"><h3>Editar carta</h3>' +
+      '<div class="f2"><div class="field"><label for="eMake">Marca</label><input type="text" id="eMake" list="mkList" maxlength="60" autocomplete="off" value="' + esc(d.make) + '"></div>' +
+      '<div class="field"><label for="eModel">Modelo</label><input type="text" id="eModel" list="eMdList" maxlength="60" autocomplete="off" value="' + esc(d.model) + '"><datalist id="eMdList">' + mdl + '</datalist></div></div>' +
+      '<div class="f2"><div class="field"><label for="eYear">Año</label><input type="number" id="eYear" inputmode="numeric" min="1900" max="2100" value="' + esc(d.year) + '"></div>' +
+      '<div class="field"><label for="eRarity">Rareza</label><select id="eRarity">' + opt(RAR.map(function (r, i) { return [String(i), r.n]; }), d.rarity) + '</select></div></div>' +
+      '<div class="field"><label for="eBody">Tipo de carro</label><select id="eBody">' + opt(BODYLIST, d.body) + '</select></div>' +
+      (c.kind === 'spotted' ? '<div class="field"><label for="ePlace">Dónde lo viste</label><input type="text" id="ePlace" maxlength="80" autocomplete="off" value="' + esc(d.place) + '"></div>' : '') +
+      '<div class="field"><label for="eNote">Nota</label><textarea id="eNote" maxlength="400">' + esc(d.note) + '</textarea></div>' +
+      '<div class="specs"><div class="specs-head"><span class="lbl">Specs</span>' + (mk && catModel(mk, d.model) ? '<button class="btn" type="button" data-act="editSpecs" style="min-height:34px;padding:4px 10px;font-size:13px">Usar specs sugeridos</button>' : '') + '</div>' +
+      '<div class="f2"><div class="field"><label for="eEngine">Motor</label><input type="text" id="eEngine" maxlength="60" autocomplete="off" value="' + esc(d.engine) + '"></div>' +
+      '<div class="field"><label for="eHp">Potencia (hp)</label><input type="number" id="eHp" min="1" max="3000" value="' + esc(d.hp) + '"></div></div>' +
+      '<div class="f2"><div class="field"><label for="eZs">0–60 mph (seg)</label><input type="number" id="eZs" min="1" max="30" step="0.1" value="' + esc(d.zs) + '"></div>' +
+      '<div class="field"><label for="eDrive">Tracción</label><select id="eDrive">' + opt(DRIVES, d.drive) + '</select></div></div></div>' +
+      '<p class="status err" id="editMsg">' + esc(state.editMsg || '') + '</p>' +
+      '<div class="actions"><button class="btn primary" type="button" data-act="editSave">Guardar</button><button class="btn" type="button" data-act="editCancel">Cancelar</button></div></div>';
+  }
+  function editSave() {
+    var c = carById(state.sel); if (!c) return;
+    var d = readEdit(); state.editDraft = d; state.editMsg = '';
+    if (!d.make || !d.model) { state.editMsg = 'Falta la marca y el modelo.'; return renderSheet(); }
+    var y = parseInt(d.year, 10); if (d.year && !(y >= 1900 && y <= 2100)) { state.editMsg = 'El año no es válido.'; return renderSheet(); }
+    if (!editDiff(c, d).length) { state.editMsg = 'No cambiaste nada.'; return renderSheet(); }
+    state.editConfirm = true; renderSheet();
+  }
+  function editCommit() {
+    var c = carById(state.sel), d = state.editDraft; if (!c || !d) return;
+    var y = parseInt(d.year, 10), hp = parseInt(d.hp, 10), zs = parseFloat(d.zs);
+    var specs = { engine: d.engine.slice(0, 60), hp: hp > 0 && hp < 3000 ? hp : null, zs: zs > 0 && zs < 30 ? Math.round(zs * 10) / 10 : null, drive: d.drive };
+    var patch = { make: d.make.slice(0, 60), model: d.model.slice(0, 60), year: (y >= 1900 && y <= 2100) ? y : null, rarity: clamp(+d.rarity || 0, 0, 4),
+      body: BODIES[d.body] ? d.body : 'sedan', note: d.note.slice(0, 400), specs: (specs.engine || specs.hp || specs.zs || specs.drive) ? specs : null };
+    if (c.kind === 'spotted') patch.place = d.place.slice(0, 80);
+    state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = '';
+    patchCar(c, patch, function () { syncBoardSafe(); });
+  }
+  function syncBoardSafe() { try { if (typeof syncBoard === 'function') syncBoard(); if (typeof syncPub === 'function') syncPub(); } catch (e) {} }
+
   /* ================= mods y eliminar ================= */
   function setMods(c, mods) {
     state.focusMod = true;
@@ -1967,7 +2049,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     setMods(c, (c.mods || []).concat([{ name: name, cost: cost }]));
   }
   function closeSheet() {
-    state.sel = null; state.look = null; state.crop = null; state.cropDirty = false; state.pi = 0; state.photoMsg = ''; state.confirmDel = false;
+    state.sel = null; state.look = null; state.crop = null; state.cropDirty = false; state.pi = 0; state.photoMsg = ''; state.confirmDel = false; state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = '';
     if (extrasUnsub) { extrasUnsub(); extrasUnsub = null; }
     state.extras = [];
     renderSheet();
@@ -2000,7 +2082,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     else if (a === 'add') openAdd(t.dataset.kind || state.tab);
     else if (a === 'addClose') closeAdd();
     else if (a === 'open') {
-      state.sel = t.dataset.id; state.look = null; state.crop = null; state.cropDirty = false; state.pi = 0; state.photoMsg = ''; state.confirmDel = false;
+      state.sel = t.dataset.id; state.look = null; state.crop = null; state.cropDirty = false; state.pi = 0; state.photoMsg = ''; state.confirmDel = false; state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = '';
       var oc = selCar(); watchExtras(oc && !oc.demo ? oc.id : null);
       renderSheet(); var cl = $('#sheetClose'); if (cl) cl.focus();
     }
@@ -2046,7 +2128,13 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
     else if (a === 'peerClose') closePeer();
     else if (a === 'peerCmp') { peerCmp = t.dataset.v; renderPeer(); }
     else if (a === 'rm') { c = carById(state.sel); if (c) { var i = +t.dataset.i; setMods(c, (c.mods || []).filter(function (_, k) { return k !== i; })); } }
-    else if (a === 'del') { state.confirmDel = true; renderSheet(); }
+    else if (a === 'del') { state.confirmDel = true; renderSheet(); var cd = document.querySelector('.confirm-del'); if (cd) cd.scrollIntoView({ block: 'center' }); }
+    else if (a === 'editOpen') { var ec = carById(state.sel); if (ec) { state.edit = true; state.editConfirm = false; state.editDraft = draftOf(ec); state.editMsg = ''; renderSheet(); var ef = $('#editForm'); if (ef) ef.scrollIntoView({ block: 'start' }); } }
+    else if (a === 'editCancel') { state.edit = false; state.editConfirm = false; state.editDraft = null; state.editMsg = ''; renderSheet(); }
+    else if (a === 'editSave') editSave();
+    else if (a === 'editBack') { state.editConfirm = false; renderSheet(); }
+    else if (a === 'editYes') editCommit();
+    else if (a === 'editSpecs') { var dd = readEdit(), mk1 = catMake(dd.make), m1 = mk1 ? catModel(mk1, dd.model) : null; if (m1) { dd.make = mk1; dd.model = m1.model; dd.engine = m1.engine; dd.hp = String(m1.hp); dd.zs = String(m1.zs); dd.drive = m1.drive; dd.body = m1.body; state.editDraft = dd; state.editMsg = ''; renderSheet(); } }
     else if (a === 'delNo') { state.confirmDel = false; renderSheet(); }
     else if (a === 'delYes') deleteCar();
   });
@@ -2058,6 +2146,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   });
   document.addEventListener('input', function (e) {
     var t = e.target;
+    if (t.closest && t.closest('#editForm')) { state.editDraft = readEdit(); if (t.id === 'eMake' || t.id === 'eModel') { var keep = t.id, pos = t.selectionStart; renderSheet(); var ne = $('#' + keep); if (ne) { ne.focus(); try { ne.setSelectionRange(pos, pos); } catch (e2) {} } } return; }
     if (t.id === 'make') { renderSug(); lookupModels(); }
     else if (t.id === 'model') { var mk0 = catMake($('#make').value); if (mk0 && catModel(mk0, t.value)) applyModelMatch(); else renderSug(); }
     else if (t.id === 'spEngine' || t.id === 'spHp' || t.id === 'spZs') { $('#specBox').classList.remove('warn'); if ($('#spOk').checked) return; setSpecStatus('Cuando estén bien, marca «Confirmo estos specs».'); }
@@ -2067,6 +2156,7 @@ input[type="text"], input[type="tel"], input[type="password"], input[type="numbe
   });
   document.addEventListener('change', function (e) {
     var t = e.target;
+    if (t.closest && t.closest('#editForm')) { state.editDraft = readEdit(); return; }
     if (t.id === 'make' || t.id === 'model') applyModelMatch();
     else if (t.id === 'spOk') { $('#specBox').classList.remove('warn'); setSpecStatus(t.checked ? 'Specs confirmados. Se guardan con la carta.' : 'Sin confirmar: no se guardan.'); }
     else if (t.id === 'spDrive') { if (!$('#spOk').checked) setSpecStatus('Cuando estén bien, marca «Confirmo estos specs».'); }
