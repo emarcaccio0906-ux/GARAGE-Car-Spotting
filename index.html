@@ -1,0 +1,1846 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>GARAGE</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: plate masthead, section tabs (collection, my cars, ranking), a grid of minimalist collectible cards (square photo window, hairlines, rarity pip), an inline add form with a crop window, and a side sheet with the big card, photo gallery and cropper, points, visualizer and mods. */
+:root {
+  --bg: #E8EAED;
+  --surface: #F7F8F9;
+  --surface-2: #DCE0E6;
+  --fg: #16181D;
+  --muted: #565C68;
+  --line: #C3C8D0;
+  --accent: #CF2F36;
+  --accent-fg: #FFFFFF;
+  --r0: #6B7280;
+  --r1: #1B7F63;
+  --r2: #2A5FC4;
+  --r3: #8A3CCB;
+  --r4: #B56F00;
+  --f-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --f-body: 'Barlow', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1114; --surface: #181B20; --surface-2: #22262D; --fg: #ECEEF1; --muted: #9BA2AE; --line: #2D323B;
+    --accent: #FF5A5F; --accent-fg: #1B0A0B;
+    --r0: #9BA2AE; --r1: #3CC39A; --r2: #6A9CFF; --r3: #B882FF; --r4: #F2B13B;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1114; --surface: #181B20; --surface-2: #22262D; --fg: #ECEEF1; --muted: #9BA2AE; --line: #2D323B;
+  --accent: #FF5A5F; --accent-fg: #1B0A0B;
+  --r0: #9BA2AE; --r1: #3CC39A; --r2: #6A9CFF; --r3: #B882FF; --r4: #F2B13B;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 400 16px/1.45 var(--f-body); padding-inline: 16px; padding-block: 20px 48px; }
+button { font-family: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.r0 { --rc: var(--r0); } .r1 { --rc: var(--r1); } .r2 { --rc: var(--r2); } .r3 { --rc: var(--r3); } .r4 { --rc: var(--r4); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.app { max-width: 1040px; margin-inline: auto; display: flex; flex-direction: column; gap: 18px; }
+
+.mast { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.plate-brand { display: inline-flex; flex-direction: column; gap: 2px; border: 2px solid var(--fg); border-radius: 8px; background: var(--surface); padding: 5px 16px 4px; }
+.plate-brand small { font: 500 10px var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.plate-brand b { font: 700 42px/1 var(--f-display); letter-spacing: .1em; }
+.summary { margin: 0; font-size: 15px; color: var(--muted); }
+.summary strong { color: var(--fg); font-weight: 600; }
+
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.tabs { max-width: 100%; overflow-x: auto; display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--line); border-radius: 11px; background: var(--surface-2); }
+.tab { border: 0; background: transparent; color: var(--muted); font: 600 15px var(--f-body); padding: 8px 12px; min-height: 40px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+.tab[aria-selected="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 0 var(--line); }
+@media (max-width: 420px) { .tab { padding: 8px 9px; font-size: 14px; } }
+.btn { font: 600 15px var(--f-body); border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 10px; padding: 10px 16px; min-height: 44px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-align: center; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.btn.danger { border-color: var(--accent); color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 8px; min-height: 38px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); color: var(--fg); font: 500 14px var(--f-body); cursor: pointer; }
+.chip i { width: 10px; height: 10px; border-radius: 50%; background: var(--rc); flex: none; }
+.chip .n { font: 500 12px var(--f-mono); color: var(--muted); }
+.chip[aria-pressed="true"] { border-color: var(--fg); background: var(--surface-2); }
+
+.note { margin: 0; padding: 10px 14px; border: 1px dashed var(--line); border-radius: 10px; color: var(--muted); font-size: 14px; }
+.foot { margin: 0; font-size: 13px; color: var(--muted); }
+
+/* ---------- collectible card ---------- */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(164px, 1fr)); gap: 14px; }
+.card { position: relative; display: flex; flex-direction: column; min-width: 0; padding: 8px 8px 10px; text-align: left; font: inherit; color: var(--fg); border: 1px solid color-mix(in srgb, var(--rc) 40%, var(--line)); border-radius: 16px; background: var(--surface); cursor: pointer; }
+.card.big { cursor: default; width: 100%; max-width: 320px; margin-inline: auto; }
+.card:not(.r3):not(.r4):not(.big):hover { border-color: var(--rc); }
+.card.r3, .card.r4 { border-color: transparent; background: linear-gradient(var(--surface), var(--surface)) padding-box, linear-gradient(135deg, var(--rc), color-mix(in srgb, var(--rc) 25%, #fff) 50%, var(--rc)) border-box; }
+.c-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 2px 4px 8px; font: 500 10px var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.c-top .rar { display: inline-flex; align-items: center; gap: 6px; color: var(--fg); white-space: nowrap; }
+.c-top i { width: 7px; height: 7px; border-radius: 50%; background: var(--rc); }
+.art { position: relative; display: block; aspect-ratio: 1 / 1; border-radius: 10px; overflow: hidden; background: linear-gradient(160deg, var(--surface-2), color-mix(in srgb, var(--rc) 16%, var(--surface-2))); }
+.art > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.art > svg { position: absolute; left: 4%; top: 50%; width: 92%; height: auto; transform: translateY(-50%); }
+.card.r3 .art::before, .card.r4 .art::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(115deg, transparent 34%, rgba(255, 255, 255, .32) 50%, transparent 66%); transform: translateX(-110%); }
+.card.r3:hover .art::before, .card.r4:hover .art::before { transform: translateX(110%); }
+@media (prefers-reduced-motion: no-preference) { .card.r3 .art::before, .card.r4 .art::before { transition: transform .9s ease; } }
+.tag { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 3px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--fg); font: 500 10px var(--f-mono); letter-spacing: .12em; text-transform: uppercase; }
+.c-bar { display: block; height: 2px; margin: 10px 4px 0; border-radius: 2px; background: var(--rc); }
+.c-meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: 8px 4px 0; }
+.make { font: 600 11px var(--f-body); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); overflow-wrap: anywhere; }
+.model { margin: 0; font: 700 26px/1.02 var(--f-display); overflow-wrap: anywhere; }
+.c-foot { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin: 10px 4px 0; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.c-foot > span { min-width: 0; overflow-wrap: anywhere; }
+.c-foot b { font: 500 13px var(--f-mono); color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.empty { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 16px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 12px; }
+
+/* ---------- panels and form ---------- */
+.panel { padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.panel-head h2 { margin: 0; font: 700 28px/1 var(--f-display); letter-spacing: .02em; }
+.add-grid { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 680px) { .add-grid { grid-template-columns: minmax(0, 1fr); } }
+.photo-col, .fields { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.drop { display: grid; place-items: center; aspect-ratio: 1 / 1; padding: 12px; border: 1.5px dashed var(--line); border-radius: 12px; background: var(--bg); color: var(--muted); text-align: center; font-size: 14px; cursor: pointer; }
+#photo:focus-visible + .drop { outline: 2px solid var(--accent); outline-offset: 2px; }
+.status { margin: 0; min-height: 1.4em; font-size: 13px; color: var(--muted); }
+.status.err { color: var(--accent); }
+.kind { display: flex; gap: 8px 20px; flex-wrap: wrap; margin: 0; padding: 0; border: 0; }
+.kind legend { padding: 0; margin-bottom: 6px; font-size: 13px; color: var(--muted); }
+.kind label { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; }
+.f2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.field label { font-size: 13px; color: var(--muted); }
+input[type="text"], input[type="tel"], input[type="password"], input[type="number"], select, textarea { width: 100%; min-height: 44px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: 400 16px var(--f-body); }
+textarea { resize: vertical; min-height: 64px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.qline { display: flex; flex-direction: column; gap: 6px; }
+.qhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.qhead b { font: 700 26px/1 var(--f-display); }
+.qbar { height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.qbar span { display: block; height: 100%; border-radius: 99px; background: var(--accent); }
+.score { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+
+/* ---------- crop window ---------- */
+.crop-stage { position: relative; aspect-ratio: 1 / 1; border-radius: 12px; overflow: hidden; background: var(--surface-2); touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.crop-stage:active { cursor: grabbing; }
+.crop-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.thirds { position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(to right, transparent calc(33.3% - .5px), rgba(255, 255, 255, .4) 0 calc(33.3% + .5px), transparent 0 calc(66.6% - .5px), rgba(255, 255, 255, .4) 0 calc(66.6% + .5px), transparent 0), linear-gradient(to bottom, transparent calc(33.3% - .5px), rgba(255, 255, 255, .4) 0 calc(33.3% + .5px), transparent 0 calc(66.6% - .5px), rgba(255, 255, 255, .4) 0 calc(66.6% + .5px), transparent 0); }
+.crop-ctl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; align-items: center; font-size: 13px; color: var(--muted); }
+.cropper { display: flex; flex-direction: column; gap: 12px; }
+.thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+.thumb { position: relative; width: 60px; height: 60px; padding: 0; border: 2px solid var(--line); border-radius: 10px; background: var(--surface-2); overflow: hidden; cursor: pointer; }
+.thumb[aria-pressed="true"] { border-color: var(--accent); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb b { position: absolute; left: 3px; bottom: 3px; padding: 1px 4px; border-radius: 3px; background: var(--bg); color: var(--fg); font: 500 8px var(--f-mono); letter-spacing: .06em; text-transform: uppercase; }
+.thumb.add { display: grid; place-items: center; font-size: 26px; color: var(--muted); border-style: dashed; background: var(--bg); }
+
+/* ---------- ranking ---------- */
+.rank { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.rank-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.rank-row.me { border-color: var(--accent); }
+.pos { font: 700 30px/1 var(--f-display); color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; }
+.rank-row:first-child .pos { color: var(--accent); }
+.who { display: flex; flex-direction: column; min-width: 0; }
+.who b { overflow-wrap: anywhere; }
+.who span { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.sc { display: flex; flex-direction: column; align-items: flex-end; }
+.sc b { font: 700 26px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.sc span { font-size: 12px; color: var(--muted); }
+.rank-empty { padding: 20px; text-align: center; color: var(--muted); border: 1px dashed var(--line); border-radius: 10px; }
+
+/* ---------- side sheet ---------- */
+.scrim { position: fixed; inset: 0; z-index: 10; background: rgba(0, 0, 0, .55); }
+.sheet { position: fixed; z-index: 11; top: 0; right: 0; bottom: 0; width: min(460px, 100%); overflow-y: auto; background: var(--surface); border-left: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.sheet-body { display: flex; flex-direction: column; gap: 14px; padding: 16px; }
+.sheet-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 8px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font: 600 13px var(--f-body); }
+.pill i { width: 10px; height: 10px; border-radius: 50%; background: var(--rc); flex: none; }
+.plate { padding: 2px 6px; border: 1px solid var(--line); border-radius: 4px; font: 500 11px var(--f-mono); letter-spacing: .08em; color: var(--muted); }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px 16px; margin: 0; }
+.facts dt { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.facts dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+.why { margin: 0; padding: 10px 12px; border-left: 3px solid var(--rc); background: var(--surface-2); border-radius: 0 8px 8px 0; font-size: 14px; }
+.sheet h3 { margin: 6px 0 0; font: 700 22px/1 var(--f-display); letter-spacing: .04em; text-transform: uppercase; }
+.mods { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.mods li { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.mods .mn { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.mods .cost { font: 500 14px var(--f-mono); font-variant-numeric: tabular-nums; }
+.mods .rm { min-width: 36px; min-height: 36px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: 20px; cursor: pointer; }
+.mods-total { display: flex; justify-content: space-between; font-weight: 600; }
+.mods-total span:last-child { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.mod-add { display: grid; grid-template-columns: minmax(0, 1fr) 92px auto; gap: 8px; }
+@media (max-width: 420px) { .mod-add { grid-template-columns: minmax(0, 1fr) 84px; } .mod-add .btn { grid-column: 1 / -1; } }
+
+.viz { display: flex; flex-direction: column; gap: 14px; }
+.viz-stage { padding: 14px 8px 8px; border-radius: 12px; background: var(--surface-2); }
+.viz-stage svg { display: block; width: 100%; height: auto; }
+.ctl { display: flex; flex-direction: column; gap: 6px; }
+.lbl { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.opts, .swatches { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.sw { width: 36px; height: 36px; padding: 0; border: 2px solid var(--line); border-radius: 50%; background: var(--c); cursor: pointer; }
+.sw[aria-pressed="true"] { outline: 2px solid var(--fg); outline-offset: 2px; }
+input[type="color"] { width: 36px; height: 36px; padding: 0; border: 2px solid var(--line); border-radius: 50%; background: none; cursor: pointer; overflow: hidden; }
+input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 50%; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.check { display: flex; align-items: center; gap: 8px; min-height: 40px; }
+.hint { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); }
+
+/* radar + gente */
+.acct-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); margin-top: 8px; }
+.acct-row.on { border-color: var(--accent); }
+.acct-row .who { display: flex; flex-direction: column; gap: 2px; }
+.acct-row .who span { font-size: 13px; color: var(--muted); }
+.acct-row .rb { display: flex; gap: 8px; flex-wrap: wrap; }
+.acct-row .btn, .acct-new .btn { min-height: 40px; padding: 8px 14px; font-size: 14px; }
+.acct-new { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.rank-row.p { grid-template-columns: 40px minmax(0, 1fr); }
+.rank-row .rb { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; }
+.rank-row .rb .btn, .sight .btn[data-act="follow"] { min-height: 40px; padding: 8px 12px; font-size: 14px; }
+.btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.cam video { width: 100%; max-height: 60vh; border-radius: 10px; background: #000; object-fit: cover; display: block; margin-bottom: 10px; }
+#tabSpot { color: var(--accent); }
+#tabSpot[aria-selected="true"] { color: var(--fg); }
+[hidden] { display: none !important; }
+.tabs { scrollbar-width: none; }
+.sub { margin: 18px 0 0; font: 700 18px/1 var(--f-display); letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.sight-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.radar-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 10px; }
+.sights { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.sight { display: grid; grid-template-columns: 6px minmax(0, 1fr); gap: 12px; padding: 10px 12px 10px 0; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); overflow: hidden; }
+.sight.old { opacity: .6; }
+.sight .pip { background: var(--rc, var(--r0)); }
+.sight .sb { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.sight .sb b { font: 700 19px/1.1 var(--f-display); letter-spacing: .02em; }
+.sight .sb .meta { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.sight .sb .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.sight .btn { min-height: 40px; padding: 8px 12px; font-size: 14px; }
+.sight .btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.sight a.btn { text-decoration: none; }
+.profile { display: flex; flex-direction: column; gap: 12px; }
+.vis { display: flex; gap: 14px; flex-wrap: wrap; border: 0; padding: 0; margin: 0; }
+.vis label { display: flex; align-items: center; gap: 6px; min-height: 40px; }
+.peer-sum { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.peer-sum .chip { cursor: default; }
+.peer-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 640px) { .peer-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
+.card.mini { cursor: default; }
+.card.mini.have { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div class="app">
+  <header class="mast">
+    <div class="plate-brand"><b>GARAGE</b></div>
+    <p class="summary" id="summary"></p>
+  </header>
+
+  <div class="bar">
+    <div class="tabs" role="tablist" aria-label="Secciones">
+      <button class="tab" role="tab" id="tabSpotted" data-act="tab" data-tab="spotted"></button>
+      <button class="tab" role="tab" id="tabGarage" data-act="tab" data-tab="garage"></button>
+      <button class="tab" role="tab" id="tabSpot" data-act="tab" data-tab="spot">Spot now</button>
+      <button class="tab" role="tab" id="tabRadar" data-act="tab" data-tab="radar">Radar</button>
+      <button class="tab" role="tab" id="tabPeople" data-act="tab" data-tab="people">Gente</button>
+      <button class="tab" role="tab" id="tabBoard" data-act="tab" data-tab="board">Ranking</button>
+      <button class="tab" role="tab" id="tabAcct" data-act="tab" data-tab="acct">Cuenta</button>
+    </div>
+    <button class="btn primary" id="addOpen" data-act="add" type="button">+ Agregar carro</button>
+  </div>
+
+  <section class="panel" id="add" hidden aria-label="Agregar carro">
+    <div class="panel-head">
+      <h2>Nuevo carro</h2>
+      <button class="btn" data-act="addClose" type="button">Cerrar</button>
+    </div>
+    <div class="add-grid">
+      <div class="photo-col">
+        <input class="sr" type="file" id="photo" accept="image/*">
+        <label class="drop" id="dropLabel" for="photo"><span id="dropText">Toca para tomar o subir una foto</span></label>
+        <div class="cropper" id="addCropBox" hidden>
+          <div class="crop-stage"><img id="addImg" alt="Foto del carro"><span class="thirds"></span></div>
+          <div class="crop-ctl">
+            <label for="addZ">Zoom</label><input class="cz" id="addZ" type="range" min="1" max="3" step="0.05" value="1">
+            <label for="addX">Horizontal</label><input class="cx" id="addX" type="range" min="0" max="100" step="1" value="50">
+            <label for="addY">Vertical</label><input class="cy" id="addY" type="range" min="0" max="100" step="1" value="50">
+          </div>
+          <div class="actions">
+            <button class="btn" type="button" data-crop="center">Centrar</button>
+            <label class="btn" for="photo">Cambiar foto</label>
+          </div>
+          <p class="status">Arrastra la foto para encuadrarla. Así se verá en la carta.</p>
+        </div>
+        <button class="btn" id="idBtn" type="button" hidden disabled>Identificar con IA</button>
+        <p class="status" id="idStatus" role="status"></p>
+        <div class="qline" id="qLine" hidden>
+          <div class="qhead"><b id="qScore"></b><span id="qLabel"></span></div>
+          <div class="qbar"><span id="qFill"></span></div>
+          <p class="status" id="qTip"></p>
+          <p class="status" id="qPts"></p>
+        </div>
+      </div>
+      <div class="fields">
+        <fieldset class="kind">
+          <legend>¿De quién es?</legend>
+          <label><input type="radio" name="kind" value="spotted" checked> Lo vi en la calle</label>
+          <label><input type="radio" name="kind" value="garage"> Es mío</label>
+        </fieldset>
+        <div class="f2">
+          <div class="field"><label for="make">Marca</label><input type="text" id="make" autocomplete="off" placeholder="Toyota"></div>
+          <div class="field"><label for="model">Modelo</label><input type="text" id="model" autocomplete="off" placeholder="Tacoma"></div>
+        </div>
+        <div class="f2">
+          <div class="field"><label for="year">Año</label><input type="number" id="year" inputmode="numeric" min="1900" max="2100" placeholder="2025"></div>
+          <div class="field"><label for="rarity">Rareza</label><select id="rarity"></select></div>
+        </div>
+        <div class="field"><label for="bodyType">Tipo de carro</label><select id="bodyType"></select></div>
+        <div class="field" id="placeField"><label for="place">Dónde lo viste</label><input type="text" id="place" autocomplete="off" placeholder="Brickell, Wynwood, Doral…"></div>
+        <div class="field"><label for="noteIn">Nota</label><textarea id="noteIn" placeholder="Color, detalles, algo que te llamó la atención"></textarea></div>
+        <div class="actions"><button class="btn primary" id="save" type="button">Guardar carta</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="acct" hidden aria-label="Cuenta">
+    <div class="panel-head"><h2>Cuenta</h2></div>
+    <div id="acctBox"></div>
+  </section>
+
+  <section class="panel" id="spot" hidden aria-label="Spot now">
+    <div class="panel-head"><h2>Spot now</h2></div>
+    <p class="status">Ves un carro bueno en la calle: abre la cámara, toma la foto en el momento y la IA lo identifica. Una foto bien encuadrada y con buena luz vale más puntos.</p>
+    <div class="cam" id="camWrap" hidden>
+      <video id="camVideo" playsinline muted></video>
+      <div class="actions"><button class="btn primary" type="button" data-act="camSnap">Tomar foto</button><button class="btn" type="button" data-act="camClose">Cerrar cámara</button></div>
+    </div>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn primary" type="button" id="camOpen" data-act="camOpen">Abrir cámara</button>
+      <label class="btn" for="spotFile">Usar la cámara del teléfono</label>
+      <input class="sr" type="file" id="spotFile" accept="image/*" capture="environment">
+    </div>
+    <p class="status" id="camMsg"></p>
+  </section>
+
+  <section class="panel" id="radar" hidden aria-label="Radar de avistamientos">
+    <div class="panel-head">
+      <h2>Radar</h2>
+      <button class="btn primary" data-act="sightNew" type="button">+ Marcar avistamiento</button>
+    </div>
+    <p class="status" id="radarNote"></p>
+    <form class="sight-form" id="sightForm" hidden onsubmit="return false">
+      <div class="field"><label for="sFrom">Desde mi colección</label><select id="sFrom"></select></div>
+      <div class="f2">
+        <div class="field"><label for="sMake">Marca</label><input type="text" id="sMake" autocomplete="off" placeholder="Lamborghini"></div>
+        <div class="field"><label for="sModel">Modelo</label><input type="text" id="sModel" autocomplete="off" placeholder="Huracán"></div>
+      </div>
+      <div class="f2">
+        <div class="field"><label for="sRarity">Rareza</label><select id="sRarity"></select></div>
+        <div class="field"><label for="sBody">Tipo</label><select id="sBody"></select></div>
+      </div>
+      <div class="field"><label for="sArea">Zona o calle</label><input type="text" id="sArea" autocomplete="off" placeholder="Brickell Ave, Doral Blvd, Wynwood…"></div>
+      <div class="field"><label for="sNote">Detalle</label><input type="text" id="sNote" autocomplete="off" placeholder="Color, placa parcial, si estaba estacionado…"></div>
+      <p class="status" id="sLoc"></p>
+      <div class="actions">
+        <button class="btn" type="button" data-act="sightLoc" id="sLocBtn">Usar mi ubicación</button>
+        <button class="btn primary" type="button" data-act="sightSave" id="sSave">Publicar</button>
+        <button class="btn" type="button" data-act="sightCancel">Cancelar</button>
+      </div>
+      <p class="status">Los avistamientos los ve quien tenga esta página. Marca calles y sitios públicos, nunca casas ni direcciones privadas. La ubicación se redondea a unos 100 metros.</p>
+    </form>
+    <div class="radar-bar" id="radarBar"></div>
+    <ul class="sights" id="sightList"></ul>
+  </section>
+
+  <section class="panel" id="people" hidden aria-label="Gente y colecciones">
+    <div class="panel-head"><h2>Gente</h2></div>
+    <div id="profileBox"></div>
+    <h3 class="sub">Mi colección</h3>
+    <div id="mineBox"></div>
+    <h3 class="sub">Colecciones públicas</h3>
+    <div class="radar-bar" id="peopleBar"></div>
+    <ul class="rank" id="peopleList"></ul>
+    <div id="peerBox"></div>
+  </section>
+
+  <section class="panel" id="board" hidden aria-label="Ranking entre amigos">
+    <div class="panel-head">
+      <h2>Ranking</h2>
+      <button class="btn" id="joinBtn" data-act="join" type="button" hidden></button>
+    </div>
+    <p class="status" id="boardNote"></p>
+    <ol class="rank" id="rankList"></ol>
+  </section>
+
+  <div class="chips" id="chips" role="group" aria-label="Filtrar por rareza"></div>
+  <p class="note" id="demoNote" hidden>Vista de ejemplo. Estas cartas son de muestra y desaparecen cuando guardes tu primera foto.</p>
+  <main class="grid" id="grid"></main>
+  <p class="foot" id="foot"></p>
+</div>
+<div id="sheetRoot"></div>
+
+<script>
+(function () {
+  /* ================= datos base ================= */
+  var RAR = [{ n: 'Común' }, { n: 'Poco común' }, { n: 'Raro' }, { n: 'Épico' }, { n: 'Legendario' }];
+  var DEFAULT_CROP = { x: 50, y: 50, z: 1 };
+  var $ = function (s) { return document.querySelector(s); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var usd = function (n) { return '$' + Math.round(n).toLocaleString('en-US'); };
+  var clamp = function (x, a, b) { return Math.max(a, Math.min(b, x)); };
+  var clamp01 = function (x) { return clamp(x, 0, 1); };
+  var r2 = function (x) { return Math.round(x * 100) / 100; };
+  var num = function (v, d) { v = parseFloat(v); return isFinite(v) ? v : d; };
+  var uid = function () { return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8); };
+  var queue = Promise.resolve();
+  var enqueue = function (fn) { queue = queue.then(fn, fn); return queue; };
+
+  var DEMOS = [
+    { id: 'd1', demo: 1, serial: 'EJ-001', kind: 'spotted', make: 'Lamborghini', model: 'Huracán', year: 2021, rarity: 3, place: 'Wynwood', body: 'sports', q: 86, look: { color: '#E4B72A', wheel: 'sport', rim: 'negro', drop: 2, tint: 2 } },
+    { id: 'd2', demo: 1, serial: 'EJ-002', kind: 'spotted', make: 'Porsche', model: '911 Carrera', year: 2022, rarity: 2, place: 'Coral Gables', body: 'sports', q: 74, look: { color: '#7B8494', wheel: 'sport', rim: 'plata', drop: 1, tint: 1 } },
+    { id: 'd3', demo: 1, serial: 'EJ-003', kind: 'spotted', make: 'Ford', model: 'Mustang GT', year: 2020, rarity: 1, place: 'Brickell', body: 'convertible', q: 62, look: { color: '#C0302F', wheel: 'std', rim: 'plata', drop: 1 } },
+    { id: 'd4', demo: 1, serial: 'EJ-004', kind: 'spotted', make: 'Toyota', model: 'Corolla', year: 2018, rarity: 0, place: 'Doral', body: 'sedan', q: 38, look: { color: '#F0F1F3', wheel: 'std', rim: 'plata' } },
+    { id: 'd5', demo: 1, serial: 'EJ-005', kind: 'spotted', make: 'Ford', model: 'F-150 Raptor', year: 2023, rarity: 2, place: 'Hialeah', body: 'pickup', q: 70, look: { color: '#2E8B57', wheel: 'mesh', rim: 'negro', drop: -1, tint: 2 } },
+    { id: 'd6', demo: 1, serial: 'EJ-006', kind: 'spotted', make: 'Jeep', model: 'Wrangler Rubicon', year: 2022, rarity: 1, place: 'Key Biscayne', body: 'suv', q: 55, look: { color: '#E0762B', wheel: 'std', rim: 'negro', drop: -2, tint: 0 } },
+    { id: 'd7', demo: 1, serial: 'EJ-007', kind: 'garage', make: 'Honda', model: 'Civic Si', year: 2019, rarity: 1, place: '', body: 'hatch', note: 'Carro de ejemplo para ver cómo funcionan los mods y el visualizador.', mods: [{ name: 'Escape cat-back', cost: 450 }, { name: 'Coilovers', cost: 900 }], look: { color: '#2F5BD8', wheel: 'sport', rim: 'bronce', drop: 2, tint: 1, wing: true } }
+  ];
+  var PROMPT = 'Eres experto en carros. Mira la foto e identifica el carro principal. Responde SOLO con un objeto JSON con estos campos: ' +
+    '{"make": string, "model": string, "year": número o null (año aproximado del modelo), "rarity": entero de 0 a 4, "body": "sports" (deportivo o coupé) | "sedan" | "hatch" (hatchback) | "suv" | "pickup" | "convertible", "confidence": "alta" | "media" | "baja", "why": una frase corta en español sobre el carro y por qué esa rareza, "composition": entero de 0 a 10 (10 = el carro se ve completo, bien encuadrado, con buena luz y sin estorbos; 0 = cortado, tapado o casi invisible), "stock": true si parece una imagen de internet, un anuncio o una captura de pantalla y no una foto tomada en persona, si no false}. ' +
+    'Escala de rareza según qué tan raro es verlo en las calles de Estados Unidos: 0 Común (Corolla, Civic, Camry, pickups de trabajo), 1 Poco común (versiones deportivas o de nicho: Mustang GT, Wrangler Rubicon, Miata), ' +
+    '2 Raro (deportivos y lujo alto: Porsche 911, Corvette, AMG, M3), 3 Épico (exóticos: Lamborghini, Ferrari, McLaren, Aston Martin), 4 Legendario (hipercarros y clásicos muy escasos: Bugatti, Pagani, Koenigsegg, ediciones limitadas). ' +
+    'Si no estás seguro del año, da un año aproximado y confianza baja. Si no hay un carro claro en la foto responde {"error": "no_car"}.';
+
+  /* ================= dibujo del carro (vista lateral) ================= */
+  /* VIS START */
+  var DEFAULT_LOOK = { body: 'sedan', color: '#2F5BD8', wheel: 'std', rim: 'plata', drop: 0, tint: 1, wing: false };
+  var SWATCHES = [['Rojo', '#C0302F'], ['Naranja', '#E0762B'], ['Amarillo', '#E4B72A'], ['Verde', '#2E8B57'], ['Azul', '#2F5BD8'], ['Gris', '#7B8494'], ['Negro', '#1A1C20'], ['Blanco', '#F0F1F3']];
+  var RIMS = { plata: '#C9CED6', negro: '#1B1D21', bronce: '#A8733C', blanco: '#F2F3F5' };
+  var WHEELS = [['std', 'De fábrica'], ['sport', 'Deportivo'], ['mesh', 'Malla']];
+  var RIMC = [['plata', 'Plata'], ['negro', 'Negro'], ['bronce', 'Bronce'], ['blanco', 'Blanco']];
+  var TINTS = [['0', 'Sin tinte'], ['1', 'Ligero'], ['2', 'Oscuro']];
+  var BODYLIST = [['sports', 'Deportivo'], ['sedan', 'Sedán'], ['hatch', 'Hatchback'], ['suv', 'SUV'], ['pickup', 'Pickup'], ['convertible', 'Convertible']];
+  var SVGN = 0;
+  var BODIES = {
+    sedan: {
+      R: 24, ys: 135, Ra: 30, rcx: 90, fcx: 310, belt: 90, gtop: 56,
+      top: 'M24 135L22 118Q22 100 32 95L98 91C110 80 122 58 146 52Q188 47 232 52C254 56 270 78 284 90L344 94Q372 98 376 114L378 135',
+      glass: 'M104 90C114 78 126 60 148 56L230 56C248 60 262 78 276 89Z',
+      shoulder: 'M40 100L98 96C150 90 230 90 284 94L340 98',
+      pillars: [190], doors: [112, 190, 270], handles: [[150, 96], [222, 96]], mirror: [278, 88],
+      head: 'M354 100L374 106L376 116L352 112Z', tail: 'M24 102L24 116L36 116L34 100Z',
+      wing: 'M28 96L24 86L28 84L66 91L64 95Z'
+    },
+    sports: {
+      R: 27, ys: 133, Ra: 33, rcx: 88, fcx: 312, belt: 88, gtop: 66,
+      top: 'M24 133L22 118Q22 100 34 95L84 90C100 82 114 66 142 62Q186 58 216 62C242 66 262 78 284 87L338 93Q368 98 376 116L378 133',
+      glass: 'M100 88C112 76 124 66 144 66L204 66C230 70 250 80 268 86Z',
+      shoulder: 'M36 98L84 93C150 80 230 82 284 90L336 96',
+      pillars: [], doors: [124, 226], handles: [[186, 92]], mirror: [274, 85],
+      head: 'M350 101L372 108L374 117L346 111Z', tail: 'M24 104L24 114L42 112L40 100Z',
+      wing: 'M30 96L24 82L28 80L72 88L70 92Z',
+      extra: function () { return '<path d="M130 100L152 104L130 108Z" fill="#000" opacity=".5"/>'; }
+    },
+    hatch: {
+      R: 24, ys: 135, Ra: 30, rcx: 98, fcx: 302, belt: 88, gtop: 57,
+      top: 'M28 135L26 112Q26 98 34 92L52 64Q58 54 74 52L214 52C240 54 262 74 276 90L336 94Q364 98 370 114L372 135',
+      glass: 'M50 86L60 62Q64 57 78 57L210 57C232 60 250 76 266 88Z',
+      shoulder: 'M38 94L276 92L334 96',
+      pillars: [168], doors: [110, 168, 256], handles: [[130, 96], [200, 96]], mirror: [272, 88],
+      head: 'M346 100L366 106L368 114L344 110Z', tail: 'M28 98L28 112L38 112L38 96Z',
+      wing: 'M46 66L54 53L72 52L68 57L56 63Z'
+    },
+    suv: {
+      R: 29, ys: 127, Ra: 36, rcx: 92, fcx: 308, belt: 78, gtop: 36, flares: true,
+      top: 'M26 127L24 108Q24 90 34 84L46 42Q50 32 64 31L238 30C256 32 272 58 286 76L340 82Q370 88 376 106L378 127',
+      glass: 'M52 78L58 42Q60 36 70 36L232 36C248 38 262 58 274 74Z',
+      shoulder: 'M40 84L282 80L338 86',
+      pillars: [112, 186], doors: [116, 188, 266], handles: [[150, 86], [222, 86]], mirror: [276, 78],
+      head: 'M350 90L372 96L374 104L348 100Z', tail: 'M26 86L26 104L36 104L36 84Z',
+      wing: 'M44 44L50 34L66 31L66 36L52 41Z',
+      extra: function () { return '<path d="M66 28L232 27" stroke="#15171A" stroke-width="3" stroke-linecap="round" fill="none"/>'; }
+    },
+    pickup: {
+      R: 29, ys: 127, Ra: 36, rcx: 96, fcx: 310, belt: 74, gtop: 39, flares: true,
+      top: 'M22 127L22 84Q22 78 28 78L160 78L163 50Q166 36 182 34L258 34C276 36 290 58 300 74L352 79Q376 83 380 100L380 127',
+      glass: 'M168 74L170 52Q172 40 184 39L256 39C270 41 282 58 292 72Z',
+      shoulder: 'M168 76L296 76',
+      pillars: [228], doors: [176, 228, 292], handles: [[196, 84], [260, 84]], mirror: [292, 70],
+      head: 'M358 86L378 92L379 102L356 98Z', tail: 'M22 86L22 100L29 100L29 86Z',
+      wing: 'M24 78L24 73L52 73L52 78Z',
+      extra: function () { return '<path d="M26 84L158 84" stroke="#000" stroke-opacity=".3" stroke-width="2" fill="none"/><path d="M36 78L36 116" stroke="#000" stroke-opacity=".25" stroke-width="1.3" fill="none"/>'; }
+    },
+    convertible: {
+      R: 27, ys: 133, Ra: 33, rcx: 88, fcx: 312, belt: 90, gtop: 66,
+      top: 'M24 133L22 118Q22 100 34 95L94 91L214 88L238 64L248 64L274 87L338 93Q368 98 376 116L378 133',
+      glass: 'M219 87L239 67L246 67L268 86Z',
+      shoulder: 'M36 98L94 94L214 91L270 90',
+      pillars: [], doors: [132, 230], handles: [[150, 98]], mirror: [262, 84],
+      head: 'M350 101L372 108L374 117L346 111Z', tail: 'M24 104L24 114L42 112L40 100Z',
+      wing: 'M30 96L24 83L28 81L68 89L66 93Z',
+      extra: function () { return '<path d="M100 90L112 76Q152 70 200 76L216 88Z" fill="#131417"/><path d="M126 88L130 70Q138 65 148 70L152 88Z" fill="#9A6B45"/><path d="M130 72Q138 67 147 72" fill="none" stroke="#fff" stroke-opacity=".25" stroke-width="1.5"/>'; }
+    }
+  };
+
+  function wheelSVG(cx, cy, R, L) {
+    var rim = RIMS[L.rim] || RIMS.plata, dark = '#0C0D10', k = R / 28, i, a, g = '';
+    var f = function (n) { return +(n * k).toFixed(2); };
+    var C = 'cx="' + cx + '" cy="' + cy + '"';
+    g += '<circle ' + C + ' r="' + R + '" fill="#14161A"/>';
+    g += '<circle ' + C + ' r="' + f(25) + '" fill="none" stroke="#2B2E35" stroke-width="1.2"/>';
+    g += '<circle ' + C + ' r="' + f(21) + '" fill="' + dark + '"/>';
+    g += '<circle ' + C + ' r="' + f(16.5) + '" fill="#868C96"/>';
+    g += '<circle ' + C + ' r="' + f(11) + '" fill="#555A63"/>';
+    g += '<rect x="' + (cx + f(1)) + '" y="' + (cy - f(18.5)) + '" width="' + f(11) + '" height="' + f(6.5) + '" rx="' + f(2) + '" fill="#C8242B"/>';
+    if (L.wheel === 'sport') {
+      for (i = 0; i < 5; i++) g += '<rect x="' + (cx - f(3.4)) + '" y="' + (cy - f(20)) + '" width="' + f(6.8) + '" height="' + f(20) + '" rx="' + f(2) + '" fill="' + rim + '" transform="rotate(' + (i * 72) + ' ' + cx + ' ' + cy + ')"/>';
+    } else if (L.wheel === 'mesh') {
+      for (i = 0; i < 12; i++) {
+        a = i * Math.PI / 6;
+        g += '<line x1="' + cx + '" y1="' + cy + '" x2="' + (cx + f(20) * Math.cos(a)).toFixed(1) + '" y2="' + (cy + f(20) * Math.sin(a)).toFixed(1) + '" stroke="' + rim + '" stroke-width="' + f(1.6) + '"/>';
+      }
+    } else {
+      g += '<circle ' + C + ' r="' + f(20) + '" fill="' + rim + '"/>';
+      for (i = 0; i < 5; i++) {
+        a = i * 2 * Math.PI / 5 - Math.PI / 2;
+        g += '<circle cx="' + (cx + f(11) * Math.cos(a)).toFixed(1) + '" cy="' + (cy + f(11) * Math.sin(a)).toFixed(1) + '" r="' + f(3.4) + '" fill="' + dark + '"/>';
+      }
+    }
+    g += '<circle ' + C + ' r="' + f(20.2) + '" fill="none" stroke="' + rim + '" stroke-width="' + f(2.2) + '"/>';
+    g += '<circle ' + C + ' r="' + f(4.5) + '" fill="' + (L.wheel === 'std' ? dark : rim) + '"/>';
+    return g;
+  }
+
+  function carSVG(look) {
+    var L = Object.assign({}, DEFAULT_LOOK, look || {});
+    var B = BODIES[L.body] || BODIES.sedan;
+    var R = B.R, cy = 160 - R, ys = B.ys, Ra = B.Ra, rcx = B.rcx, fcx = B.fcx, i;
+    var s = clamp(+L.drop || 0, -2, 2) * 3;
+    var tint = [0, 0.45, 0.85][+L.tint] || 0, col = esc(L.color), p = 'g' + (++SVGN) + '-';
+    var d = B.top + 'L' + (fcx + Ra) + ' ' + ys + 'A' + Ra + ' ' + Ra + ' 0 0 0 ' + (fcx - Ra) + ' ' + ys + 'L' + (rcx + Ra) + ' ' + ys + 'A' + Ra + ' ' + Ra + ' 0 0 0 ' + (rcx - Ra) + ' ' + ys + 'Z';
+    var grad = function (id, x2, y2, stops) {
+      return '<linearGradient id="' + p + id + '" x1="0" y1="0" x2="' + x2 + '" y2="' + y2 + '">' + stops.map(function (t) { return '<stop offset="' + t[0] + '" stop-color="' + t[1] + '" stop-opacity="' + t[2] + '"/>'; }).join('') + '</linearGradient>';
+    };
+    var defs = '<defs>' +
+      grad('vg', 0, 1, [[0, '#fff', .26], [.5, '#fff', 0], [1, '#000', .32]]) +
+      grad('sg', 1, 0, [[0, '#fff', 0], [.3, '#fff', .12], [.62, '#fff', 0], [1, '#000', .14]]) +
+      grad('gg', 0, 1, [[0, '#BCD5E4', 1], [1, '#6A879B', 1]]) +
+      grad('hg', 0, 1, [[0, '#FFFFFF', 1], [1, '#E6D79C', 1]]) +
+      grad('tg', 0, 1, [[0, '#FF5256', 1], [1, '#9B1016', 1]]) + '</defs>';
+    var liner = function (cx) { return '<path d="M' + (cx - Ra + 2) + ' ' + ys + 'A' + (Ra - 2) + ' ' + (Ra - 2) + ' 0 0 1 ' + (cx + Ra - 2) + ' ' + ys + 'Z" fill="#08090B" opacity=".9"/>'; };
+    var lines = '';
+    (B.doors || []).forEach(function (x) { lines += 'M' + x + ' ' + B.belt + 'L' + x + ' ' + (ys - 9); });
+    var handles = (B.handles || []).map(function (h) { return '<rect x="' + h[0] + '" y="' + h[1] + '" width="14" height="3" rx="1.5" fill="#000" opacity=".4"/>'; }).join('');
+    var pill = (B.pillars || []).map(function (x) { return '<path d="M' + x + ' ' + B.gtop + 'L' + x + ' ' + B.belt + '" stroke="' + col + '" stroke-width="5" fill="none"/>'; }).join('');
+    var mir = B.mirror ? '<path d="M' + B.mirror[0] + ' ' + B.mirror[1] + 'L' + (B.mirror[0] + 14) + ' ' + (B.mirror[1] + 2) + 'L' + (B.mirror[0] + 13) + ' ' + (B.mirror[1] + 9) + 'L' + (B.mirror[0] + 2) + ' ' + (B.mirror[1] + 8) + 'Z" fill="' + col + '" stroke="#000" stroke-opacity=".35" stroke-width="1"/>' : '';
+    var flares = '';
+    if (B.flares) [rcx, fcx].forEach(function (cx) { flares += '<path d="M' + (cx - Ra - 1) + ' ' + ys + 'A' + (Ra + 1) + ' ' + (Ra + 1) + ' 0 0 1 ' + (cx + Ra + 1) + ' ' + ys + '" fill="none" stroke="#15171A" stroke-width="4"/>'; });
+    var contact = '';
+    [rcx, fcx].forEach(function (cx) { contact += '<ellipse cx="' + cx + '" cy="160" rx="' + (R * 0.9).toFixed(1) + '" ry="3" fill="#000" opacity=".4"/>'; });
+    return '<svg viewBox="0 16 400 150" role="img" aria-label="Vista lateral del carro">' + defs +
+      '<ellipse cx="200" cy="160" rx="178" ry="6" fill="#000" opacity=".2"/>' + contact +
+      '<g transform="translate(0 ' + s + ')">' + liner(rcx) + liner(fcx) + '</g>' +
+      wheelSVG(rcx, cy, R, L) + wheelSVG(fcx, cy, R, L) +
+      '<g transform="translate(0 ' + s + ')">' +
+      '<path d="' + d + '" fill="' + col + '"/>' +
+      '<path d="' + d + '" fill="url(#' + p + 'vg)"/>' +
+      '<path d="' + d + '" fill="url(#' + p + 'sg)"/>' +
+      '<path d="M' + (rcx + Ra + 2) + ' ' + (ys - 6) + 'L' + (fcx - Ra - 2) + ' ' + (ys - 6) + 'L' + (fcx - Ra - 2) + ' ' + ys + 'L' + (rcx + Ra + 2) + ' ' + ys + 'Z" fill="#000" opacity=".32"/>' +
+      '<path d="' + B.shoulder + '" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="1.5"/>' +
+      '<path d="' + lines + '" stroke="#000" stroke-opacity=".28" stroke-width="1.3" fill="none"/>' +
+      handles + (B.extra ? B.extra() : '') +
+      '<path d="' + B.glass + '" fill="url(#' + p + 'gg)"/>' +
+      '<path d="' + B.glass + '" fill="#06080B" opacity="' + tint + '"/>' +
+      '<path d="' + B.glass + '" fill="none" stroke="#0A0B0D" stroke-width="1.6"/>' +
+      pill + mir + flares +
+      '<path d="' + B.head + '" fill="url(#' + p + 'hg)" stroke="#000" stroke-opacity=".3" stroke-width=".8"/>' +
+      '<path d="' + B.tail + '" fill="url(#' + p + 'tg)"/>' +
+      (L.wing ? '<path d="' + B.wing + '" fill="#14161A" stroke="#fff" stroke-opacity=".15" stroke-width=".8"/>' : '') +
+      '</g></svg>';
+  }
+  /* VIS END */
+
+  /* ================= visualizador (panel) ================= */
+  function vizHTML(c) {
+    var L = Object.assign({}, DEFAULT_LOOK, { body: c.body || 'sedan' }, c.look || {}, state.look || {});
+    var chip = function (k, v, label) { return '<button type="button" class="chip" data-act="look" data-k="' + k + '" data-v="' + v + '" aria-pressed="' + (String(L[k]) === v) + '">' + label + '</button>'; };
+    var sw = SWATCHES.map(function (s) {
+      return '<button type="button" class="sw" style="--c:' + s[1] + '" data-act="look" data-k="color" data-v="' + s[1] + '" aria-label="' + s[0] + '" aria-pressed="' + (String(L.color).toLowerCase() === s[1].toLowerCase()) + '"></button>';
+    }).join('');
+    var hex = /^#[0-9a-fA-F]{6}$/.test(L.color) ? L.color : DEFAULT_LOOK.color;
+    return '<h3>Visualizador</h3><div class="viz" id="viz">' +
+      '<div class="viz-stage" id="vizStage">' + carSVG(L) + '</div>' +
+      '<div class="ctl"><span class="lbl">Tipo de carro</span><div class="opts">' + BODYLIST.map(function (b) { return chip('body', b[0], b[1]); }).join('') + '</div></div>' +
+      '<div class="ctl"><span class="lbl">Color</span><div class="swatches">' + sw + '<input type="color" id="lookColor" value="' + hex + '" aria-label="Color personalizado"></div></div>' +
+      '<div class="ctl"><span class="lbl">Rines</span><div class="opts">' + WHEELS.map(function (w) { return chip('wheel', w[0], w[1]); }).join('') + '</div></div>' +
+      '<div class="ctl"><span class="lbl">Color de rines</span><div class="opts">' + RIMC.map(function (w) { return chip('rim', w[0], w[1]); }).join('') + '</div></div>' +
+      '<div class="ctl"><span class="lbl">Tinte de vidrios</span><div class="opts">' + TINTS.map(function (w) { return chip('tint', w[0], w[1]); }).join('') + '</div></div>' +
+      '<div class="ctl"><label class="lbl" for="lookDrop">Suspensión</label><input type="range" id="lookDrop" min="-2" max="2" step="1" value="' + (+L.drop || 0) + '"><div class="hint"><span>Levantado</span><span>De fábrica</span><span>Pegado al piso</span></div></div>' +
+      '<label class="check"><input type="checkbox" id="lookWing"' + (L.wing ? ' checked' : '') + '> Alerón / spoiler</label>' +
+      (c.demo ? '<p class="status">Vista previa. Los ejemplos no se guardan.</p>' : '<div class="actions"><button class="btn primary" type="button" id="lookSave" data-act="lookSave" disabled>Guardar look</button></div>') +
+      '<p class="status">Vista estilizada para probar ideas. No es una foto de tu carro modificado.</p></div>';
+  }
+  function curLook() {
+    var c = selCar();
+    return Object.assign({}, DEFAULT_LOOK, { body: (c && c.body) || 'sedan' }, (c && c.look) || {}, state.look || {});
+  }
+  function refreshViz() {
+    var L = state.look, st = $('#vizStage');
+    if (!st || !L) return;
+    st.innerHTML = carSVG(L);
+    document.querySelectorAll('#viz [data-act=look]').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(L[b.dataset.k]).toLowerCase() === b.dataset.v.toLowerCase());
+    });
+    var d = $('#lookDrop'); if (d) d.value = L.drop;
+    var cc = $('#lookColor'); if (cc && /^#[0-9a-fA-F]{6}$/.test(L.color)) cc.value = L.color;
+    var w = $('#lookWing'); if (w) w.checked = !!L.wing;
+    var sv = $('#lookSave'); if (sv) sv.disabled = false;
+  }
+  function setLook(k, v) {
+    var L = curLook();
+    L[k] = (k === 'drop' || k === 'tint') ? +v : (k === 'wing' ? !!v : v);
+    state.look = L;
+    refreshViz();
+  }
+  function saveLook() {
+    var c = carById(state.sel), look = state.look;
+    if (!c || !look) return;
+    var sv = $('#lookSave'); if (sv) sv.disabled = true;
+    patchCar(c, { look: look, body: look.body }, function () { state.look = null; });
+  }
+
+  /* ================= calidad de foto y puntos ================= */
+  var BASE = [10, 25, 60, 120, 250];
+  /* Mide la foto en el dispositivo: nitidez (varianza del laplaciano), luz y tamaño. Los umbrales son una primera calibración a ojo. */
+  function analyze(c, px) {
+    try {
+      var w = 256, h = Math.max(8, Math.round(w * c.height / c.width));
+      var t = document.createElement('canvas'); t.width = w; t.height = h;
+      var x = t.getContext('2d'); x.drawImage(c, 0, 0, w, h);
+      var d = x.getImageData(0, 0, w, h).data, n = w * h, g = new Float32Array(n), sum = 0, clip = 0, i, v;
+      for (i = 0; i < n; i++) { v = .299 * d[i * 4] + .587 * d[i * 4 + 1] + .114 * d[i * 4 + 2]; g[i] = v; sum += v; if (v < 8 || v > 247) clip++; }
+      var ls = 0, lss = 0, m = 0, xx, yy, k, L;
+      for (yy = 1; yy < h - 1; yy++) for (xx = 1; xx < w - 1; xx++) { k = yy * w + xx; L = 4 * g[k] - g[k - 1] - g[k + 1] - g[k - w] - g[k + w]; ls += L; lss += L * L; m++; }
+      var variance = lss / m - (ls / m) * (ls / m), mean = sum / n;
+      var sharp = clamp01((Math.log(variance + 1) - Math.log(25)) / (Math.log(500) - Math.log(25)));
+      var ex = mean <= 35 || mean >= 225 ? 0 : mean < 90 ? (mean - 35) / 55 : mean <= 170 ? 1 : (225 - mean) / 55;
+      ex = clamp01(ex) * clamp01(1 - Math.max(0, clip / n - .12) * 3);
+      var res = clamp01((px / 1e6 - .3) / 1.7);
+      return { sharp: r2(sharp), exp: r2(ex), res: r2(res), lum: Math.round(mean) };
+    } catch (e) { return { sharp: .6, exp: .6, res: .6, lum: 128 }; }
+  }
+  function qualityOf(tech, comp, stock) {
+    var t = tech.sharp * .5 + tech.exp * .3 + tech.res * .2;
+    var q = typeof comp === 'number' ? t * .6 + (comp / 10) * .4 : t;
+    if (stock) q = Math.min(q, .4);
+    return Math.round(q * 100);
+  }
+  function qdOf(tech, comp, stock) { return { sharp: tech.sharp, exp: tech.exp, res: tech.res, lum: tech.lum, comp: comp, stock: !!stock }; }
+  function qLabel(q) { return q >= 85 ? 'Excelente' : q >= 70 ? 'Buena' : q >= 50 ? 'Regular' : 'Floja'; }
+  function qualityTip(d) {
+    if (!d) return '';
+    if (d.stock) return 'Parece una imagen de internet. Las fotos que tomas tú valen más.';
+    var c = [[d.sharp, 'Sale borrosa: acércate o toca la pantalla para enfocar.'], [d.exp, d.lum < 120 ? 'Está muy oscura: busca más luz.' : 'Está muy clara: evita el sol directo.'], [d.res, 'Es muy pequeña: usa la cámara, no una captura.']];
+    if (typeof d.comp === 'number') c.push([d.comp / 10, 'El carro sale cortado o tapado: encuádralo completo.']);
+    c.sort(function (a, b) { return a[0] - b[0]; });
+    return c[0][0] < .6 ? c[0][1] : 'Foto bien tomada.';
+  }
+  function pointsOf(rarity, q) {
+    var b = BASE[rarity] || BASE[0], mult = typeof q === 'number' ? .5 + clamp(q, 0, 100) / 100 : 1;
+    return Math.round(b * mult);
+  }
+  function scoreHTML(c) {
+    var has = typeof c.q === 'number', qn = has ? clamp(Math.round(c.q), 0, 100) : 0;
+    var h = '<div class="score"><div class="qhead"><b>' + pointsOf(c.rarity, c.q) + ' pts</b><span>Base ' + (BASE[c.rarity] || BASE[0]) + (has ? ' × calidad ' + (.5 + qn / 100).toFixed(2) : '') + '</span></div>';
+    if (has) h += '<div class="qhead"><span>Foto principal ' + qn + '/100 · ' + qLabel(qn) + '</span></div><div class="qbar"><span style="width:' + qn + '%"></span></div>' + (c.qd ? '<p class="status">' + esc(qualityTip(c.qd)) + '</p>' : '');
+    else h += '<p class="status">Esta carta no tiene calificación de foto.</p>';
+    return h + '</div>';
+  }
+
+  /* ================= estado ================= */
+  var state = { cars: [], tab: 'spotted', filter: null, sel: null, look: null, crop: null, cropDirty: false, pi: 0, extras: [], photoMsg: '', confirmDel: false, focusMod: false, mode: 'checking' };
+  var col = null, sample = null, canImages = false, ctl = null, lastWhy = '', lastAI = null, extrasUnsub = null;
+  var photo = { blob: null, url: '', tech: null };
+  var addCrop = { x: 50, y: 50, z: 1 }, addCropper = null, sheetCropper = null;
+  var board = [], joined = false, userNS = null, selfId = null, boardCol = null, lastPub = '', canWrite = null;
+
+  var usingDemos = function () { return state.cars.length === 0; };
+  var all = function () { return usingDemos() ? DEMOS : state.cars; };
+  var carById = function (id) { return state.cars.find(function (c) { return c.id === id; }); };
+  var selCar = function () { return state.sel ? all().find(function (x) { return x.id === state.sel; }) : null; };
+  var serialOf = function (c) {
+    if (c.demo || c.peer) return c.serial;
+    var i = state.cars.findIndex(function (x) { return x.id === c.id; });
+    return 'GAR-' + String(i + 1).padStart(3, '0');
+  };
+  var dateOf = function (ts) { return ts ? new Date(ts).toLocaleDateString('es-US', { day: 'numeric', month: 'short', year: 'numeric' }) : ''; };
+
+  /* actualiza campos de un carro (db o memoria) */
+  function patchCar(c, patch, done) {
+    enqueue(async function () {
+      try {
+        if (col) await col.doc(c.id).update(patch); else Object.assign(c, patch);
+        if (done) done();
+        renderSheet(); renderGrid(); renderHeader();
+      } catch (e) { var s = $('#lookSave'); if (s) s.disabled = false; }
+    });
+  }
+
+  /* ================= fotos y encuadre ================= */
+  function normCrop(c) { c = c || {}; return { x: clamp(num(c.x, 50), 0, 100), y: clamp(num(c.y, 50), 0, 100), z: clamp(num(c.z, 1), 1, 3) }; }
+  function cropStyle(c) { var k = normCrop(c); return 'object-position:' + k.x + '% ' + k.y + '%;transform-origin:' + k.x + '% ' + k.y + '%;transform:scale(' + k.z + ')'; }
+
+  function photoList(c) {
+    var out = [];
+    if (c.photo) out.push({ id: 'primary', primary: true, data: c.photo, crop: c.crop, q: c.q, qd: c.qd });
+    (col ? state.extras : (c.extra || [])).forEach(function (p) { out.push({ id: p.id, primary: false, data: p.data, crop: p.crop, q: p.q, qd: p.qd }); });
+    return out;
+  }
+  function selPhoto(c) { var l = photoList(c); state.pi = clamp(state.pi, 0, Math.max(0, l.length - 1)); return l[state.pi] || null; }
+
+  /* Ventana de encuadre: arrastrar mueve, los controles hacen zoom y ajuste fino. st = {x, y, z} */
+  function mountCropper(root, st, onChange) {
+    var stage = root.querySelector('.crop-stage'), img = stage.querySelector('img');
+    var zi = root.querySelector('.cz'), xi = root.querySelector('.cx'), yi = root.querySelector('.cy'), cb = root.querySelector('[data-crop=center]');
+    var drag = null;
+    function apply() {
+      img.style.objectPosition = st.x + '% ' + st.y + '%';
+      img.style.transformOrigin = st.x + '% ' + st.y + '%';
+      img.style.transform = 'scale(' + st.z + ')';
+      zi.value = st.z; xi.value = st.x; yi.value = st.y;
+    }
+    function change() { apply(); if (onChange) onChange(st); }
+    zi.oninput = function () { st.z = clamp(+zi.value, 1, 3); change(); };
+    xi.oninput = function () { st.x = clamp(+xi.value, 0, 100); change(); };
+    yi.oninput = function () { st.y = clamp(+yi.value, 0, 100); change(); };
+    cb.onclick = function () { st.x = 50; st.y = 50; st.z = 1; change(); };
+    stage.onpointerdown = function (e) { drag = { x: e.clientX, y: e.clientY, sx: st.x, sy: st.y }; try { stage.setPointerCapture(e.pointerId); } catch (err) { /* sin captura */ } };
+    stage.onpointermove = function (e) {
+      if (!drag) return;
+      var r = stage.getBoundingClientRect();
+      st.x = clamp(drag.sx - (e.clientX - drag.x) / r.width * 100, 0, 100);
+      st.y = clamp(drag.sy - (e.clientY - drag.y) / r.height * 100, 0, 100);
+      change();
+    };
+    stage.onpointerup = stage.onpointercancel = function () { drag = null; };
+    apply();
+    return { apply: apply };
+  }
+
+  function photosHTML(c) {
+    var list = photoList(c), sp = selPhoto(c), h = '<h3>Fotos</h3><div class="thumbs">';
+    list.forEach(function (p, i) {
+      h += '<button type="button" class="thumb" data-act="pick" data-i="' + i + '" aria-pressed="' + (p === sp || (sp && p.id === sp.id)) + '" aria-label="Foto ' + (i + 1) + (p.primary ? ' (principal)' : '') + '"><img src="' + esc(p.data) + '" alt="" style="' + cropStyle(p.crop) + '">' + (p.primary ? '<b>Principal</b>' : '') + '</button>';
+    });
+    if (list.length < 6) h += '<label class="thumb add" for="morePhoto" aria-label="Agregar foto">+</label>';
+    h += '</div><input class="sr" type="file" id="morePhoto" accept="image/*"><p class="status" id="photoMsg" role="status">' + esc(state.photoMsg) + '</p>';
+    if (sp) {
+      if (!state.crop) state.crop = normCrop(sp.crop);
+      var k = state.crop;
+      h += '<div class="cropper" id="sheetCrop"><div class="crop-stage"><img src="' + esc(sp.data) + '" alt="Encuadre de la foto"><span class="thirds"></span></div>' +
+        '<div class="crop-ctl"><label for="sZ">Zoom</label><input class="cz" id="sZ" type="range" min="1" max="3" step="0.05" value="' + k.z + '">' +
+        '<label for="sX">Horizontal</label><input class="cx" id="sX" type="range" min="0" max="100" step="1" value="' + k.x + '">' +
+        '<label for="sY">Vertical</label><input class="cy" id="sY" type="range" min="0" max="100" step="1" value="' + k.y + '"></div>' +
+        '<div class="actions"><button class="btn" type="button" data-crop="center">Centrar</button>' +
+        '<button class="btn primary" type="button" id="cropSave" data-act="cropSave"' + (state.cropDirty ? '' : ' disabled') + '>Guardar encuadre</button>' +
+        (sp.primary ? '' : '<button class="btn" type="button" data-act="photoMain">Hacer principal</button><button class="btn danger" type="button" data-act="photoDel">Quitar</button>') + '</div>' +
+        (typeof sp.q === 'number' ? '<p class="status">Foto ' + clamp(Math.round(sp.q), 0, 100) + '/100 · ' + qLabel(sp.q) + (sp.qd ? ' · ' + esc(qualityTip(sp.qd)) : '') + '</p>' : '') + '</div>';
+    } else {
+      h += '<p class="status">Este carro todavía no tiene foto. Toca + para agregar la primera.</p>';
+    }
+    return h;
+  }
+
+  function setPhotoMsg(t) { state.photoMsg = t || ''; var m = $('#photoMsg'); if (m) m.textContent = state.photoMsg; }
+
+  async function addPhotoFile(f) {
+    var c = carById(state.sel); if (!c) return;
+    if (photoList(c).length >= 6) { setPhotoMsg('Máximo 6 fotos por carro.'); return; }
+    setPhotoMsg('Preparando la foto…');
+    try {
+      var sh = await shrink(f, 720), url = await toURL(sh.blob);
+      if (url.length > 200000) { sh = await shrink(f, 480); url = await toURL(sh.blob); }
+      var q = qualityOf(sh.tech, null, false), qd = qdOf(sh.tech, null, false), crop = { x: 50, y: 50, z: 1 };
+      var before = typeof c.q === 'number' ? c.q : -1, hadPrimary = !!c.photo;
+      var newIndex = photoList(c).length;
+      await enqueue(async function () {
+        if (!hadPrimary) {
+          if (col) await col.doc(c.id).update({ photo: url, crop: crop, q: q, qd: qd }); else Object.assign(c, { photo: url, crop: crop, q: q, qd: qd });
+        } else {
+          var ph = { id: uid(), data: url, crop: crop, q: q, qd: qd, ts: Date.now() };
+          if (col) await col.doc(c.id).collection('photos').doc(ph.id).set(ph); else c.extra = (c.extra || []).concat([ph]);
+        }
+      });
+      state.pi = hadPrimary ? newIndex : 0; state.crop = null; state.cropDirty = false;
+      setPhotoMsg(hadPrimary && c.kind === 'spotted' && q > before ? 'Esta foto sacó ' + q + '/100, más que la principal. Ponla como principal para ganar más puntos.' : 'Foto agregada.');
+      renderSheet(); renderGrid();
+    } catch (e) { setPhotoMsg('No se pudo agregar la foto. Intenta con otra.'); }
+  }
+
+  function saveCrop() {
+    var c = carById(state.sel); if (!c) return;
+    var sp = selPhoto(c); if (!sp || !state.crop) return;
+    var crop = { x: Math.round(state.crop.x * 10) / 10, y: Math.round(state.crop.y * 10) / 10, z: r2(state.crop.z) };
+    enqueue(async function () {
+      try {
+        if (sp.primary) { if (col) await col.doc(c.id).update({ crop: crop }); else c.crop = crop; }
+        else if (col) await col.doc(c.id).collection('photos').doc(sp.id).update({ crop: crop });
+        else { var ex = (c.extra || []).find(function (x) { return x.id === sp.id; }); if (ex) ex.crop = crop; }
+        state.cropDirty = false; state.crop = null;
+        renderSheet(); renderGrid();
+      } catch (e) { setPhotoMsg('No se pudo guardar el encuadre.'); }
+    });
+  }
+
+  function makePrimary() {
+    var c = carById(state.sel); if (!c) return;
+    var sp = selPhoto(c); if (!sp || sp.primary) return;
+    var old = c.photo ? { data: c.photo, crop: c.crop || DEFAULT_CROP, q: c.q == null ? null : c.q, qd: c.qd || null } : null;
+    enqueue(async function () {
+      try {
+        if (col) {
+          await col.doc(c.id).update({ photo: sp.data, crop: normCrop(sp.crop), q: sp.q == null ? null : sp.q, qd: sp.qd || null });
+          var pc = col.doc(c.id).collection('photos');
+          if (old) await pc.doc(sp.id).set(Object.assign({ ts: Date.now() }, old)); else await pc.doc(sp.id).delete();
+        } else {
+          c.extra = (c.extra || []).filter(function (x) { return x.id !== sp.id; });
+          if (old) c.extra.push(Object.assign({ id: sp.id, ts: Date.now() }, old));
+          Object.assign(c, { photo: sp.data, crop: normCrop(sp.crop), q: sp.q, qd: sp.qd });
+        }
+        state.pi = 0; state.crop = null; state.cropDirty = false; state.photoMsg = '';
+        render();
+      } catch (e) { setPhotoMsg('No se pudo cambiar la foto principal.'); }
+    });
+  }
+
+  function removePhoto() {
+    var c = carById(state.sel); if (!c) return;
+    var sp = selPhoto(c); if (!sp || sp.primary) return;
+    enqueue(async function () {
+      try {
+        if (col) await col.doc(c.id).collection('photos').doc(sp.id).delete(); else c.extra = (c.extra || []).filter(function (x) { return x.id !== sp.id; });
+        state.pi = 0; state.crop = null; state.cropDirty = false; state.photoMsg = '';
+        renderSheet();
+      } catch (e) { setPhotoMsg('No se pudo quitar la foto.'); }
+    });
+  }
+
+  function watchExtras(id) {
+    if (extrasUnsub) { extrasUnsub(); extrasUnsub = null; }
+    state.extras = [];
+    if (!col || !id) return;
+    try {
+      extrasUnsub = col.doc(id).collection('photos').orderBy('ts').onSnapshot(function (snap) {
+        state.extras = snap.docs.map(function (d) { var o = d.data() || {}; o.id = d.id; return o; });
+        if (state.sel === id) renderSheet();
+      }, function () { state.extras = []; });
+    } catch (e) { extrasUnsub = null; }
+  }
+
+  /* ================= ranking entre amigos ================= */
+  function myEntry() {
+    var pts = 0, best = null, n = 0;
+    state.cars.forEach(function (c) {
+      if (c.kind !== 'spotted') return;
+      var p = pointsOf(c.rarity, c.q); pts += p; n++;
+      if (!best || c.rarity > best.rarity || (c.rarity === best.rarity && p > best.p)) best = { make: c.make, model: c.model, rarity: c.rarity, p: p };
+    });
+    return { pts: pts, cards: n, best: best ? { make: best.make, model: best.model, rarity: best.rarity } : null };
+  }
+  function startBoard(db) {
+    boardCol = db.collection('board');
+    boardCol.onSnapshot(function (snap) {
+      board = snap.docs.map(function (d) { var o = d.data() || {}; return { id: d.id, pts: num(o.pts, 0), cards: num(o.cards, 0), best: o.best || null }; });
+      joined = board.some(function (r) { return r.id === selfId; });
+      renderBoard();
+    }, function () { boardCol = null; renderBoard(); });
+  }
+  function syncBoard() {
+    if (!boardCol || !selfId || !joined) return;
+    var e = myEntry(), key = JSON.stringify(e);
+    if (key === lastPub) return;
+    lastPub = key;
+    enqueue(async function () { try { await boardCol.doc(selfId).set(Object.assign({ ts: Date.now() }, e)); } catch (err) { lastPub = ''; } });
+  }
+  function toggleJoin() {
+    if (!boardCol || !selfId) return;
+    var jb = $('#joinBtn'); if (jb) jb.disabled = true;
+    enqueue(async function () {
+      try {
+        if (joined) { await boardCol.doc(selfId).delete(); lastPub = ''; }
+        else { var e = myEntry(); lastPub = JSON.stringify(e); await boardCol.doc(selfId).set(Object.assign({ ts: Date.now() }, e)); }
+      } catch (err) {
+        lastPub = '';
+        var n = $('#boardNote'); if (n) n.textContent = 'No se pudo actualizar el ranking. Puede que no tengas permiso para escribir aquí: pide acceso de colaborador a quien te compartió la página.';
+      } finally { var b = $('#joinBtn'); if (b) b.disabled = false; }
+    });
+  }
+  function hn(id) { var pr = profiles.find(function (x) { return x.id === id; }); return pr && pr.handle ? pr.handle : ''; }
+  async function renderBoard() {
+    if (state.tab !== 'board') return;
+    var list = $('#rankList'), note = $('#boardNote'), jb = $('#joinBtn');
+    if (!boardCol || !selfId || active !== 'cloud') {
+      note.textContent = 'El ranking necesita entrar con tu cuenta de Claude (pestaña Cuenta).';
+      jb.hidden = true; list.innerHTML = ''; return;
+    }
+    jb.hidden = false; jb.textContent = joined ? 'Salir del ranking' : 'Entrar al ranking'; jb.disabled = canWrite === false;
+    note.textContent = 'Aquí solo se comparten tus puntos, cuántas cartas tienes y tu mejor hallazgo. Las fotos son privadas. Cuentan los carros de la colección, no los de tu garage.' +
+      (canWrite === false ? ' Para entrar necesitas acceso de colaborador: pídeselo a quien te compartió la página.' : '');
+    var rows = board.slice().sort(function (a, b) { return (b.pts - a.pts) || (b.cards - a.cards); });
+    if (!rows.length) { list.innerHTML = '<li class="rank-empty">Nadie en el ranking todavía. Entra tú primero y pásale la página a tus amigos.</li>'; return; }
+    var ps = {};
+    if (userNS) { try { ps = await userNS.profiles(rows.map(function (r) { return r.id; })); } catch (e) { ps = {}; } }
+    if (state.tab !== 'board') return;
+    list.innerHTML = rows.map(function (r, i) {
+      var p = ps[r.id], me = r.id === selfId, name = me ? 'Tú' : (hn(r.id) || (p && p.name) || 'Amigo');
+      var br = r.best && RAR[+r.best.rarity] ? RAR[+r.best.rarity].n : '';
+      var best = r.best && br ? esc(r.best.make + ' ' + r.best.model) + ' · ' + br : 'Sin hallazgos todavía';
+      return '<li class="rank-row' + (me ? ' me' : '') + '"><span class="pos">' + (i + 1) + '</span><span class="who"><b>' + esc(name) + '</b><span>' + best + '</span></span><span class="sc"><b>' + Math.round(r.pts) + '</b><span>' + Math.round(r.cards) + ' cartas</span></span></li>';
+    }).join('');
+  }
+
+  /* ================= perfil, colecciones públicas y radar ================= */
+  var pubCol = null, sightCol = null, sights = [], mySights = [], profiles = [], myProfile = null, myPubSig = {}, tracks = {};
+  var follows = {}, peopleFilter = 'all', names = {}, myPos = null, sightSort = 'recent', sightFilter = 'all', peer = null, peerCmp = 'all', peerUnsub = null, locTmp = null;
+  var pubBusy = false, pubAgain = false, lastProfStat = '', profSig = '', radarMsg = '';
+
+  function nameOf(id) {
+    if (id === selfId) return 'Tú';
+    var pr = profiles.find(function (p) { return p.id === id; });
+    return (pr && pr.handle) || names[id] || 'Alguien';
+  }
+  function needNames(ids) {
+    if (!userNS) return;
+    var miss = ids.filter(function (i) { return i !== selfId && !(i in names); });
+    if (!miss.length) return;
+    miss.forEach(function (i) { names[i] = ''; });
+    userNS.profiles(miss).then(function (ps) {
+      miss.forEach(function (i) { var p = ps && ps[i]; names[i] = (p && p.name) || ''; });
+      renderRadar(); renderPeople();
+    }).catch(function () {});
+  }
+
+  function startShared(db) {
+    pubCol = db.collection('pub'); sightCol = db.collection('sights');
+    pubCol.onSnapshot(function (snap) {
+      profiles = snap.docs.map(function (d) {
+        var o = d.data() || {};
+        return { id: d.id, handle: String(o.handle || '').slice(0, 24), vis: o.vis === 'public' ? 'public' : 'private', pts: num(o.pts, 0), cards: num(o.cards, 0), garage: !!o.garage };
+      });
+      myProfile = profiles.find(function (p) { return p.id === selfId; }) || null;
+      renderPeople(); renderBoard(); renderRadar();
+      if (peer) renderPeer();
+      syncPub();
+    }, function () { pubCol = null; renderPeople(); });
+    sightCol.onSnapshot(function (snap) {
+      sights = []; mySights = [];
+      snap.docs.forEach(function (d) {
+        var o = d.data() || {}, it = Array.isArray(o.items) ? o.items : [];
+        it.forEach(function (s) {
+          if (!s || !s.id || !s.make) return;
+          var r = { id: String(s.id), owner: d.id, make: String(s.make).slice(0, 60), model: String(s.model || '').slice(0, 60), rarity: clamp(s.rarity | 0, 0, 4), body: BODIES[s.body] ? s.body : 'sedan', area: String(s.area || '').slice(0, 80), note: String(s.note || '').slice(0, 120), ts: num(s.ts, 0) };
+          if (isFinite(+s.lat) && isFinite(+s.lng) && s.lat !== null && s.lng !== null) { r.lat = +s.lat; r.lng = +s.lng; }
+          sights.push(r);
+          if (d.id === selfId) mySights.push(r);
+        });
+      });
+      renderRadar();
+    }, function () { sightCol = null; renderRadar(); });
+    db.collection('pub/' + selfId + '/cards').onSnapshot(function (snap) {
+      myPubSig = {}; snap.docs.forEach(function (d) { myPubSig[d.id] = (d.data() || {}).sig || ''; });
+      syncPub();
+    }, function () {});
+  }
+
+  /* ---- publicar mi colección (solo si el perfil es público) ---- */
+  function sigOf(c) { return [c.make, c.model, c.year, c.rarity, c.kind, c.q, c.body, c.photo ? c.photo.length : 0, JSON.stringify(c.crop || ''), JSON.stringify(c.look || ''), (c.mods || []).length].join('|'); }
+  function wantPub(c) { return !!myProfile && myProfile.vis === 'public' && (c.kind === 'spotted' || myProfile.garage); }
+  function makeThumb(c) {
+    return new Promise(function (res) {
+      if (!c.photo) { res(null); return; }
+      var im = new Image();
+      im.onload = function () {
+        try {
+          var S = 240, k = normCrop(c.crop), cv = document.createElement('canvas'); cv.width = cv.height = S;
+          var g = cv.getContext('2d'), w = im.naturalWidth, h = im.naturalHeight, s0 = Math.max(S / w, S / h);
+          var ox = (S - w * s0) * k.x / 100, oy = (S - h * s0) * k.y / 100, px = k.x / 100 * S, py = k.y / 100 * S;
+          g.fillStyle = '#111'; g.fillRect(0, 0, S, S);
+          g.drawImage(im, px + (ox - px) * k.z, py + (oy - py) * k.z, w * s0 * k.z, h * s0 * k.z);
+          res(cv.toDataURL('image/jpeg', .6));
+        } catch (e) { res(null); }
+      };
+      im.onerror = function () { res(null); };
+      im.src = c.photo;
+    });
+  }
+  function syncPub() {
+    if (!pubCol || !selfId || !col || state.mode !== 'db') return;
+    if (pubBusy) { pubAgain = true; return; }
+    var want = {}; state.cars.forEach(function (c) { if (wantPub(c)) want[c.id] = c; });
+    var todo = [];
+    Object.keys(want).forEach(function (id) { if (myPubSig[id] !== sigOf(want[id])) todo.push(['set', want[id]]); });
+    Object.keys(myPubSig).forEach(function (id) { if (!want[id]) todo.push(['del', id]); });
+    var e = myEntry(), pk = JSON.stringify([e.pts, e.cards]);
+    var needProf = !!myProfile && myProfile.vis === 'public' && pk !== lastProfStat;
+    if (!todo.length && !needProf) return;
+    pubBusy = true;
+    enqueue(async function () {
+      try {
+        var cc = pubCol.doc(selfId).collection('cards');
+        for (var i = 0; i < todo.length; i++) {
+          var t = todo[i];
+          if (t[0] === 'del') { await cc.doc(t[1]).delete(); continue; }
+          var c = t[1], th = await makeThumb(c);
+          await cc.doc(c.id).set({ make: c.make, model: c.model, year: c.year || null, rarity: c.rarity | 0, kind: c.kind, body: c.body || 'sedan', q: typeof c.q === 'number' ? c.q : null, thumb: th, look: c.look || null, mods: (c.mods || []).length, ts: c.ts || 0, sig: sigOf(c) });
+        }
+        if (needProf && myProfile) { await pubCol.doc(selfId).update({ pts: e.pts, cards: e.cards, ts: Date.now() }); lastProfStat = pk; }
+      } catch (err) {
+      } finally { pubBusy = false; if (pubAgain) { pubAgain = false; setTimeout(syncPub, 0); } }
+    });
+  }
+
+  function toggleFollow(id) {
+    if (!id || id === selfId) return;
+    if (follows[id]) delete follows[id]; else follows[id] = true;
+    renderPeople(); renderRadar(); if (peer) renderPeer();
+    if (col) {
+      var ids = Object.keys(follows).slice(-200);
+      enqueue(async function () { try { await col.doc('meta-follows').set({ ids: ids }); } catch (err) {} });
+    }
+  }
+  function renderMine() {
+    var box = $('#mineBox'); if (!box) return;
+    var list = state.cars.slice().sort(function (a, b) { return b.rarity - a.rarity || (b.ts || 0) - (a.ts || 0); });
+    var vis = myProfile ? (myProfile.vis === 'public' ? 'Pública' : 'Privada') : 'Sin usuario todavía';
+    if (!list.length) { box.innerHTML = '<p class="status">Todavía no tienes cartas. Usa «Spot now» o «+ Agregar carro».</p>'; return; }
+    box.innerHTML = '<p class="status">' + list.length + ' cartas · Visibilidad: ' + vis + '. Toca una para abrirla.</p><div class="peer-grid">' + list.map(function (c) { return cardHTML(c, false); }).join('') + '</div>';
+  }
+
+  /* ---- pestaña Gente ---- */
+  function renderPeople() {
+    if (state.tab !== 'people') return;
+    var box = $('#profileBox'), list = $('#peopleList');
+    renderMine();
+    if (!pubCol || !selfId || active !== 'cloud') {
+      box.innerHTML = '<p class="status">Los perfiles necesitan entrar con tu cuenta de Claude (pestaña Cuenta).</p>'; $('#mineBox').innerHTML = ''; list.innerHTML = ''; profSig = ''; return;
+    }
+    var sig = JSON.stringify([myProfile, canWrite]);
+    if (sig !== profSig && !(box.contains(document.activeElement) && box.innerHTML)) {
+      profSig = sig;
+      var p = myProfile || { handle: '', vis: 'public', garage: false };
+      box.innerHTML = '<div class="profile">' +
+        '<div class="field"><label for="pfHandle">' + (myProfile ? 'Tu nombre de usuario' : 'Crea tu usuario') + '</label><input type="text" id="pfHandle" maxlength="24" autocomplete="off" placeholder="elio.garage" value="' + esc(p.handle) + '"></div>' +
+        '<fieldset class="vis"><legend class="status">¿Quién ve tus cartas?</legend>' +
+        '<label><input type="radio" name="pfvis" value="public"' + (p.vis === 'public' ? ' checked' : '') + '> Públicas</label>' +
+        '<label><input type="radio" name="pfvis" value="private"' + (p.vis === 'private' ? ' checked' : '') + '> Privadas</label></fieldset>' +
+        '<label class="vis"><input type="checkbox" id="pfGarage"' + (p.garage ? ' checked' : '') + '> Incluir también «Mis carros»</label>' +
+        '<p class="status">Públicas: quien tenga esta página ve tu usuario, tus puntos y tus cartas con una foto pequeña, y puede compararlas con las suyas. Los mods, costos, notas y fotos completas siguen privados. Privadas: no se publica nada.</p>' +
+        (canWrite === false ? '<p class="status err">Para publicar necesitas acceso de colaborador: pídeselo a quien te compartió la página.</p>' : '') +
+        '<p class="status err" id="pfMsg"></p>' +
+        '<div class="actions"><button class="btn primary" type="button" data-act="pfSave"' + (canWrite === false ? ' disabled' : '') + '>' + (myProfile ? 'Guardar cambios' : 'Crear usuario') + '</button>' +
+        (myProfile ? '<button class="btn" type="button" data-act="pfDel">Borrar mi usuario</button>' : '') + '</div></div>';
+    }
+    var pub = profiles.filter(function (x) { return x.vis === 'public' && x.id !== selfId; }).sort(function (a, b) { return (follows[b.id] ? 1 : 0) - (follows[a.id] ? 1 : 0) || b.pts - a.pts; });
+    var nfw = Object.keys(follows).length;
+    $('#peopleBar').innerHTML = '<button type="button" class="chip" data-act="peopleFilter" data-v="all" aria-pressed="' + (peopleFilter === 'all') + '">Todos</button><button type="button" class="chip" data-act="peopleFilter" data-v="follow" aria-pressed="' + (peopleFilter === 'follow') + '">Siguiendo (' + nfw + ')</button>';
+    if (peopleFilter === 'follow') pub = pub.filter(function (x) { return follows[x.id]; });
+    needNames(pub.map(function (x) { return x.id; }));
+    list.innerHTML = pub.length ? pub.map(function (x) {
+      return '<li class="rank-row p"><span class="pos">' + (x.handle ? esc(x.handle.charAt(0).toUpperCase()) : '?') + '</span><span class="who"><b>' + esc(x.handle || names[x.id] || 'Sin nombre') + '</b><span>' + Math.round(x.cards) + ' cartas · ' + Math.round(x.pts) + ' pts</span></span><span class="rb"><button class="btn" type="button" data-act="follow" data-id="' + esc(x.id) + '" aria-pressed="' + !!follows[x.id] + '">' + (follows[x.id] ? 'Siguiendo ✓' : 'Seguir') + '</button><button class="btn" type="button" data-act="peerOpen" data-id="' + esc(x.id) + '">Ver y comparar</button></span></li>';
+    }).join('') : '<li class="rank-empty">' + (peopleFilter === 'follow' ? 'Todavía no sigues a nadie. Toca «Seguir» en alguien de la lista o desde el Radar.' : 'Todavía nadie publicó su colección. Crea tu usuario, ponlo en público y pásale la página a tus amigos.') + '</li>';
+  }
+  function saveProfile() {
+    if (!pubCol || !selfId) return;
+    var h = ($('#pfHandle').value || '').trim().replace(/\s+/g, ' ').slice(0, 24), msg = $('#pfMsg');
+    if (h.length < 2) { msg.textContent = 'El usuario necesita al menos 2 letras.'; return; }
+    var taken = profiles.some(function (p) { return p.id !== selfId && p.handle.toLowerCase() === h.toLowerCase(); });
+    if (taken) { msg.textContent = 'Ese usuario ya existe. Prueba otro.'; return; }
+    var vis = document.querySelector('input[name=pfvis]:checked').value, gar = $('#pfGarage').checked, e = myEntry();
+    var doc = { handle: h, vis: vis, garage: gar, pts: vis === 'public' ? e.pts : 0, cards: vis === 'public' ? e.cards : 0, ts: Date.now() };
+    lastProfStat = vis === 'public' ? JSON.stringify([e.pts, e.cards]) : '';
+    msg.textContent = '';
+    enqueue(async function () {
+      try { await pubCol.doc(selfId).set(doc); }
+      catch (err) { var m = $('#pfMsg'); if (m) m.textContent = 'No se pudo guardar. Puede que no tengas permiso para escribir aquí.'; }
+    });
+  }
+  function deleteProfile() {
+    if (!pubCol || !selfId) return;
+    enqueue(async function () {
+      try { await pubCol.doc(selfId).delete(); lastProfStat = ''; }
+      catch (err) { var m = $('#pfMsg'); if (m) m.textContent = 'No se pudo borrar. Intenta otra vez.'; }
+    });
+  }
+
+  /* ---- comparar con otra colección ---- */
+  var keyOf = function (c) { return (String(c.make) + String(c.model)).toLowerCase().replace(/[^a-z0-9]/g, ''); };
+  function closePeer() { if (peerUnsub) { peerUnsub(); peerUnsub = null; } peer = null; var b = $('#peerBox'); if (b) b.innerHTML = ''; }
+  function peerOpen(id) {
+    var pr = profiles.find(function (p) { return p.id === id; });
+    if (!pr || !pubCol) return;
+    closePeer(); peerCmp = 'all';
+    peer = { id: id, cards: [], loading: true, err: false };
+    peerUnsub = pubCol.doc(id).collection('cards').onSnapshot(function (snap) {
+      if (!peer || peer.id !== id) return;
+      peer.cards = snap.docs.map(function (d) { var o = d.data() || {}; o.id = d.id; return o; }); peer.loading = false; renderPeer();
+    }, function () { if (peer) { peer.loading = false; peer.err = true; renderPeer(); } });
+    renderPeer();
+    var b = $('#peerBox'); if (b) b.scrollIntoView({ block: 'start' });
+  }
+  function renderPeer() {
+    var box = $('#peerBox'); if (!box) return;
+    if (!peer) { box.innerHTML = ''; return; }
+    var pr = profiles.find(function (p) { return p.id === peer.id; });
+    var head = '<div class="panel-head" style="margin-top:18px"><h2>' + esc(pr && pr.handle ? pr.handle : 'Colección') + '</h2><span class="rb" style="display:flex;gap:8px"><button class="btn" type="button" data-act="follow" data-id="' + esc(peer.id) + '" aria-pressed="' + !!follows[peer.id] + '">' + (follows[peer.id] ? 'Siguiendo ✓' : 'Seguir') + '</button><button class="btn" type="button" data-act="peerClose">Cerrar</button></span></div>';
+    if (peer.loading) { box.innerHTML = head + '<p class="status">Cargando…</p>'; return; }
+    if (peer.err || !pr || pr.vis !== 'public') { box.innerHTML = head + '<p class="status">Esta colección ya no está pública.</p>'; return; }
+    var mineS = state.cars.filter(function (c) { return c.kind === 'spotted'; });
+    var theirsAll = peer.cards.slice().sort(function (a, b) { return (b.rarity | 0) - (a.rarity | 0) || (b.ts || 0) - (a.ts || 0); });
+    var theirs = theirsAll.filter(function (c) { return c.kind === 'spotted'; }), garage = theirsAll.filter(function (c) { return c.kind === 'garage'; });
+    var mk = {}, tk = {}; mineS.forEach(function (c) { mk[keyOf(c)] = 1; }); theirs.forEach(function (c) { tk[keyOf(c)] = 1; });
+    var common = theirs.filter(function (c) { return mk[keyOf(c)]; }), missing = theirs.filter(function (c) { return !mk[keyOf(c)]; });
+    var onlyMine = mineS.filter(function (c) { return !tk[keyOf(c)]; });
+    var opts = [['all', 'Todas (' + theirs.length + ')'], ['missing', 'Te faltan (' + missing.length + ')'], ['common', 'En común (' + common.length + ')'], ['mine', 'Solo tú (' + onlyMine.length + ')']];
+    var chips = opts.map(function (o) { return '<button type="button" class="chip" data-act="peerCmp" data-v="' + o[0] + '" aria-pressed="' + (peerCmp === o[0]) + '">' + o[1] + '</button>'; }).join('');
+    var mini = function (c, i, theirsCard) {
+      var o = theirsCard ? { id: c.id, make: c.make, model: c.model, year: c.year, rarity: c.rarity, kind: c.kind, body: c.body, q: typeof c.q === 'number' ? c.q : undefined, photo: c.thumb || '', crop: null, look: c.look || undefined, mods: new Array(c.mods | 0), peer: true, serial: 'N.º ' + String(i + 1).padStart(2, '0') } : c;
+      return cardHTML(o, true).replace('class="card big ', 'class="card mini' + (theirsCard && mk[keyOf(c)] ? ' have' : '') + ' ');
+    };
+    var show = peerCmp === 'missing' ? missing : peerCmp === 'common' ? common : peerCmp === 'mine' ? onlyMine : theirs;
+    var grid = show.length ? '<div class="peer-grid">' + show.map(function (c, i) { return mini(c, i, peerCmp !== 'mine'); }).join('') + '</div>' : '<p class="status">Nada por aquí.</p>';
+    var gh = (peerCmp === 'all' && garage.length) ? '<h3 class="sub">Su garage</h3><div class="peer-grid">' + garage.map(function (c, i) { return mini(c, i, true); }).join('') + '</div>' : '';
+    var note = peerCmp === 'all' ? '<p class="status">Las cartas con borde son las que tú también tienes (se comparan por marca y modelo).</p>' : '';
+    box.innerHTML = head + '<p class="status">' + Math.round(pr.cards) + ' cartas · ' + Math.round(pr.pts) + ' puntos' + (usingDemos() ? ' · Aún no tienes cartas, así que te faltan todas.' : '') + '</p><div class="peer-sum">' + chips + '</div>' + note + grid + gh;
+  }
+
+  /* ---- Radar de avistamientos ---- */
+  var ageOf = function (ts) { return Date.now() - ts; };
+  function ageText(ts) {
+    var m = Math.round(ageOf(ts) / 60000);
+    if (m < 2) return 'ahora mismo';
+    if (m < 60) return 'hace ' + m + ' min';
+    var h = Math.round(m / 60);
+    return h < 48 ? 'hace ' + h + ' h' : 'hace ' + Math.round(h / 24) + ' días';
+  }
+  function distMi(a, b, c, d) {
+    var R = 3958.8, t = Math.PI / 180, dl = (c - a) * t, dn = (d - b) * t;
+    var x = Math.sin(dl / 2) * Math.sin(dl / 2) + Math.cos(a * t) * Math.cos(c * t) * Math.sin(dn / 2) * Math.sin(dn / 2);
+    return 2 * R * Math.asin(Math.sqrt(x));
+  }
+  var distText = function (mi) { return mi < 0.1 ? Math.max(10, Math.round(mi * 528) * 10) + ' ft' : mi.toFixed(1) + ' mi'; };
+  function getPos(cb) {
+    if (!navigator.geolocation) { cb(null); return; }
+    navigator.geolocation.getCurrentPosition(function (p) { cb({ lat: p.coords.latitude, lng: p.coords.longitude }); }, function () { cb(null); }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
+  }
+  function mapsURL(s) {
+    if (s.lat !== undefined) return 'https://www.google.com/maps/search/?api=1&query=' + s.lat + '%2C' + s.lng;
+    if (s.area) return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(s.area);
+    return '';
+  }
+  function renderRadar() {
+    if (state.tab !== 'radar') return;
+    var note = $('#radarNote'), bar = $('#radarBar'), list = $('#sightList');
+    if (!sightCol || !selfId || active !== 'cloud') {
+      note.textContent = 'El radar necesita entrar con tu cuenta de Claude (pestaña Cuenta).'; bar.innerHTML = ''; list.innerHTML = ''; return;
+    }
+    note.textContent = radarMsg || (canWrite === false ? 'Puedes seguir avistamientos, pero para marcar los tuyos necesitas acceso de colaborador.' : 'Marca dónde viste un carro raro. Los demás pueden seguirlo e ir a buscarlo.');
+    var wk = Date.now() - 7 * 864e5;
+    var rows = sights.filter(function (s) { return s.ts > wk; });
+    needNames(rows.map(function (s) { return s.owner; }));
+    rows.forEach(function (s) { s.dist = (myPos && s.lat !== undefined) ? distMi(myPos.lat, myPos.lng, s.lat, s.lng) : null; });
+    var nf = rows.filter(function (s) { return tracks[s.id]; }).length, nfo = rows.filter(function (s) { return follows[s.owner]; }).length;
+    if (sightFilter === 'follow') rows = rows.filter(function (s) { return tracks[s.id]; });
+    else if (sightFilter === 'people') rows = rows.filter(function (s) { return follows[s.owner]; });
+    else if (sightFilter === 'mine') rows = rows.filter(function (s) { return s.owner === selfId; });
+    rows.sort(sightSort === 'near' && myPos ? function (a, b) { return (a.dist == null ? 1e9 : a.dist) - (b.dist == null ? 1e9 : b.dist); } : function (a, b) { return b.ts - a.ts; });
+    var ch = function (act, v, label, on) { return '<button type="button" class="chip" data-act="' + act + '" data-v="' + v + '" aria-pressed="' + on + '">' + label + '</button>'; };
+    bar.innerHTML = ch('sightFilter', 'all', 'Todos', sightFilter === 'all') + ch('sightFilter', 'follow', 'Siguiendo (' + nf + ')', sightFilter === 'follow') + ch('sightFilter', 'people', 'De mis seguidos (' + nfo + ')', sightFilter === 'people') + ch('sightFilter', 'mine', 'Míos', sightFilter === 'mine') +
+      ch('sightSort', 'recent', 'Más recientes', sightSort === 'recent') + ch('sightSort', 'near', 'Más cerca', sightSort === 'near');
+    list.innerHTML = rows.length ? rows.map(function (s) {
+      var old = ageOf(s.ts) > 864e5, url = mapsURL(s), mine = s.owner === selfId;
+      var meta = [s.area, ageText(s.ts) + (old ? ' · puede que ya no esté' : ''), s.dist != null ? distText(s.dist) : '', nameOf(s.owner)].filter(Boolean).join(' · ');
+      return '<li class="sight r' + s.rarity + (old ? ' old' : '') + '"><span class="pip"></span><div class="sb"><b>' + esc(s.make + ' ' + s.model) + '</b><span class="meta">' + RAR[s.rarity].n + ' · ' + esc(meta) + '</span>' + (s.note ? '<span class="meta">' + esc(s.note) + '</span>' : '') +
+        '<div class="acts">' + (url ? '<a class="btn" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">Ver en el mapa</a>' : '') +
+        (mine ? '' : '<button class="btn" type="button" data-act="track" data-id="' + esc(s.id) + '" aria-pressed="' + !!tracks[s.id] + '">' + (tracks[s.id] ? 'Siguiendo ✓' : 'Voy a buscarlo') + '</button>') +
+        (mine ? '' : '<button class="btn" type="button" data-act="sightFound" data-id="' + esc(s.id) + '">Lo encontré</button>') +
+        (mine ? '' : '<button class="btn" type="button" data-act="follow" data-id="' + esc(s.owner) + '" aria-pressed="' + !!follows[s.owner] + '">' + (follows[s.owner] ? 'Siguiendo a ' + esc(nameOf(s.owner)) + ' ✓' : 'Seguir a ' + esc(nameOf(s.owner))) + '</button>') +
+        (mine ? '<button class="btn" type="button" data-act="sightDel" data-id="' + esc(s.id) + '">Borrar</button>' : '') + '</div></div></li>';
+    }).join('') : '<li class="rank-empty">' + (sightFilter === 'all' ? 'No hay avistamientos de los últimos 7 días. Marca el primero.' : 'Nada en esta lista.') + '</li>';
+  }
+  function openSightForm(pre) {
+    pre = pre || {};
+    var f = $('#sightForm'); f.hidden = false; locTmp = null;
+    var sp = state.cars.filter(function (c) { return c.kind === 'spotted'; });
+    $('#sFrom').innerHTML = '<option value="">Escribir a mano</option>' + sp.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.make + ' ' + c.model) + (c.place ? ' · ' + esc(c.place) : '') + '</option>'; }).join('');
+    $('#sMake').value = pre.make || ''; $('#sModel').value = pre.model || ''; $('#sRarity').value = String(pre.rarity | 0);
+    $('#sBody').value = BODIES[pre.body] ? pre.body : 'sedan'; $('#sArea').value = pre.area || ''; $('#sNote').value = ''; $('#sLoc').textContent = '';
+    f.scrollIntoView({ block: 'nearest' });
+  }
+  function sightLoc() {
+    var l = $('#sLoc'); l.textContent = 'Buscando tu ubicación…'; l.classList.remove('err');
+    getPos(function (p) {
+      if (!p) { l.textContent = 'No pude obtener tu ubicación. Escribe la zona o la calle.'; l.classList.add('err'); return; }
+      myPos = p; locTmp = { lat: Math.round(p.lat * 1000) / 1000, lng: Math.round(p.lng * 1000) / 1000 };
+      l.textContent = 'Ubicación lista (aproximada, a unos 100 m).';
+    });
+  }
+  function sightSave() {
+    var l = $('#sLoc');
+    var make = $('#sMake').value.trim(), model = $('#sModel').value.trim(), area = $('#sArea').value.trim();
+    l.classList.add('err');
+    if (!make || !model) { l.textContent = 'Falta la marca y el modelo.'; return; }
+    if (!area && !locTmp) { l.textContent = 'Escribe la zona o usa tu ubicación para que otros lo encuentren.'; return; }
+    if (!sightCol || !selfId) return;
+    l.classList.remove('err');
+    var s = { id: uid(), make: make.slice(0, 60), model: model.slice(0, 60), rarity: +$('#sRarity').value || 0, body: $('#sBody').value, area: area.slice(0, 80), note: $('#sNote').value.trim().slice(0, 120), ts: Date.now() };
+    if (locTmp) { s.lat = locTmp.lat; s.lng = locTmp.lng; }
+    var wk = Date.now() - 7 * 864e5;
+    var items = [s].concat(mySights.filter(function (x) { return x.ts > wk; }).map(rawSight)).slice(0, 30);
+    var b = $('#sSave'); b.disabled = true;
+    enqueue(async function () {
+      try { await sightCol.doc(selfId).set({ items: items }); $('#sightForm').hidden = true; radarMsg = ''; }
+      catch (err) { l.classList.add('err'); l.textContent = 'No se pudo publicar. Puede que no tengas permiso para escribir aquí: pide acceso de colaborador.'; }
+      finally { b.disabled = false; }
+    });
+  }
+  function rawSight(r) { var o = { id: r.id, make: r.make, model: r.model, rarity: r.rarity, body: r.body, area: r.area, note: r.note, ts: r.ts }; if (r.lat !== undefined) { o.lat = r.lat; o.lng = r.lng; } return o; }
+  function sightDel(id) {
+    var items = mySights.filter(function (x) { return x.id !== id; }).map(rawSight);
+    enqueue(async function () { try { await sightCol.doc(selfId).set({ items: items }); } catch (err) {} });
+  }
+  function toggleTrack(id) {
+    if (tracks[id]) delete tracks[id]; else tracks[id] = true;
+    renderRadar();
+    if (col) {
+      var ids = Object.keys(tracks).slice(-100);
+      enqueue(async function () { try { await col.doc('meta-tracks').set({ ids: ids }); } catch (err) {} });
+    }
+  }
+  function sightFound(id) {
+    var s = sights.find(function (x) { return x.id === id; }); if (!s) return;
+    openAdd('spotted');
+    $('#make').value = s.make; $('#model').value = s.model; $('#rarity').value = String(s.rarity); $('#bodyType').value = s.body; $('#place').value = s.area;
+    updateQuality();
+    setStatus('Datos del avistamiento cargados. Ahora toma tu propia foto: la calidad de la foto da los puntos.');
+  }
+
+  /* ================= Spot now: cámara en vivo ================= */
+  var camStream = null;
+  function stopCam() {
+    if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
+    var v = $('#camVideo'); if (v) v.srcObject = null;
+    var w = $('#camWrap'); if (w) w.hidden = true;
+    var o = $('#camOpen'); if (o) o.hidden = false;
+  }
+  async function openCam() {
+    var m = $('#camMsg'); m.textContent = '';
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { m.textContent = 'Aquí no se puede abrir la cámara directo. Usa el botón «Usar la cámara del teléfono».'; return; }
+    try {
+      camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }, audio: false });
+      var v = $('#camVideo'); v.srcObject = camStream; await v.play();
+      $('#camWrap').hidden = false; $('#camOpen').hidden = true;
+    } catch (e) {
+      stopCam(); m.textContent = 'No pude abrir la cámara (sin permiso o no disponible). Usa el botón «Usar la cámara del teléfono».';
+    }
+  }
+  function camSnap() {
+    var v = $('#camVideo'); if (!camStream || !v.videoWidth) return;
+    var c = document.createElement('canvas'); c.width = v.videoWidth; c.height = v.videoHeight; c.getContext('2d').drawImage(v, 0, 0);
+    c.toBlob(function (b) { if (b) spotWith(new File([b], 'spot.jpg', { type: 'image/jpeg' })); }, 'image/jpeg', .9);
+  }
+  async function spotWith(f) {
+    stopCam(); state.tab = 'spotted'; state.filter = null; render(); openAdd('spotted');
+    await handleFile(f);
+    if (canImages && photo.blob) identify();
+  }
+
+  /* ================= cuentas en este dispositivo (sin Claude, gratis) ================= */
+  var LS = {
+    get: function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+  var cloudName = '', cloudPhone = '', accts = [], active = '', cloudAvail = false, cloud = null, cloudCars = [], pendingLogin = null, confirmDelAcct = null, acctMsg = '', persistT = null, acctSig = '';
+  var cloudOn = function () { return active === 'cloud' && !!cloud; };
+  function loadAccts() { try { accts = JSON.parse(LS.get('garage.v1.accts') || '[]'); } catch (e) { accts = []; } if (!Array.isArray(accts)) accts = []; }
+  function saveAccts() { return LS.set('garage.v1.accts', JSON.stringify(accts)); }
+  function loadCars(id) { try { var o = JSON.parse(LS.get('garage.v1.d.' + id) || '{}'); return Array.isArray(o.cars) ? o.cars : []; } catch (e) { return []; } }
+  function acctName() { if (active === 'cloud') return cloudName || 'Cuenta de Claude'; var a = accts.find(function (x) { return x.id === active; }); return a ? a.name : ''; }
+  function persistNow() {
+    if (!active || active === 'cloud') return;
+    clearTimeout(persistT); persistT = null;
+    var ok = LS.set('garage.v1.d.' + active, JSON.stringify({ cars: state.cars }));
+    var f = $('#foot'); if (f && !ok) f.textContent = 'No hay espacio en este dispositivo: lo último que hiciste no se guardó. Borra fotos o exporta una copia desde Cuenta.';
+  }
+  function persist() { if (!active || active === 'cloud') return; if (persistT) clearTimeout(persistT); persistT = setTimeout(persistNow, 400); }
+  async function hashPin(pin, salt) {
+    try { var h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(salt + ':' + pin)); return Array.prototype.map.call(new Uint8Array(h), function (x) { return x.toString(16).padStart(2, '0'); }).join(''); }
+    catch (e) { return 'p' + btoa(unescape(encodeURIComponent(salt + pin))); }
+  }
+  function applyTabs() { ['tabRadar', 'tabPeople', 'tabBoard'].forEach(function (id) { $('#' + id).hidden = !cloudAvail; }); }
+  function setActive(id) {
+    persistNow();
+    closeSheet(); closeAdd();
+    active = id; LS.set('garage.v1.active', id);
+    pendingLogin = null; confirmDelAcct = null; acctMsg = '';
+    if (id === 'cloud' && cloud) { col = cloud.col; state.cars = cloudCars; state.mode = 'db'; }
+    else { col = null; state.cars = loadCars(id); state.mode = 'local'; }
+    state.tab = 'spotted'; state.filter = null; acctSig = '';
+    render();
+  }
+  async function createAccount() {
+    var n = ($('#acName').value || '').trim().replace(/\s+/g, ' ').slice(0, 24), pin = ($('#acPin').value || '').trim();
+    if (n.length < 2) { acctMsg = 'El nombre necesita al menos 2 letras.'; return renderAcct(true); }
+    if (accts.some(function (a) { return a.name.toLowerCase() === n.toLowerCase(); })) { acctMsg = 'Ya existe una cuenta con ese nombre en este dispositivo.'; return renderAcct(true); }
+    if (pin && (pin.length < 4 || pin.length > 12)) { acctMsg = 'El PIN debe tener entre 4 y 12 caracteres, o déjalo vacío.'; return renderAcct(true); }
+    var salt = uid().slice(0, 8), a = { id: 'l' + uid().slice(0, 8), name: n, salt: salt, pin: pin ? await hashPin(pin, salt) : '' };
+    accts.push(a);
+    if (!saveAccts()) { accts.pop(); acctMsg = 'Este navegador no deja guardar datos, así que no se puede crear la cuenta.'; return renderAcct(true); }
+    setActive(a.id);
+  }
+  function loginAccount(id) {
+    var a = accts.find(function (x) { return x.id === id; }); if (!a) return;
+    if (a.pin) { pendingLogin = id; acctMsg = ''; acctSig = ''; renderAcct(true); var i = $('#acPinIn'); if (i) i.focus(); }
+    else setActive(id);
+  }
+  async function confirmPin() {
+    var a = accts.find(function (x) { return x.id === pendingLogin; }); if (!a) return;
+    var v = ($('#acPinIn').value || '').trim();
+    if ((await hashPin(v, a.salt)) === a.pin) setActive(a.id);
+    else { acctMsg = 'PIN incorrecto.'; acctSig = ''; renderAcct(true); }
+  }
+  function deleteAccount(id) {
+    accts = accts.filter(function (x) { return x.id !== id; }); saveAccts(); LS.del('garage.v1.d.' + id);
+    confirmDelAcct = null;
+    if (active === id) { if (cloud) setActive('cloud'); else if (accts.length) setActive(accts[0].id); else ensureLocal(); }
+    else { acctSig = ''; renderAcct(true); }
+  }
+  function ensureLocal() {
+    if (accts.length) return;
+    accts.push({ id: 'l' + uid().slice(0, 8), name: 'Invitado', salt: '', pin: '' }); saveAccts();
+    setActive(accts[0].id);
+  }
+  function saveCloudAcct() {
+    if (!cloudOn()) return;
+    var n = ($('#caName').value || '').trim().replace(/\s+/g, ' ').slice(0, 24), ph = ($('#caPhone').value || '').replace(/[^0-9+() -]/g, '').slice(0, 20);
+    if (n.length < 2) { acctMsg = 'El nombre necesita al menos 2 letras.'; return renderAcct(true); }
+    cloudName = n; cloudPhone = ph; acctMsg = 'Cuenta guardada.';
+    enqueue(async function () { try { await col.doc('meta-account').set({ name: n, phone: ph }); } catch (e) { acctMsg = 'No se pudo guardar. Intenta otra vez.'; } acctSig = ''; renderAcct(true); renderHeader(); });
+    acctSig = ''; renderAcct(true); renderHeader();
+  }
+  function linkLocal() {
+    var id = ($('#lkSel') || {}).value; if (!cloudOn() || !id) return;
+    var cars = loadCars(id), have = {}; cloudCars.forEach(function (c) { have[c.id] = 1; });
+    var add = cars.filter(function (c) { return c && c.id && !have[c.id]; });
+    acctMsg = 'Pasando ' + add.length + ' cartas a tu cuenta…'; acctSig = ''; renderAcct(true);
+    enqueue(async function () {
+      var ok = 0;
+      for (var i = 0; i < add.length; i++) {
+        var c = Object.assign({}, add[i]), ex = c.extra || []; delete c.extra;
+        try { await col.doc(c.id).set(c); for (var j = 0; j < ex.length; j++) await col.doc(c.id).collection('photos').doc(ex[j].id).set(ex[j]); ok++; } catch (e) {}
+      }
+      acctMsg = ok + ' de ' + add.length + ' cartas pasadas a tu cuenta.' + (ok < add.length ? ' Algunas no cupieron o no se pudieron guardar.' : ''); acctSig = ''; renderAcct(true);
+    });
+  }
+  async function exportData() {
+    var nm = acctName() || 'garage';
+    var fname = 'garage-' + nm.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.json';
+    var text = JSON.stringify({ app: 'garage', v: 1, name: nm, cars: state.cars });
+    var dl = null;
+    try { dl = (window.claude && window.claude.use) ? await window.claude.use('downloads') : null; } catch (e) { dl = null; }
+    try {
+      if (dl && dl.save) { await dl.save({ filename: fname, data: text }); acctMsg = 'Copia lista.'; }
+      else {
+        var u = URL.createObjectURL(new Blob([text], { type: 'application/json' })), a = document.createElement('a');
+        a.href = u; a.download = fname; document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(u); }, 3000);
+        acctMsg = 'Copia lista.';
+      }
+    } catch (e) { acctMsg = (e && e.code === 'declined') ? '' : 'No se pudo descargar la copia desde aquí.'; }
+    acctSig = ''; renderAcct(true);
+  }
+  function importData(file) {
+    var fr = new FileReader();
+    fr.onload = function () {
+      var d; try { d = JSON.parse(fr.result); } catch (e) { d = null; }
+      if (!d || d.app !== 'garage' || !Array.isArray(d.cars)) { acctMsg = 'Ese archivo no es una copia de GARAGE.'; return renderAcct(true); }
+      var have = {}; state.cars.forEach(function (c) { have[c.id] = 1; });
+      var add = d.cars.filter(function (c) { return c && c.id && c.make && c.model && !have[c.id]; });
+      if (cloudOn()) {
+        enqueue(async function () { for (var i = 0; i < add.length; i++) { var c = Object.assign({}, add[i]); delete c.extra; try { await col.doc(c.id).set(c); } catch (e) {} } });
+      } else { state.cars = state.cars.concat(add).sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); }); persistNow(); render(); }
+      acctMsg = add.length + ' cartas importadas' + (cloudOn() ? ' (sin fotos extra).' : '.'); acctSig = ''; renderAcct(true);
+    };
+    fr.readAsText(file);
+  }
+  function renderAcct(force) {
+    if (state.tab !== 'acct') return;
+    var box = $('#acctBox');
+    var sig = JSON.stringify([active, accts.map(function (a) { return a.id + a.name + (a.pin ? 1 : 0); }), cloudAvail, pendingLogin, confirmDelAcct, acctMsg, cloudName, cloudPhone]);
+    if (!force && sig === acctSig) return;
+    if (!force && box.contains(document.activeElement) && box.innerHTML) return;
+    acctSig = sig;
+    var rows = '';
+    if (cloudAvail) rows += '<div class="acct-row' + (active === 'cloud' ? ' on' : '') + '"><div class="who"><b>' + esc(cloudName || 'Cuenta de Claude') + '</b><span>En la nube. Es la única con Gente, Radar, Ranking e identificación con IA.</span></div><div class="rb">' + (active === 'cloud' ? '<span class="status">Sesión actual</span>' : '<button class="btn" type="button" data-act="acLogin" data-id="cloud">Entrar</button>') + '</div></div>';
+    rows += accts.map(function (a) {
+      var on = active === a.id;
+      var body = '<div class="who"><b>' + esc(a.name) + '</b><span>En este dispositivo' + (a.pin ? ' · con PIN' : '') + (on ? ' · ' + state.cars.length + ' cartas' : '') + '</span></div>';
+      var act = on ? '<span class="status">Sesión actual</span>' : '<button class="btn" type="button" data-act="acLogin" data-id="' + esc(a.id) + '">Entrar</button>';
+      if (pendingLogin === a.id) act = '<input type="password" id="acPinIn" maxlength="12" placeholder="PIN" aria-label="PIN" autocomplete="off" style="max-width:120px"><button class="btn primary" type="button" data-act="acPin">Confirmar</button><button class="btn" type="button" data-act="acCancel">Cancelar</button>';
+      var del = confirmDelAcct === a.id ? '<button class="btn danger" type="button" data-act="acDelYes" data-id="' + esc(a.id) + '">Sí, borrar con todas sus cartas</button><button class="btn" type="button" data-act="acCancel">Cancelar</button>' : '<button class="btn" type="button" data-act="acDel" data-id="' + esc(a.id) + '">Borrar</button>';
+      return '<div class="acct-row' + (on ? ' on' : '') + '">' + body + '<div class="rb">' + act + (pendingLogin === a.id ? '' : del) + '</div></div>';
+    }).join('');
+    var cloudForm = '';
+    if (cloudAvail) {
+      cloudForm = '<h3 class="sub">Mi cuenta en la nube</h3><div class="acct-new" style="margin-top:8px"><div class="field"><label for="caName">Nombre de la cuenta</label><input type="text" id="caName" maxlength="24" autocomplete="off" placeholder="EMCCGARAGE" value="' + esc(cloudName) + '"></div>' +
+        '<div class="field"><label for="caPhone">Teléfono (privado)</label><input type="tel" id="caPhone" maxlength="20" autocomplete="off" placeholder="305…" value="' + esc(cloudPhone) + '"></div>' +
+        '<p class="status">El teléfono se guarda solo en tu cuenta. Nadie más lo ve: ni en Gente, ni en Ranking, ni en el Radar. Tu nombre público se cambia en Gente.</p>' +
+        '<div class="actions"><button class="btn primary" type="button" data-act="caSave"' + (active === 'cloud' ? '' : ' disabled') + '>Guardar cuenta</button></div>' +
+        (active === 'cloud' ? '' : '<p class="status">Entra a la cuenta de Claude para editarla.</p>') +
+        (accts.length && active === 'cloud' ? '<div class="field"><label for="lkSel">Pasar cartas de una cuenta de este dispositivo a mi cuenta de Claude</label><select id="lkSel">' + accts.map(function (a) { return '<option value="' + esc(a.id) + '">' + esc(a.name) + ' (' + loadCars(a.id).length + ' cartas)</option>'; }).join('') + '</select></div><div class="actions"><button class="btn" type="button" data-act="lkGo">Pasar cartas</button></div>' : '') + '</div>';
+    }
+    box.innerHTML = '<p class="status">Sesión actual: <b>' + esc(acctName()) + '</b>. ' + (active === 'cloud' ? 'Tus cartas están en tu cuenta de Claude.' : 'Tus cartas se guardan en este dispositivo.') + '</p>' + rows +
+      '<div class="acct-new"><div class="field"><label for="acName">Crear cuenta nueva</label><input type="text" id="acName" maxlength="24" autocomplete="off" placeholder="Nombre"></div>' +
+      '<div class="field"><label for="acPin">PIN (opcional)</label><input type="password" id="acPin" maxlength="12" autocomplete="off" placeholder="4 a 12 caracteres"></div>' +
+      '<div class="actions"><button class="btn primary" type="button" data-act="acNew">Crear cuenta</button></div></div>' +
+      cloudForm + '<h3 class="sub">Copia de seguridad</h3><p class="status">Para pasar tus cartas a otro teléfono o guardarlas, exporta una copia e impórtala allá.</p>' +
+      '<div class="actions" style="margin-top:8px"><button class="btn" type="button" data-act="acExport">Exportar copia</button><label class="btn" for="acImport">Importar copia</label><input class="sr" type="file" id="acImport" accept="application/json,.json"></div>' +
+      '<p class="status err" id="acMsg">' + esc(acctMsg) + '</p>' +
+      '<p class="status">Las cuentas de este dispositivo viven solo en este navegador: no se sincronizan entre teléfonos y se pierden si borras los datos del navegador. El PIN solo evita que alguien abra tu cuenta por accidente; no es seguridad real.</p>';
+  }
+
+  /* ================= vistas ================= */
+  function artHTML(c) {
+    if (c.photo) return '<img src="' + esc(c.photo) + '" alt="' + esc(c.make + ' ' + c.model) + '" style="' + cropStyle(c.crop) + '">';
+    var look = Object.assign({ body: c.body || 'sedan' }, c.kind === 'garage' ? {} : { color: '#7B8494' }, c.look || {});
+    return carSVG(look);
+  }
+  function cardHTML(c, big) {
+    var r = clamp(c.rarity | 0, 0, 4), spotted = c.kind === 'spotted', foot;
+    if (spotted) foot = [c.year || '', c.place || ''].filter(Boolean).join(' · ');
+    else { var t = (c.mods || []).reduce(function (s, m) { return s + (+m.cost || 0); }, 0); foot = [c.year || '', (c.mods || []).length + ' mods' + (t ? ' · ' + usd(t) : '')].filter(Boolean).join(' · '); }
+    var inner = '<span class="c-top"><span>' + esc(serialOf(c)) + '</span><span class="rar"><i></i>' + RAR[r].n + '</span></span>' +
+      '<span class="art">' + artHTML(c) + (c.demo ? '<span class="tag">Ejemplo</span>' : '') + '</span><span class="c-bar"></span>' +
+      '<span class="c-meta"><span class="make">' + esc(c.make) + '</span><span class="model">' + esc(c.model) + '</span></span>' +
+      '<span class="c-foot"><span>' + esc(foot) + '</span>' + (spotted ? '<b>★ ' + pointsOf(c.rarity, c.q) + '</b>' : '') + '</span>';
+    return big ? '<div class="card big r' + r + '">' + inner + '</div>' : '<button type="button" class="card r' + r + '" data-act="open" data-id="' + esc(c.id) + '">' + inner + '</button>';
+  }
+
+  function renderHeader() {
+    persist();
+    var cars = all();
+    var spotted = cars.filter(function (c) { return c.kind === 'spotted'; });
+    var garage = cars.filter(function (c) { return c.kind === 'garage'; });
+    var best = spotted.reduce(function (m, c) { return Math.max(m, c.rarity); }, -1);
+    var s = '<strong>' + spotted.length + '</strong> en la colección · <strong>' + garage.length + '</strong> míos';
+    if (best >= 0) s += ' · mejor hallazgo: <strong>' + RAR[best].n + '</strong>';
+    s += ' · <strong>' + spotted.reduce(function (t, c) { return t + pointsOf(c.rarity, c.q); }, 0) + '</strong> puntos';
+    $('#summary').innerHTML = s;
+    var ts = $('#tabSpotted'), tg = $('#tabGarage');
+    ts.textContent = 'Colección (' + spotted.length + ')';
+    tg.textContent = 'Mis carros (' + garage.length + ')';
+    ts.setAttribute('aria-selected', state.tab === 'spotted');
+    tg.setAttribute('aria-selected', state.tab === 'garage');
+    $('#tabBoard').setAttribute('aria-selected', state.tab === 'board');
+    $('#tabSpot').setAttribute('aria-selected', state.tab === 'spot');
+    $('#tabAcct').setAttribute('aria-selected', state.tab === 'acct');
+    $('#tabRadar').setAttribute('aria-selected', state.tab === 'radar');
+    $('#tabPeople').setAttribute('aria-selected', state.tab === 'people');
+    $('#demoNote').hidden = !usingDemos() || !(state.tab === 'spotted' || state.tab === 'garage');
+    var f = '';
+    if (state.mode === 'memory') f = 'Modo de prueba: lo que agregues no se guarda al cerrar esta página.';
+    else if (state.mode === 'local') f = 'Guardado en este dispositivo, cuenta «' + acctName() + '». No se sincroniza con otros teléfonos: exporta una copia desde Cuenta.';
+    else if (state.mode === 'db') f = 'Tus cartas y fotos se guardan en tu cuenta y solo las ves tú, salvo lo que publiques en Gente, Radar o Ranking.';
+    $('#foot').textContent = f;
+  }
+
+  function renderChips() {
+    var cars = all().filter(function (c) { return c.kind === state.tab; });
+    $('#chips').innerHTML = RAR.map(function (r, i) {
+      var n = cars.filter(function (c) { return c.rarity === i; }).length;
+      return '<button type="button" class="chip r' + i + '" data-act="filter" data-r="' + i + '" aria-pressed="' + (state.filter === i) + '"><i></i>' + r.n + ' <span class="n">' + n + '</span></button>';
+    }).join('');
+  }
+
+  function renderGrid() {
+    var list = all().filter(function (c) { return c.kind === state.tab && (state.filter === null || c.rarity === state.filter); });
+    list.sort(function (a, b) { return b.rarity - a.rarity || (b.ts || 0) - (a.ts || 0); });
+    var g = $('#grid');
+    if (!list.length) {
+      var msg = state.filter !== null ? 'No tienes cartas de esa rareza todavía.' :
+        (state.tab === 'garage' ? 'Todavía no tienes carros tuyos. Agrega uno con foto y después anota los mods.' : 'Todavía no hay cartas aquí.');
+      g.innerHTML = '<div class="empty"><span>' + msg + '</span>' + (state.filter === null ? '<button class="btn primary" type="button" data-act="add" data-kind="' + state.tab + '">+ Agregar carro</button>' : '') + '</div>';
+      return;
+    }
+    g.innerHTML = list.map(function (c) { return cardHTML(c, false); }).join('');
+  }
+
+  function renderSheet() {
+    persist();
+    var root = $('#sheetRoot');
+    var prev = root.querySelector('.sheet'), prevTop = prev ? prev.scrollTop : 0;
+    var c = selCar();
+    if (!c) { root.innerHTML = ''; return; }
+    var mods = c.mods || [];
+    var total = mods.reduce(function (s, m) { return s + (+m.cost || 0); }, 0);
+    var facts = '';
+    if (c.year) facts += '<div><dt>Año</dt><dd>' + c.year + '</dd></div>';
+    if (c.place) facts += '<div><dt>Visto en</dt><dd>' + esc(c.place) + '</dd></div>';
+    if (c.ts) facts += '<div><dt>' + (c.kind === 'garage' ? 'Agregado' : 'Fecha') + '</dt><dd>' + dateOf(c.ts) + '</dd></div>';
+    var modsHTML = '';
+    if (c.kind === 'garage') {
+      modsHTML = vizHTML(c) + '<h3>Mods</h3>' +
+        (mods.length ? '<ul class="mods">' + mods.map(function (m, i) {
+          return '<li><span class="mn">' + esc(m.name) + '</span>' + (m.cost ? '<span class="cost">' + usd(m.cost) + '</span>' : '') +
+            (c.demo ? '' : '<button class="rm" type="button" data-act="rm" data-i="' + i + '" aria-label="Quitar ' + esc(m.name) + '">×</button>') + '</li>';
+        }).join('') + '</ul>' : '<p class="status">Todavía no hay mods anotados.</p>') +
+        (total ? '<div class="mods-total"><span>Invertido</span><span>' + usd(total) + '</span></div>' : '') +
+        (c.demo ? '' : '<div class="mod-add"><input type="text" id="modName" placeholder="Intake, tune, rines…" aria-label="Nombre del mod" autocomplete="off"><input type="number" id="modCost" inputmode="decimal" min="0" placeholder="$" aria-label="Costo"><button class="btn" type="button" data-act="modAdd">Agregar</button></div>');
+    }
+    var tail;
+    if (c.demo) tail = '<p class="note">Carta de ejemplo. Desaparece cuando guardes tu primer carro.</p>';
+    else if (state.confirmDel) tail = '<div class="actions"><button class="btn danger" type="button" data-act="delYes">Sí, eliminar</button><button class="btn" type="button" data-act="delNo">Cancelar</button></div>';
+    else tail = '<div class="actions">' + (c.kind === 'spotted' && sightCol && active === 'cloud' ? '<button class="btn" type="button" data-act="sightFromCar">Marcar en el Radar</button>' : '') + '<button class="btn" type="button" data-act="del">Eliminar carta</button></div>';
+    root.innerHTML = '<div class="scrim" data-act="close"></div>' +
+      '<aside class="sheet r' + clamp(c.rarity | 0, 0, 4) + '" role="dialog" aria-modal="true" aria-label="' + esc(c.make + ' ' + c.model) + '"><div class="sheet-body">' +
+      '<div class="sheet-top"><span class="lbl">Carta ' + esc(serialOf(c)) + '</span><button class="btn" type="button" id="sheetClose" data-act="close">Cerrar</button></div>' +
+      cardHTML(c, true) +
+      (c.demo ? '' : photosHTML(c)) +
+      (c.kind === 'spotted' ? scoreHTML(c) : '') +
+      (facts ? '<dl class="facts">' + facts + '</dl>' : '') +
+      (c.why ? '<p class="why">' + esc(c.why) + '</p>' : '') +
+      (c.note ? '<p>' + esc(c.note) + '</p>' : '') +
+      modsHTML + tail + '</div></aside>';
+    var sc = $('#sheetCrop');
+    sheetCropper = sc ? mountCropper(sc, state.crop, function () { state.cropDirty = true; var b = $('#cropSave'); if (b) b.disabled = false; }) : null;
+    var ns = root.querySelector('.sheet'); if (ns && prev) ns.scrollTop = prevTop;
+    if (state.focusMod) { state.focusMod = false; var m = $('#modName'); if (m) m.focus(); }
+  }
+
+  function render() {
+    var t = state.tab, isCol = t === 'spotted' || t === 'garage';
+    $('#chips').hidden = !isCol; $('#grid').hidden = !isCol; $('#board').hidden = t !== 'board'; $('#radar').hidden = t !== 'radar'; $('#spot').hidden = t !== 'spot'; if (t !== 'spot') stopCam(); $('#people').hidden = t !== 'people';
+    $('#acct').hidden = t !== 'acct';
+    renderHeader(); renderChips(); renderGrid(); renderBoard(); renderRadar(); renderPeople(); renderAcct(); renderSheet();
+  }
+
+  /* ================= agregar carro ================= */
+  function setStatus(t, err) { var s = $('#idStatus'); s.textContent = t || ''; s.classList.toggle('err', !!err); }
+  function updateIdUI() { var b = $('#idBtn'); b.hidden = !canImages; b.disabled = !canImages || !photo.blob; }
+  function currentQ() {
+    if (!photo.tech) return null;
+    var comp = lastAI ? lastAI.comp : null, stock = lastAI ? lastAI.stock : false;
+    return { q: qualityOf(photo.tech, comp, stock), qd: qdOf(photo.tech, comp, stock) };
+  }
+  function updateQuality() {
+    var box = $('#qLine'), cq = currentQ();
+    if (!cq) { box.hidden = true; return; }
+    box.hidden = false;
+    $('#qScore').textContent = cq.q + '/100';
+    $('#qLabel').textContent = qLabel(cq.q);
+    $('#qFill').style.width = cq.q + '%';
+    $('#qTip').textContent = qualityTip(cq.qd);
+    var isG = document.querySelector('input[name=kind]:checked').value === 'garage';
+    $('#qPts').textContent = isG ? 'Los carros de tu garage no suman puntos.' : 'Valdría ≈ ' + pointsOf(+$('#rarity').value || 0, cq.q) + ' puntos' + (lastAI ? '' : ' (la IA puede subir o bajar la nota al evaluar el encuadre)');
+  }
+  function syncKind() {
+    var k = document.querySelector('input[name=kind]:checked').value;
+    $('#placeField').hidden = k !== 'spotted';
+    updateQuality();
+  }
+  function resetForm() {
+    ['#make', '#model', '#year', '#place', '#noteIn'].forEach(function (s) { $(s).value = ''; });
+    $('#rarity').value = '0'; $('#bodyType').value = 'sedan';
+    photo = { blob: null, url: '', tech: null }; lastWhy = ''; lastAI = null;
+    addCrop.x = 50; addCrop.y = 50; addCrop.z = 1;
+    $('#photo').value = '';
+    $('#addCropBox').hidden = true; $('#addImg').removeAttribute('src');
+    $('#dropLabel').hidden = false;
+    setStatus('');
+    updateQuality();
+    updateIdUI();
+  }
+  function openAdd(kind) {
+    resetForm();
+    var r = document.querySelector('input[name=kind][value=' + (kind === 'garage' ? 'garage' : 'spotted') + ']');
+    r.checked = true; syncKind();
+    $('#add').hidden = false;
+    $('#add').scrollIntoView({ block: 'start' });
+  }
+  function closeAdd() { $('#add').hidden = true; resetForm(); }
+
+  function shrink(file, max) {
+    return new Promise(function (res, rej) {
+      var u = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        var s = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight));
+        var c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(im.naturalWidth * s)); c.height = Math.max(1, Math.round(im.naturalHeight * s));
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(u);
+        var tech = analyze(c, im.naturalWidth * im.naturalHeight);
+        c.toBlob(function (b) { b ? res({ blob: b, tech: tech }) : rej(new Error('blob')); }, 'image/jpeg', .72);
+      };
+      im.onerror = function () { URL.revokeObjectURL(u); rej(new Error('img')); };
+      im.src = u;
+    });
+  }
+  function toURL(blob) {
+    return new Promise(function (res, rej) { var f = new FileReader(); f.onload = function () { res(f.result); }; f.onerror = function () { rej(f.error); }; f.readAsDataURL(blob); });
+  }
+
+  function onPhoto(ev) { var f = ev.target.files && ev.target.files[0]; if (f) return handleFile(f); }
+  async function handleFile(f) {
+    setStatus('Preparando la foto…');
+    try {
+      var sh = await shrink(f, 720), blob = sh.blob, tech = sh.tech, url = await toURL(blob);
+      if (url.length > 200000) { var sh2 = await shrink(f, 480); blob = sh2.blob; url = await toURL(blob); }
+      photo = { blob: blob, url: url, tech: tech }; lastWhy = ''; lastAI = null;
+      addCrop.x = 50; addCrop.y = 50; addCrop.z = 1;
+      $('#addImg').src = url; $('#addCropBox').hidden = false; $('#dropLabel').hidden = true;
+      if (addCropper) addCropper.apply();
+      updateIdUI(); updateQuality();
+      setStatus(canImages ? 'Listo. Identifícalo con IA o llena los datos a mano.' : 'Llena los datos a mano.');
+    } catch (e) {
+      photo = { blob: null, url: '', tech: null }; lastAI = null; updateIdUI(); updateQuality();
+      setStatus('No pude leer esa foto. Prueba con otra.', true);
+    }
+  }
+
+  var ERR = {
+    not_granted: 'Para identificar fotos hay que permitir que esta página use Claude.',
+    rate_limited: 'Demasiadas consultas seguidas. Espera un momento y vuelve a intentar.',
+    image_rejected: 'Esa foto no sirvió. Prueba con otra.',
+    invalid_json: 'No pude leer la respuesta. Intenta otra vez o llena los datos a mano.',
+    session_expired: 'Vuelve a iniciar sesión e intenta otra vez.'
+  };
+  async function identify() {
+    if (ctl) { ctl.abort(); return; }
+    if (!sample || !photo.blob) return;
+    ctl = new AbortController();
+    var b = $('#idBtn'); b.textContent = 'Cancelar'; setStatus('Analizando la foto…');
+    try {
+      var r = await sample.json(PROMPT, { images: photo.blob, signal: ctl.signal, modelTier: 'default' });
+      if (!r || r.error === 'no_car' || !r.make) { setStatus('No veo un carro claro en esa foto. Prueba con otra o llena los datos a mano.', true); return; }
+      $('#make').value = String(r.make || '').slice(0, 60);
+      $('#model').value = String(r.model || '').slice(0, 60);
+      var y = parseInt(r.year, 10); $('#year').value = (y >= 1900 && y <= 2100) ? y : '';
+      var ra = Math.max(0, Math.min(4, parseInt(r.rarity, 10) || 0)); $('#rarity').value = String(ra);
+      if (BODIES[r.body]) $('#bodyType').value = r.body;
+      lastWhy = String(r.why || '').slice(0, 240);
+      var cmp = parseFloat(r.composition);
+      lastAI = { comp: isFinite(cmp) ? clamp(cmp, 0, 10) : null, stock: r.stock === true };
+      updateQuality();
+      setStatus((r.confidence === 'baja' ? 'No estoy seguro, revisa los datos. ' : 'Identificado. ') + lastWhy);
+    } catch (e) {
+      var code = e && e.code;
+      if (code === 'cancelled') setStatus('');
+      else {
+        setStatus(ERR[code] || 'No se pudo identificar ahora. Llena los datos a mano.', true);
+        if (code === 'sampling_disabled' || code === 'images_unavailable' || code === 'not_declared') { canImages = false; }
+      }
+    } finally {
+      ctl = null; b.textContent = 'Identificar con IA'; updateIdUI();
+    }
+  }
+
+  function save() {
+    var kind = document.querySelector('input[name=kind]:checked').value;
+    var make = $('#make').value.trim(), model = $('#model').value.trim();
+    if (!make || !model) { setStatus('Falta la marca y el modelo.', true); return; }
+    var y = parseInt($('#year').value, 10);
+    var cq = currentQ();
+    var car = {
+      id: uid(), kind: kind, make: make.slice(0, 60), model: model.slice(0, 60),
+      year: (y >= 1900 && y <= 2100) ? y : null, rarity: +$('#rarity').value || 0, body: BODIES[$('#bodyType').value] ? $('#bodyType').value : 'sedan',
+      place: kind === 'spotted' ? $('#place').value.trim().slice(0, 80) : '',
+      note: $('#noteIn').value.trim().slice(0, 400), why: lastWhy, photo: photo.url,
+      crop: photo.url ? { x: Math.round(addCrop.x * 10) / 10, y: Math.round(addCrop.y * 10) / 10, z: r2(addCrop.z) } : null,
+      q: cq ? cq.q : null, qd: cq ? cq.qd : null, mods: [], ts: Date.now()
+    };
+    var sb = $('#save'); sb.disabled = true;
+    enqueue(async function () {
+      try {
+        if (col) await col.doc(car.id).set(car); else state.cars.push(car);
+        state.tab = kind; state.filter = null;
+        closeAdd(); render();
+      } catch (e) {
+        setStatus(e && e.code === 'quota_exceeded' ? 'No hay más espacio para guardar cartas.' : 'No se pudo guardar. Intenta otra vez.', true);
+      } finally { sb.disabled = false; }
+    });
+  }
+
+  /* ================= mods y eliminar ================= */
+  function setMods(c, mods) {
+    state.focusMod = true;
+    enqueue(async function () {
+      try {
+        if (col) await col.doc(c.id).update({ mods: mods }); else { c.mods = mods; render(); }
+      } catch (e) { state.focusMod = false; }
+    });
+  }
+  function modAdd() {
+    var c = carById(state.sel); if (!c) return;
+    var name = ($('#modName').value || '').trim().slice(0, 80);
+    if (!name) { $('#modName').focus(); return; }
+    var cost = parseFloat($('#modCost').value); cost = cost > 0 ? cost : 0;
+    setMods(c, (c.mods || []).concat([{ name: name, cost: cost }]));
+  }
+  function closeSheet() {
+    state.sel = null; state.look = null; state.crop = null; state.cropDirty = false; state.pi = 0; state.photoMsg = ''; state.confirmDel = false;
+    if (extrasUnsub) { extrasUnsub(); extrasUnsub = null; }
+    state.extras = [];
+    renderSheet();
+  }
+  function deleteCar() {
+    var c = carById(state.sel); if (!c) return;
+    var ex = state.extras.slice();
+    enqueue(async function () {
+      try {
+        if (col) {
+          var pc = col.doc(c.id).collection('photos');
+          for (var i = 0; i < ex.length; i++) await pc.doc(ex[i].id).delete();
+          await col.doc(c.id).delete();
+        } else state.cars = state.cars.filter(function (x) { return x.id !== c.id; });
+        closeSheet(); render();
+      } catch (e) { state.confirmDel = false; renderSheet(); }
+    });
+  }
+
+  /* ================= eventos ================= */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-act]'); if (!t) return;
+    var a = t.dataset.act, c;
+    if (a === 'tab') { state.tab = t.dataset.tab; state.filter = null; render(); }
+    else if (a === 'filter') { var r = +t.dataset.r; state.filter = state.filter === r ? null : r; renderChips(); renderGrid(); }
+    else if (a === 'add') openAdd(t.dataset.kind || state.tab);
+    else if (a === 'addClose') closeAdd();
+    else if (a === 'open') {
+      state.sel = t.dataset.id; state.look = null; state.crop = null; state.cropDirty = false; state.pi = 0; state.photoMsg = ''; state.confirmDel = false;
+      var oc = selCar(); watchExtras(oc && !oc.demo ? oc.id : null);
+      renderSheet(); var cl = $('#sheetClose'); if (cl) cl.focus();
+    }
+    else if (a === 'close') closeSheet();
+    else if (a === 'pick') { state.pi = +t.dataset.i; state.crop = null; state.cropDirty = false; state.photoMsg = ''; renderSheet(); }
+    else if (a === 'cropSave') saveCrop();
+    else if (a === 'photoMain') makePrimary();
+    else if (a === 'photoDel') removePhoto();
+    else if (a === 'modAdd') modAdd();
+    else if (a === 'look') setLook(t.dataset.k, t.dataset.v);
+    else if (a === 'lookSave') saveLook();
+    else if (a === 'join') toggleJoin();
+    else if (a === 'caSave') saveCloudAcct();
+    else if (a === 'lkGo') linkLocal();
+    else if (a === 'acNew') createAccount();
+    else if (a === 'acLogin') loginAccount(t.dataset.id);
+    else if (a === 'acPin') confirmPin();
+    else if (a === 'acCancel') { pendingLogin = null; confirmDelAcct = null; acctMsg = ''; renderAcct(true); }
+    else if (a === 'acDel') { confirmDelAcct = t.dataset.id; renderAcct(true); }
+    else if (a === 'acDelYes') deleteAccount(t.dataset.id);
+    else if (a === 'acExport') exportData();
+    else if (a === 'follow') toggleFollow(t.dataset.id);
+    else if (a === 'peopleFilter') { peopleFilter = t.dataset.v; renderPeople(); }
+    else if (a === 'camOpen') openCam();
+    else if (a === 'camSnap') camSnap();
+    else if (a === 'camClose') stopCam();
+    else if (a === 'sightNew') openSightForm();
+    else if (a === 'sightCancel') $('#sightForm').hidden = true;
+    else if (a === 'sightSave') sightSave();
+    else if (a === 'sightLoc') sightLoc();
+    else if (a === 'sightFilter') { sightFilter = t.dataset.v; renderRadar(); }
+    else if (a === 'sightSort') {
+      if (t.dataset.v === 'near' && !myPos) { radarMsg = 'Buscando tu ubicación…'; renderRadar(); getPos(function (p) { radarMsg = p ? '' : 'No pude obtener tu ubicación, así que no puedo ordenar por cercanía.'; if (p) { myPos = p; sightSort = 'near'; } renderRadar(); }); }
+      else { sightSort = t.dataset.v; renderRadar(); }
+    }
+    else if (a === 'track') toggleTrack(t.dataset.id);
+    else if (a === 'sightFound') sightFound(t.dataset.id);
+    else if (a === 'sightDel') sightDel(t.dataset.id);
+    else if (a === 'sightFromCar') { c = carById(state.sel); if (c) { closeSheet(); state.tab = 'radar'; render(); openSightForm({ make: c.make, model: c.model, rarity: c.rarity, body: c.body, area: c.place }); } }
+    else if (a === 'pfSave') saveProfile();
+    else if (a === 'pfDel') deleteProfile();
+    else if (a === 'peerOpen') peerOpen(t.dataset.id);
+    else if (a === 'peerClose') closePeer();
+    else if (a === 'peerCmp') { peerCmp = t.dataset.v; renderPeer(); }
+    else if (a === 'rm') { c = carById(state.sel); if (c) { var i = +t.dataset.i; setMods(c, (c.mods || []).filter(function (_, k) { return k !== i; })); } }
+    else if (a === 'del') { state.confirmDel = true; renderSheet(); }
+    else if (a === 'delNo') { state.confirmDel = false; renderSheet(); }
+    else if (a === 'delYes') deleteCar();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      if (state.sel) closeSheet();
+      else if (!$('#add').hidden) closeAdd();
+    } else if (e.key === 'Enter' && e.target && e.target.id === 'modName') { e.preventDefault(); modAdd(); }
+  });
+  document.addEventListener('input', function (e) {
+    var t = e.target;
+    if (t.id === 'lookDrop') setLook('drop', t.value);
+    else if (t.id === 'lookColor') setLook('color', t.value);
+    else if (t.id === 'lookWing') setLook('wing', t.checked);
+  });
+  document.addEventListener('change', function (e) {
+    var t = e.target;
+    if (t.id === 'acImport') { var imf = t.files && t.files[0]; t.value = ''; if (imf) importData(imf); }
+    else if (t.id === 'sFrom') { var fc = carById(t.value); if (fc) { $('#sMake').value = fc.make; $('#sModel').value = fc.model; $('#sRarity').value = String(fc.rarity | 0); $('#sBody').value = BODIES[fc.body] ? fc.body : 'sedan'; if (fc.place) $('#sArea').value = fc.place; } }
+    else if (t.id === 'spotFile') { var sf = t.files && t.files[0]; t.value = ''; if (sf) spotWith(sf); }
+    else if (t.id === 'morePhoto') { var f = t.files && t.files[0]; t.value = ''; if (f) addPhotoFile(f); }
+  });
+  $('#photo').addEventListener('change', onPhoto);
+  $('#idBtn').addEventListener('click', identify);
+  $('#rarity').addEventListener('change', updateQuality);
+  $('#save').addEventListener('click', save);
+  document.querySelectorAll('input[name=kind]').forEach(function (r) { r.addEventListener('change', syncKind); });
+
+  $('#rarity').innerHTML = RAR.map(function (r, i) { return '<option value="' + i + '">' + r.n + '</option>'; }).join('');
+  $('#bodyType').innerHTML = BODYLIST.map(function (b) { return '<option value="' + b[0] + '">' + b[1] + '</option>'; }).join('');
+  $('#bodyType').value = 'sedan';
+  addCropper = mountCropper($('#addCropBox'), addCrop, null);
+  $('#sRarity').innerHTML = RAR.map(function (r, i) { return '<option value="' + i + '">' + r.n + '</option>'; }).join('');
+  $('#sBody').innerHTML = BODYLIST.map(function (b) { return '<option value="' + b[0] + '">' + b[1] + '</option>'; }).join('');
+  syncKind();
+  render();
+
+  /* ================= capacidades (todas opcionales; la página funciona sola) ================= */
+  async function init() {
+    loadAccts(); applyTabs();
+    var use = function (n) { return (window.claude && window.claude.use) ? window.claude.use(n).catch(function () { return null; }) : Promise.resolve(null); };
+    var res = await Promise.all([use('db'), use('user'), use('sample')]);
+    var db = res[0], user = res[1]; sample = res[2]; userNS = user;
+    if (sample && sample.limits) { try { var l = await sample.limits(); canImages = !!(l && l.images) && typeof sample.json === 'function'; } catch (e) { canImages = false; } }
+    updateIdUI();
+    var id = null; try { id = user ? await user.id() : null; } catch (e) { id = null; }
+    if (db && id) {
+      try {
+        col = db.collection('data/users/' + id);
+        selfId = id; cloud = { col: col }; cloudAvail = true;
+        startBoard(db);
+        startShared(db);
+        if (user) user.can('data.write').then(function (v) { canWrite = v; renderBoard(); });
+        col.onSnapshot(function (snap) {
+          snap.docs.forEach(function (d) { if (d.id === 'meta-account') { var ao = d.data() || {}; cloudName = String(ao.name || '').slice(0, 24); cloudPhone = String(ao.phone || '').slice(0, 20); } if (d.id === 'meta-follows') { follows = {}; ((d.data() || {}).ids || []).forEach(function (i) { follows[i] = true; }); } if (d.id === 'meta-tracks') { tracks = {}; ((d.data() || {}).ids || []).forEach(function (i) { tracks[i] = true; }); } });
+          cloudCars = snap.docs.filter(function (d) { return d.id.indexOf('meta-') !== 0; }).map(function (d) { var o = d.data() || {}; o.id = d.id; return o; }).sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); });
+          if (active !== 'cloud') { renderAcct(); return; }
+          state.cars = cloudCars;
+          state.mode = 'db';
+          syncBoard(); syncPub();
+          if (state.sel && !all().some(function (x) { return x.id === state.sel; })) closeSheet();
+          render();
+        }, function () { col = null; cloud = null; cloudAvail = false; applyTabs(); if (!accts.length) ensureLocal(); else setActive(accts[0].id); });
+        applyTabs();
+        var last = LS.get('garage.v1.active');
+        if (last && last !== 'cloud' && accts.some(function (a) { return a.id === last; })) setActive(last);
+        else { active = 'cloud'; state.mode = 'db'; render(); }
+        return;
+      } catch (e) { col = null; cloud = null; cloudAvail = false; }
+    }
+    applyTabs();
+    var l2 = LS.get('garage.v1.active');
+    if (l2 && accts.some(function (a) { return a.id === l2; })) setActive(l2);
+    else if (accts.length) setActive(accts[0].id);
+    else ensureLocal();
+  }
+  init();
+})();
+</script>
+
+</body></html>
